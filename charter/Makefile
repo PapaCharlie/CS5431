@@ -5,6 +5,8 @@ PDF := $(SRC:.tex=.pdf)
 FIGURES := $(filter-out *-crop.pdf, $(shell find figures -name "*.pdf" -type f))
 PNG := $(filter-out *-crop.png, $(shell find figures -name "*.png" -type f))
 
+SBT_TASKS := compile test run
+
 all:
 	-mkdir .build
 	-rm $(PDF)
@@ -27,3 +29,5 @@ links:
 	-rm $(PDF)
 	ln -s .build/*.pdf .
 
+$(SBT_TASKS):
+	sbt "$@"
