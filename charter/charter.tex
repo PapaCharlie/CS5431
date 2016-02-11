@@ -3,27 +3,68 @@
 \usepackage[margin=2cm, headheight=0pt, headsep=1cm]{geometry}
 \usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
 
-\title{CS 5431 - Charter}
+\title{Vault 5431 - Charter}
 \author{Paul Chesnais, Chang Yang Jiao, Britney Wong, Alicia Wu}
 \date{\today}
 
 \pagestyle{fancy}
 \fancyhead{}
 \lhead{cj285, bmw227, pmc85, yw344}
-\chead{CS 5430 - Charter}
+\chead{Vault 5431 - Charter}
 \rhead{\today}
 \fancyfoot{}
 \rfoot{\thepage}
-% \lfoot{\includegraphics[height=20pt]{Logo}}
 \renewcommand{\headrulewidth}{0.5pt}
 \renewcommand{\footrulewidth}{0.5pt}
-
-\newcommand{\prob}[1]{\section*{Problem #1}}
 
 \begin{document}
 \maketitle
 \thispagestyle{empty}
 
+\section{The Team}
+\label{sec:the_team}
+
+Here are the team members for the Vault 5431 project:
+\begin{description}
+  \item[Paul Chesnais] (pmc85)
+  \item[Chang Yang Jiao] (cj285)
+  \item[Britney Wong] (bmw227)
+  \item[Alicia Wu] (yw344)
+\end{description}
+
+\section{Weekly Meetings}
+\label{sec:weekly_meetings}
+We will be meeting on Wednesdays at 5:00 PM and Sundays at 2:00PM.
+
+\section{Proposal}
+\label{sec:proposal}
+
+\subsection{Core Vision}
+\label{sub:core_vision}
+
+A secure password manager accessible from anywhere, where users can store and access passwords, generate new ones and even store other information, such as product keys and other miscellaneous confidential notes.
+
+\subsection{Key Features}
+\label{sub:key_features}
+\begin{itemize}
+  \item Master password encryption %(Authentication \& Authorization)
+  \item Isolated storage %(Confidentiality)
+  \item Password Generation
+  \item Action logging %(Audit)
+  \item Brute force prevention %(Integrity)
+  \item Encryption of data on disk and over the network %(Confidentiality \& Integrity)
+\end{itemize}
+
+\subsection{Essential Security Elements}
+\label{sub:essential_security_elements}
+
+\begin{description}
+  \item[Authentication] User be authenticated via their username and master password. No one other than an authenticated and authorized user will have the means to unlock their data store.
+  \item[Authorization] Only authorized users will be able to unlock their data store, and add or remove passwords and confidential information. No system administrator will be able to view a user's data store in plaintext.
+  \item[Audit] Extensive, timestamped logging of all actions taken by the system, and of all actions taken by users, authenticated or otherwise, in an encrypted log file. All authenticated users will be held accountable for their behavior.
+  \item[Confidentiality] The existence of stored information will not be exposed to anyone but the authorized user. Additionally, no information will exposed in plaintext to anyone but said user, including information sent over the network.
+  \item[Integrity] A user's data store cannot be changed by actions taken over the network by anyone other than said user.
+\end{description}
 
 
 \end{document}
