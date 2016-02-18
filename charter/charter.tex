@@ -66,5 +66,17 @@ A secure password manager accessible from anywhere, where users can store and ac
   \item[Integrity] A user's data store cannot be changed by actions taken over the network by anyone other than said user.
 \end{description}
 
+\section{Abstract}
+\label{sec:abstract}
+
+\par The vision of this project is to create a secure password manager that can be accessed by as many devices as possible.
+
+\par A user of Vault 5431 will be able to access his stored passwords and notes by providing a “master password” that serves as the private key to an encryption. After that, the user can see his own information and generate new passwords. The user will only be allowed to have access to his own account and passwords, while no one other than the user will be able to view the information stored in the datastore in plaintext.
+
+\par The system will log all accesses to the password manager to ensure that only authorized and authenticated users have access to their own respective passwords. Suspicious behavior like simultaneous logins from too many IP addresses will also be monitored, and action will be taken when required.
+
+\par A use case is as follows: a user has many online accounts and wishes to have different secure passwords for each account. He needs to safely store them because he cannot remember all of them. By providing users with the ability to generate secure and random passwords and to copy them into their clipboards without seeing them, we provide the first line of defense against key logger and dictionary attacks
+
+\par Another use case is as follows: A user “logs” into Vault 5431 with his master password and is able to see all of his passwords. He then uses them to log into his online accounts.
 
 \end{document}

@@ -6,6 +6,10 @@ lazy val vault5431 = project.in(file("."))
 
 findbugsSettings
 
+libraryDependencies ++= Seq(
+ "com.sparkjava" % "spark-core" % "2.3"
+)
+
 initialize := {
   val required = "1.8"
   val current = sys.props("java.specification.version")

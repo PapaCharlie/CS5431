@@ -13,6 +13,9 @@ SBT_TASKS := compile test run clean
 
 all: compile
 
+start:
+	$(SBT) "~re-start"
+
 install:
 	test -x $(SBT) && echo -e "$(INSTALLED)" && exit 1 || echo "$(INSTALLING)"
 	test -e $(SBT_TAR) || wget $(SBT_URL)
