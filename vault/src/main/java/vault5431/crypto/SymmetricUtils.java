@@ -1,9 +1,9 @@
 package vault5431.crypto;
 
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
@@ -34,7 +34,8 @@ public class SymmetricUtils {
         return new IvParameterSpec(iv);
     }
 
-    public static byte[] encrypt(Base64String content, SecretKey key, IvParameterSpec iv) throws Exception {
+    public static byte[] encrypt(Base64String content, SecretKey key, IvParameterSpec iv)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             Cipher aesCipher = Cipher.getInstance(AES_ALG);
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
@@ -43,15 +44,24 @@ public class SymmetricUtils {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
             return null;
+        } catch (NoSuchPaddingException e) {
+            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
         }
     }
 
-    public static Base64String decrypt(byte[] encryptedContent, SecretKey key, IvParameterSpec iv) throws Exception {
+    public static Base64String decrypt(byte[] encryptedContent, SecretKey key, IvParameterSpec iv)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             Cipher aesCipher = Cipher.getInstance(AES_ALG);
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
             return Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
         } catch (NoSuchAlgorithmException e) {
+            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        } catch (NoSuchPaddingException e) {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
             return null;

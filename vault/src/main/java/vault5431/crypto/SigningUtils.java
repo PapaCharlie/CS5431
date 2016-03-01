@@ -2,12 +2,12 @@ package vault5431.crypto;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 /**
- * Created by papacharlie on 2/29/16.
+ * Signing utilities.
  */
 public class SigningUtils {
 
@@ -23,6 +23,18 @@ public class SigningUtils {
             System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
             System.exit(1);
             return null;
+        }
+    }
+
+    public static boolean verifySignature(Base64String content, Base64String signature, SecretKey key) throws InvalidKeyException {
+        try {
+            Mac mac = Mac.getInstance(HMAC_SHA1_ALGORITHM);
+            mac.init(key);
+            return Arrays.equals(mac.doFinal(content.getBytes()), signature.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
+            System.exit(1);
+            return false;
         }
     }
 

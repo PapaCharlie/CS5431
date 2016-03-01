@@ -1,10 +1,13 @@
 package vault5431.crypto;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.security.*;
 
 /**
- * Created by papacharlie on 2/29/16.
+ * Asymmetric encryption utils.
  */
 public class AsymmetricUtils {
 
@@ -24,7 +27,7 @@ public class AsymmetricUtils {
         }
     }
 
-    public static byte[] encrypt(Base64String content, PublicKey publicKey) throws Exception {
+    public static byte[] encrypt(Base64String content, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             Cipher cipher = Cipher.getInstance(RSA_ALG);
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -33,15 +36,23 @@ public class AsymmetricUtils {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
             return null;
+        } catch (NoSuchPaddingException e) {
+            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
         }
     }
 
-    public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws Exception {
+    public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         try {
             Cipher cipher = Cipher.getInstance(RSA_ALG);
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             return Base64String.fromBase64(cipher.doFinal(encryptedContent));
         } catch (NoSuchAlgorithmException e) {
+            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        } catch (NoSuchPaddingException e) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
             return null;
