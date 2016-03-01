@@ -4,7 +4,8 @@ import java.util.UUID;
 import org.apache.commons.validator.routines.EmailValidator;
 
 /**
- * Created by papacharlie on 2/23/16.
+ * User class.
+ * TODO: Provide enc and dec methods
  */
 public class User {
 

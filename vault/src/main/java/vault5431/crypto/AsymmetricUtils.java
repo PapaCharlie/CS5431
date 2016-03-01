@@ -8,29 +8,31 @@ import java.security.*;
  */
 public class AsymmetricUtils {
 
-    private static String keyPairAlg = "RSA/ECB/PKCS1Padding";
+    private static String RSA = "RSA";
+    private static String RSA_ALG = RSA + "/ECB/PKCS1Padding";
 
-    public static KeyPair generateKeyPair() {
+    public static KeyPair getNewKeyPair() {
         int keySize = 2048;
         try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA);
             gen.initialize(keySize, new SecureRandom());
             return gen.generateKeyPair();
         } catch (NoSuchAlgorithmException err) {
+            System.exit(1);
             return null;
         }
     }
 
-    public static byte[] encrypt(byte[] content, PublicKey publicKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(keyPairAlg);
+    public static byte[] encrypt(Base64String content, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance(RSA_ALG);
         cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return cipher.doFinal(content);
+        return cipher.doFinal(content.getBytes());
     }
 
-    public static byte[] decrypt(byte[] encryptedContent, PrivateKey privateKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(keyPairAlg);
+    public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance(RSA_ALG);
         cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return cipher.doFinal(encryptedContent);
+        return Base64String.fromBase64(cipher.doFinal(encryptedContent));
     }
 
 }

@@ -3,7 +3,7 @@ package vault5431.crypto;
 import java.io.File;
 
 /**
- * Created by papacharlie on 2/29/16.
+ * CSV utility class. Provides file functionality.
  */
 public class CSVWriter {
 
