@@ -11,7 +11,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class SigningUtils {
 
-    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA1";
+    private static final String HMAC_SHA1_ALGORITHM = "HmacSHA256";
 
     public static Base64String getSignature(Base64String content, SecretKey key) throws InvalidKeyException {
         try {
