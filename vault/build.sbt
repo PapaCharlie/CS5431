@@ -9,7 +9,8 @@ findbugsSettings
 libraryDependencies ++= Seq(
   "com.sparkjava" % "spark-core" % "2.3",
   "commons-validator" % "commons-validator" % "1.5.0",
-  "junit" % "junit" % "4.12" % "test"
+  "junit" % "junit" % "4.12" % "test",
+  "com.novocode" % "junit-interface" % "0.11" % Test
 )
 
 initialize := {
