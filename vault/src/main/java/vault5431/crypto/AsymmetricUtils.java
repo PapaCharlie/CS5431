@@ -13,9 +13,9 @@ public class AsymmetricUtils {
 
     private static String RSA = "RSA";
     private static String RSA_ALG = RSA + "/ECB/PKCS1Padding";
+    private static int keySize = 2048;
 
     public static KeyPair getNewKeyPair() {
-        int keySize = 2048;
         try {
             KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA);
             gen.initialize(keySize, new SecureRandom());
@@ -35,11 +35,11 @@ public class AsymmetricUtils {
         } catch (NoSuchAlgorithmException e) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return new byte[0];
         } catch (NoSuchPaddingException e) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return new byte[0];
         }
     }
 
@@ -51,11 +51,11 @@ public class AsymmetricUtils {
         } catch (NoSuchAlgorithmException e) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return Base64String.empty();
         } catch (NoSuchPaddingException e) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return Base64String.empty();
         }
     }
 

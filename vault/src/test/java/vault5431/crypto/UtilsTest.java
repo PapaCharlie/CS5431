@@ -5,6 +5,7 @@ import org.junit.Test;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import java.security.KeyPair;
+import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
@@ -39,6 +40,16 @@ public class UtilsTest {
         Base64String signature1 = SigningUtils.getSignature(new Base64String(testString), key);
         Base64String signature2 = SigningUtils.getSignature(new Base64String("somethingElse"), key);
         assertFalse(signature1.equals(signature2));
+    }
+
+    @Test
+    public void hashTest() throws Exception {
+        Base64String hash = HashUtils.hash(new Base64String(testString));
+        Base64String diffHash = HashUtils.hash(new Base64String("a"));
+        assertNotNull(hash);
+        assertNotNull(diffHash);
+        assertFalse(hash.equals(diffHash));;
+        System.out.println(HashUtils.hash(new Base64String("hello")));
     }
 
 }

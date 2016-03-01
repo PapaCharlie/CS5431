@@ -14,10 +14,10 @@ public class SymmetricUtils {
 
     private static String AES = "AES";
     private static String AES_ALG = AES + "/CBC/PKCS5PADDING";
+    private static int keySize = 128;
 
     public static SecretKey getNewKey() {
         try {
-            int keySize = 128;
             KeyGenerator gen = KeyGenerator.getInstance(AES);
             gen.init(keySize);
             return gen.generateKey();
@@ -29,7 +29,7 @@ public class SymmetricUtils {
     }
 
     public static IvParameterSpec getNewIV() {
-        byte[] iv = new byte[16];
+        byte[] iv = new byte[keySize/8];
         new SecureRandom().nextBytes(iv);
         return new IvParameterSpec(iv);
     }
@@ -43,11 +43,11 @@ public class SymmetricUtils {
         } catch (NoSuchAlgorithmException e) {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return new byte[0];
         } catch (NoSuchPaddingException e) {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return new byte[0];
         }
     }
 
@@ -60,11 +60,11 @@ public class SymmetricUtils {
         } catch (NoSuchAlgorithmException e) {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return Base64String.empty();
         } catch (NoSuchPaddingException e) {
             System.err.println(AES_ALG + " encryption algorithm does not exist!");
             System.exit(1);
-            return null;
+            return Base64String.empty();
         }
     }
 

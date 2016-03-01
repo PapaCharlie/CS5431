@@ -22,7 +22,7 @@ public class SigningUtils {
         } catch (NoSuchAlgorithmException e) {
             System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
             System.exit(1);
-            return null;
+            return Base64String.empty();
         }
     }
 
