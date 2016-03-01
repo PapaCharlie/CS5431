@@ -20,6 +20,7 @@ public class SigningUtils {
             byte[] rawHmac = mac.doFinal(content.getBytes());
             return new Base64String(rawHmac);
         } catch (NoSuchAlgorithmException e) {
+            System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
             System.exit(1);
             return null;
         }

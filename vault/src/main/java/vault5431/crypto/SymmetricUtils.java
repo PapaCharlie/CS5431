@@ -22,6 +22,7 @@ public class SymmetricUtils {
             gen.init(keySize);
             return gen.generateKey();
         } catch (NoSuchAlgorithmException e) {
+            System.err.println(AES + " key generation algorithm does not exist!");
             System.exit(1);
             return null;
         }
@@ -34,15 +35,27 @@ public class SymmetricUtils {
     }
 
     public static byte[] encrypt(Base64String content, SecretKey key, IvParameterSpec iv) throws Exception {
-        Cipher aesCipher = Cipher.getInstance(AES_ALG);
-        aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
-        return aesCipher.doFinal(content.getBytes());
+        try {
+            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
+            return aesCipher.doFinal(content.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        }
     }
 
     public static Base64String decrypt(byte[] encryptedContent, SecretKey key, IvParameterSpec iv) throws Exception {
-        Cipher aesCipher = Cipher.getInstance(AES_ALG);
-        aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
-        return Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
+        try {
+            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
+            return Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        }
     }
 
 }

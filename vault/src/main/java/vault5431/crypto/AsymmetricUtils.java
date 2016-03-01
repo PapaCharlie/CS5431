@@ -18,21 +18,34 @@ public class AsymmetricUtils {
             gen.initialize(keySize, new SecureRandom());
             return gen.generateKeyPair();
         } catch (NoSuchAlgorithmException err) {
+            System.err.println(RSA + " key generation algorithm does not exist!");
             System.exit(1);
             return null;
         }
     }
 
     public static byte[] encrypt(Base64String content, PublicKey publicKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(RSA_ALG);
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return cipher.doFinal(content.getBytes());
+        try {
+            Cipher cipher = Cipher.getInstance(RSA_ALG);
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            return cipher.doFinal(content.getBytes());
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        }
     }
 
     public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(RSA_ALG);
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return Base64String.fromBase64(cipher.doFinal(encryptedContent));
+        try {
+            Cipher cipher = Cipher.getInstance(RSA_ALG);
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return Base64String.fromBase64(cipher.doFinal(encryptedContent));
+        } catch (NoSuchAlgorithmException e) {
+            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            System.exit(1);
+            return null;
+        }
     }
 
 }
