@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
   "commons-validator" % "commons-validator" % "1.5.0",
   "org.apache.commons" % "commons-csv" % "1.2",
   "junit" % "junit" % "4.12" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test
+  "com.novocode" % "junit-interface" % "0.11" % Test,
+  "com.sparkjava" % "spark-template-freemarker" % "2.3"
 )
 
 initialize := {
