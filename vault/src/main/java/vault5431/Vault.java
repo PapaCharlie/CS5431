@@ -30,7 +30,7 @@ class Vault {
                 System.exit(2);
             }
         }
-
+        staticFileLocation("vault5431/templates");
         Security.addProvider(new BouncyCastleProvider());
 //        User test = new User("John", "Doe", "test@vaul5431.com");
         port(5431);
