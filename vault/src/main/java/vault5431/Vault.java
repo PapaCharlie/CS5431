@@ -4,12 +4,28 @@ import static spark.Spark.*;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import java.io.File;
 import java.security.Security;
 
 class Vault {
+
+    public static final File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
+
     public static void main(String[] args) {
+        if (!home.exists()) {
+            if (!home.mkdir()){
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(2);
+            }
+        } else if (home.exists() && !home.isDirectory()) {
+            if (!home.delete() && !home.mkdir()) {
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(2);
+            }
+        }
+
         Security.addProvider(new BouncyCastleProvider());
-        User test = new User("John", "Doe", "test@vaul5431.com");
+//        User test = new User("John", "Doe", "test@vaul5431.com");
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
         System.out.println("Hosting at: https://localhost:5431");

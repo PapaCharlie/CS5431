@@ -10,10 +10,10 @@ import java.util.Base64;
 public class Base64String {
 
     private byte[] b64data;
-    private static String charset = "UTF-8";
+//    private static String charset = "UTF-8";
 
-    public Base64String(String data) throws UnsupportedEncodingException {
-        b64data = Base64.getUrlEncoder().encode(data.getBytes(charset));
+    public Base64String(String data) {
+        b64data = Base64.getUrlEncoder().encode(data.getBytes());
     }
 
     public Base64String(byte[] data) {
@@ -28,8 +28,8 @@ public class Base64String {
         return Base64.getUrlDecoder().decode(b64data);
     }
 
-    public String decodeAsString() throws UnsupportedEncodingException {
-        return new String(Base64.getUrlDecoder().decode(b64data), charset);
+    public String decodeAsString() {
+        return new String(Base64.getUrlDecoder().decode(b64data));
     }
 
     public int size() {
