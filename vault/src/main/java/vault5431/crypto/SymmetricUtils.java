@@ -2,10 +2,7 @@ package vault5431.crypto;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 
 /**
  * Utils class for Symmetric encryption
@@ -25,8 +22,8 @@ public class SymmetricUtils {
             KeyGenerator gen = KeyGenerator.getInstance(AES);
             gen.init(keySize);
             key = gen.generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(AES + " key generation algorithm does not exist!");
+        } catch (NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return key;
@@ -42,11 +39,11 @@ public class SymmetricUtils {
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] ciphertext = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            Cipher aesCipher = Cipher.getInstance(AES_ALG, "BC");
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
             ciphertext = aesCipher.doFinal(content.getB64Bytes());
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return ciphertext;
@@ -56,11 +53,11 @@ public class SymmetricUtils {
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Base64String decryptedText = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            Cipher aesCipher = Cipher.getInstance(AES_ALG, "BC");
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
             decryptedText = Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return decryptedText;

@@ -49,6 +49,7 @@ public class UtilsTest {
         Base64String signature1 = SigningUtils.getSignature(new Base64String(testString), key);
         Base64String signature2 = SigningUtils.getSignature(new Base64String("somethingElse"), key);
         assertFalse(signature1.equals(signature2));
+        assertTrue(SigningUtils.verifySignature(new Base64String(testString), signature1, key));
     }
 
     @Test

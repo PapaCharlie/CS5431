@@ -20,24 +20,16 @@ public class SigningUtils {
             cipher.init(key);
             byte[] mac = cipher.doFinal(content.getB64Bytes());
             sig = new Base64String(mac);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
+        } catch (NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return sig;
     }
 
     public static boolean verifySignature(Base64String content, Base64String signature, SecretKey key) throws InvalidKeyException {
-        boolean result = false;
-        try {
-            Mac cipher = Mac.getInstance(HMAC_SHA1_ALGORITHM);
-            cipher.init(key);
-            result = Arrays.equals(cipher.doFinal(content.getB64Bytes()), signature.getB64Bytes());
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(HMAC_SHA1_ALGORITHM + " signing algorithm does not exist!");
-            System.exit(1);
-        }
-        return result;
+        Base64String newSig = getSignature(content, key);
+        return newSig.equals(signature);
     }
 
 

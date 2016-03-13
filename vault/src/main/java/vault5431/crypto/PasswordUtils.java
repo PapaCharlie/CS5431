@@ -39,8 +39,8 @@ public class PasswordUtils {
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keySize);
             SecretKey key = secretKeyFactory.generateSecret(spec);
             hashedPassword = new Base64String(Arrays.concatenate(salt, key.getEncoded()));
-        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            System.err.println(HASH_ALG + " password hashing algorithm does not exist!");
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return hashedPassword;
@@ -56,8 +56,8 @@ public class PasswordUtils {
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keySize);
             SecretKey key = secretKeyFactory.generateSecret(spec);
             result = Arrays.areEqual(hash, key.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(HASH_ALG + " password hashing algorithm does not exist!");
+        } catch (NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
         }
         return result;
