@@ -1,5 +1,9 @@
 package vault5431;
 
+import vault5431.logging.CSVUtils;
+
+import java.io.IOException;
+
 /**
  * Created by papacharlie on 2/26/16.
  */
@@ -21,6 +25,10 @@ public class Password {
         this.website = website;
         this.username = username;
         this.password = password;
+    }
+
+    public String toEntry() throws IOException {
+        return CSVUtils.makeRecord(name, website, username, password);
     }
 
 }
