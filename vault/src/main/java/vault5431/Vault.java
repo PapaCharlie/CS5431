@@ -46,6 +46,11 @@ class Vault {
            return new ModelAndView(attributes,"vault5431/templates/login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
+        post("/authenticate", (req, res) -> {
+            Map<String, Object>  attributes = new HashMap<>();
+            System.out.println("authenticate login");
+            return new ModelAndView(attributes,"vault5431/templates/vault.ftl");
+        }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         get("/vault", (req, res) -> {
             Map<String, Object>  attributes = new HashMap<>();

@@ -13,7 +13,7 @@
 <body>
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
-        <li><a href="">Home</a></li>
+        <li><a href="">Vault</a></li>
         <li><a href="">Password Generator</a></li>
         <li><a href="">Settings</a></li>
         <li><a href="">Preferences</a></li>
@@ -80,7 +80,8 @@
 <div class="col-sm-9 col-md-10 newpass">
     <form class="form-signin">
         <h4 class="form-signin-heading">New Password</h4>
-        <input type="text" id="account" class="form-control" placeholder="Account Name" required="" autofocus="">
+        <input type="text" id="web" class="form-control" placeholder="Website Name" required="" autofocus="">
+        <input type="text" id="url" class="form-control" placeholder="URL" required="" autofocus="">
         <!-- <label for="inputEmail" class="sr-only">Email address</label> -->
         <input type="text" id="username" class="form-control" placeholder="Account username" required="" autofocus="">
         <!-- <label for="inputPassword" class="sr-only">Password</label> -->
