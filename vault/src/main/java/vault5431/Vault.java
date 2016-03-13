@@ -34,7 +34,7 @@ class Vault {
                 System.exit(2);
             }
         }
-
+        staticFileLocation("vault5431/templates");
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
         System.out.println("Hosting at: https://localhost:5431");

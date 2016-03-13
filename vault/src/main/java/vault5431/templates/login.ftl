@@ -1,9 +1,8 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-   <meta charset="utf-8"></meta>
-   <link rel="stylesheet" href="/login.css"></link>
-
+   <meta charset="utf-8">
+   <link rel="stylesheet" type="text/css" href="/login.css">
 </head>
 
 
@@ -18,3 +17,5 @@
     <p><input type="submit" value="Log in"></p>
   </form>
 </div>
+
+</html>
