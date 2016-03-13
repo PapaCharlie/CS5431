@@ -2,8 +2,7 @@ package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-
-import java.util.List;
+import vault5431.logging.CSVUtils;
 
 import static org.junit.Assert.*;
 

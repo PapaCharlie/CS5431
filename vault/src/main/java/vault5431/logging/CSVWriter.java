@@ -1,5 +1,7 @@
 package vault5431.logging;
 
+import static vault5431.User.getLogFile;
+import static vault5431.User.getPublicEncryptionKeyFile;
 import vault5431.crypto.Base64String;
 
 /**
@@ -7,8 +9,6 @@ import vault5431.crypto.Base64String;
  */
 public class CSVWriter {
 
-    public static boolean appendToUserLog(String username, Base64String data) {
-        return false;
-    }
+
 
 }

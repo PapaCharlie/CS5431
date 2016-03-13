@@ -1,10 +1,19 @@
 package vault5431.crypto;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
+import org.bouncycastle.util.Arrays;
+
+import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.File;
+import java.io.IOError;
+import java.io.IOException;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
+import static vault5431.crypto.HashUtils.hash256;
 
 /**
  * Asymmetric encryption utils.
@@ -12,51 +21,103 @@ import java.security.*;
 public class AsymmetricUtils {
 
     private static String RSA = "RSA";
-    private static String RSA_ALG = RSA + "/ECB/PKCS1Padding";
-    private static int keySize = 2048;
+    private static String RSA_ALG = RSA + "/CBC/OAEPWithSHA512AndMGF1Padding";
+    private static String BCProvider = "BC";
+    private static int keySize = 4096;
 
     public static KeyPair getNewKeyPair() {
+        KeyPair keyPair = null;
         try {
             KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA);
             gen.initialize(keySize, new SecureRandom());
-            return gen.generateKeyPair();
+            keyPair = gen.generateKeyPair();
         } catch (NoSuchAlgorithmException err) {
             System.err.println(RSA + " key generation algorithm does not exist!");
+            err.printStackTrace();
             System.exit(1);
-            return null;
         }
+        return keyPair;
     }
 
     public static byte[] encrypt(Base64String content, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        byte[] ciphertext = null;
         try {
-            Cipher cipher = Cipher.getInstance(RSA_ALG);
+            Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA512AndMGF1Padding", "BC");
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            return cipher.doFinal(content.getBytes());
-        } catch (NoSuchAlgorithmException e) {
+            ciphertext = cipher.doFinal(content.getB64Bytes());
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            err.printStackTrace();
             System.exit(1);
-            return new byte[0];
-        } catch (NoSuchPaddingException e) {
-            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
-            System.exit(1);
-            return new byte[0];
         }
+        return ciphertext;
     }
 
     public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Base64String decryptedText = null;
         try {
-            Cipher cipher = Cipher.getInstance(RSA_ALG);
+            Cipher cipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            return Base64String.fromBase64(cipher.doFinal(encryptedContent));
-        } catch (NoSuchAlgorithmException e) {
+            decryptedText = Base64String.fromBase64(cipher.doFinal(encryptedContent));
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             System.err.println(RSA_ALG + " encryption algorithm does not exist!");
+            err.printStackTrace();
             System.exit(1);
-            return Base64String.empty();
-        } catch (NoSuchPaddingException e) {
-            System.err.println(RSA_ALG + " encryption algorithm does not exist!");
-            System.exit(1);
-            return Base64String.empty();
         }
+        return decryptedText;
     }
+
+    public static boolean savePublicKey(File keyfile, PublicKey key) throws IOException {
+        Base64String key64 = new Base64String(key.getEncoded());
+        return key64.saveToFile(keyfile);
+    }
+
+    public static PublicKey loadPublicKey(File keyfile) throws IOError, IOException, InvalidKeySpecException {
+        PublicKey publicKey = null;
+        try {
+            byte[] key64 = Base64String.loadFromFile(keyfile).decodeBytes();
+            publicKey = KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(key64));
+        } catch (NoSuchAlgorithmException err) {
+            System.err.println(RSA + " key generation algorithm does not exist!");
+            err.printStackTrace();
+            System.exit(1);
+        }
+        return publicKey;
+    }
+
+    private static SecretKey keyFromPassword(String password) {
+        byte[] hashedPassword = hash256(new Base64String(password)).decodeBytes();
+        return new SecretKeySpec(hashedPassword, SymmetricUtils.AES);
+    }
+
+    public static boolean savePrivateKey(File keyfile, PrivateKey privateKey, String password)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException {
+        SecretKey key = keyFromPassword(password);
+        Base64String privateKey64 = new Base64String(privateKey.getEncoded());
+        IvParameterSpec iv = SymmetricUtils.getNewIV();
+        byte[] encryptedKey = SymmetricUtils.encrypt(privateKey64, key, iv);
+        return new Base64String(Arrays.concatenate(iv.getIV(), encryptedKey)).saveToFile(keyfile);
+    }
+
+    public static PrivateKey loadPrivateKey(File keyfile, String password, File passwordFile)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
+        PrivateKey privateKey = null;
+        try {
+            if (PasswordUtils.verifyPasswordInFile(passwordFile, password)) {
+                byte[] key64 = Base64String.loadFromFile(keyfile).decodeBytes();
+                byte[] iv = Arrays.copyOfRange(key64, 0, SymmetricUtils.ivSize);
+                byte[] encryptedPrivateKeyBytes = Arrays.copyOfRange(key64, SymmetricUtils.ivSize, key64.length);
+                SecretKey key = keyFromPassword(password);
+                byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedPrivateKeyBytes, key, new IvParameterSpec(iv)).decodeBytes();
+                privateKey = KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
+            }
+        } catch (NoSuchAlgorithmException err) {
+            System.err.println(RSA + " key generation algorithm does not exist!");
+            err.printStackTrace();
+            System.exit(1);
+        }
+        return privateKey;
+    }
+
 
 }
