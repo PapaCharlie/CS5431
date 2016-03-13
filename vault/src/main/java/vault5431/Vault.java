@@ -44,9 +44,11 @@ class Vault {
            return new ModelAndView(attributes,"vault5431/templates/login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
-        /*get("/", (req, res) -> {
-            return "Hello World";
-        });*/
+        get("/vault", (req, res) -> {
+            Map<String, Object>  attributes = new HashMap<>();
+            System.out.println("vault page");
+            return new ModelAndView(attributes,"vault5431/templates/vault.ftl");
+        }, new FreeMarkerEngine(freeMarkerConfiguration));
 
     }
 }

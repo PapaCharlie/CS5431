@@ -11,7 +11,7 @@
   
   <h2 class="login-header">Log in</h2>
 
-  <form class="login-container">
+  <form action="/vault" class="login-container">
     <p><input type="email" placeholder="Email"></p>
     <p><input type="password" placeholder="Password"></p>
     <p><input type="submit" value="Log in"></p>
