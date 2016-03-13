@@ -2,70 +2,67 @@ package vault5431.crypto;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.*;
 
 /**
  * Utils class for Symmetric encryption
  */
 public class SymmetricUtils {
 
-    private static String AES = "AES";
-    private static String AES_ALG = AES + "/CBC/PKCS5PADDING";
-    private static int keySize = 128;
+    private static final SecureRandom random = new SecureRandom();
+
+    public static int keySize = 256;
+    public static int ivSize = 16;
+
+    private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
+        return Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC");
+    }
 
     public static SecretKey getNewKey() {
+        SecretKey key = null;
         try {
-            KeyGenerator gen = KeyGenerator.getInstance(AES);
+            KeyGenerator gen = KeyGenerator.getInstance("AES");
             gen.init(keySize);
-            return gen.generateKey();
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(AES + " key generation algorithm does not exist!");
+            key = gen.generateKey();
+        } catch (NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
-            return null;
         }
+        return key;
     }
 
     public static IvParameterSpec getNewIV() {
-        byte[] iv = new byte[keySize/8];
-        new SecureRandom().nextBytes(iv);
+        byte[] iv = new byte[ivSize];
+        random.nextBytes(iv);
         return new IvParameterSpec(iv);
     }
 
     public static byte[] encrypt(Base64String content, SecretKey key, IvParameterSpec iv)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        byte[] ciphertext = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
-            return aesCipher.doFinal(content.getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            ciphertext = aesCipher.doFinal(content.getB64Bytes());
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
-            return new byte[0];
-        } catch (NoSuchPaddingException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
-            System.exit(1);
-            return new byte[0];
         }
+        return ciphertext;
     }
 
     public static Base64String decrypt(byte[] encryptedContent, SecretKey key, IvParameterSpec iv)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Base64String decryptedText = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG);
+            Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
-            return Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
+            decryptedText = Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
+        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            err.printStackTrace();
             System.exit(1);
-            return Base64String.empty();
-        } catch (NoSuchPaddingException e) {
-            System.err.println(AES_ALG + " encryption algorithm does not exist!");
-            System.exit(1);
-            return Base64String.empty();
         }
+        return decryptedText;
     }
 
 }

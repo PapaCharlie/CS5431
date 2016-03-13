@@ -1,11 +1,15 @@
 package vault5431;
 
-import java.io.File;
-import java.io.FilenameFilter;
-
 import vault5431.crypto.Base64String;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.security.KeyPair;
+
 import static vault5431.Vault.home;
+import static vault5431.crypto.AsymmetricUtils.getNewKeyPair;
+import static vault5431.crypto.HashUtils.hash512;
 
 /**
  * User class.
@@ -33,11 +37,15 @@ public class User {
         this.email = email;
     }
 
+    private static String getHomeName(String username) {
+        return hash512(new Base64String(username)).asHexString();
+    }
+
     private static File findUserHome(String username) {
-        String userHome = new Base64String(username).asHexString();
+        String userHome = getHomeName(username);
         FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.equals(userHome);
         File[] dirs = home.listFiles(filter);
-        if (dirs.length == 0){
+        if (dirs.length == 0) {
             return null;
         } else {
             return dirs[0];
@@ -56,6 +64,21 @@ public class User {
         } else {
             return null;
         }
+    }
+
+    public boolean create(String password) throws IOException {
+
+        if (findUserHome(username) == null) {
+            File userHome = new File(home + File.separator + getHomeName(username));
+            if (userHome.mkdir()) {
+                if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
+                    KeyPair encryptionKeys = getNewKeyPair();
+                    KeyPair signingKeys = getNewKeyPair();
+                    
+                }
+            }
+        }
+        return false;
     }
 
     public static File getLogFile(String username) {

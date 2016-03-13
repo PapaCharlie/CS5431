@@ -10,35 +10,16 @@ import java.security.Key;
  * Abstract logger class. All loggers must extend this class. Provides basic append functionality.
  * TODO: Everything
  */
-abstract class Logger {
+interface Logger {
 
-    private File logFile;
-    private Key logKey;
+    Base64String[] readLog() throws IOError;
 
-    private byte[] encryptEntry(Base64String message) {
-        // TODO
-        return null;
-    }
+    void warning(String message, String... args) throws IOError;
 
-    public Base64String[] readLog() throws IOError {
-        // TODO
-        return null;
-    }
+    void info(String message, String... args) throws IOError;
 
-    public synchronized void warning(String message, String... args) throws IOError {
-        // TODO
-    }
+    void debug(String message, String... args) throws IOError;
 
-    public synchronized void info(String message, String... args) throws IOError {
-        // TODO
-    }
-
-    public synchronized void debug(String message, String... args) throws IOError {
-        // TODO
-    }
-
-    public synchronized void error(String message, String... args) throws IOError {
-        // TODO
-    }
+    void error(String message, String... args) throws IOError;
 
 }

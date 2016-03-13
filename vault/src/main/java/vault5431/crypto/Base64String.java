@@ -1,8 +1,10 @@
 package vault5431.crypto;
 
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.Base64;
+
+import static org.bouncycastle.util.Arrays.concatenate;
 
 /**
  * Base64 utils class. All crypto algorithms either expect such a string, or output such a string.
@@ -20,16 +22,16 @@ public class Base64String {
         b64data = Base64.getUrlEncoder().encode(data);
     }
 
-    public byte[] getBytes() {
+    public byte[] getB64Bytes() {
         return b64data;
     }
 
-    public byte[] decode() {
-        return Base64.getUrlDecoder().decode(b64data);
+    public String decodeString() {
+        return new String(Base64.getUrlDecoder().decode(b64data));
     }
 
-    public String decodeAsString() {
-        return new String(Base64.getUrlDecoder().decode(b64data));
+    public byte[] decodeBytes() {
+        return Base64.getUrlDecoder().decode(b64data);
     }
 
     public int size() {
@@ -47,12 +49,18 @@ public class Base64String {
     }
 
     public boolean equals(Base64String other) {
-        return Arrays.equals(other.getBytes(), this.b64data);
+        return Arrays.equals(other.getB64Bytes(), this.b64data);
+    }
+
+    public Base64String append(Base64String other) {
+        b64data = concatenate(b64data, other.getB64Bytes());
+        return this;
     }
 
     /**
      * For use in filenames.
      * From: http://stackoverflow.com/questions/9655181/how-to-convert-a-byte-array-to-a-hex-string-in-java
+     *
      * @return
      */
     public String asHexString() {
@@ -64,6 +72,24 @@ public class Base64String {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    public boolean saveToFile(File file) throws IOException {
+        if (file.canWrite() || (!file.exists() && file.createNewFile() && file.canWrite())) {
+            FileOutputStream out = new FileOutputStream(file);
+            out.write(this.getB64Bytes());
+            out.close();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static Base64String loadFromFile(File file) throws IOError, IOException {
+        FileInputStream in = new FileInputStream(file);
+        byte[] data = new byte[in.available()];
+        in.read(data);
+        return Base64String.fromBase64(data);
     }
 
     public static Base64String empty() {

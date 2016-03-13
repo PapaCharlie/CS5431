@@ -16,6 +16,10 @@ import java.util.Map;
 
 class Vault {
 
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     public static final File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
 
     public static void main(String[] args) {
@@ -31,8 +35,6 @@ class Vault {
             }
         }
         staticFileLocation("vault5431/templates");
-        Security.addProvider(new BouncyCastleProvider());
-//        User test = new User("John", "Doe", "test@vaul5431.com");
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
         System.out.println("Hosting at: https://localhost:5431");
@@ -43,6 +45,7 @@ class Vault {
             System.out.println("Here");
            return new ModelAndView(attributes,"vault5431/templates/login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
+
 
         get("/vault", (req, res) -> {
             Map<String, Object>  attributes = new HashMap<>();
