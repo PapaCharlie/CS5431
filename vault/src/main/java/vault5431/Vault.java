@@ -10,8 +10,11 @@ import java.security.Security;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 import freemarker.template.Configuration;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import spark.template.freemarker.FreeMarkerEngine;
 
 
 class Vault {
@@ -22,9 +25,9 @@ class Vault {
 
     public static final File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (!home.exists()) {
-            if (!home.mkdir()){
+            if (!home.mkdir()) {
                 System.err.println("Could not create ~/.vault5431 home!");
                 System.exit(2);
             }
@@ -34,23 +37,24 @@ class Vault {
                 System.exit(2);
             }
         }
-        staticFileLocation("vault5431/templates");
+        File templateDir = new File(Vault.class.getResource("/templates").getFile());
+        staticFileLocation("templates");
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
         System.out.println("Hosting at: https://localhost:5431");
         Configuration freeMarkerConfiguration = new Configuration();
-        freeMarkerConfiguration.setClassForTemplateLoading(Vault.class, "/");
-        get("/", (req, res)->{
-            Map<String, Object>  attributes = new HashMap<>();
+        freeMarkerConfiguration.setDirectoryForTemplateLoading(templateDir);
+        get("/", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
             System.out.println("Here");
-           return new ModelAndView(attributes,"vault5431/templates/login.ftl");
+            return new ModelAndView(attributes, "login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
 
         get("/vault", (req, res) -> {
-            Map<String, Object>  attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>();
             System.out.println("vault page");
-            return new ModelAndView(attributes,"vault5431/templates/vault.ftl");
+            return new ModelAndView(attributes, "vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
     }
