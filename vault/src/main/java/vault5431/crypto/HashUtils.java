@@ -29,9 +29,4 @@ public class HashUtils {
     public static Base64String hash256(Base64String data) {
         return hash(data, "SHA-256");
     }
-
-    public static Base64String hash128(Base64String data) {
-        return hash(data, "SHA-1");
-    }
-
 }

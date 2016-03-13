@@ -66,21 +66,19 @@ public class User {
         }
     }
 
-    public boolean create(String password) {
-        try {
-            if (findUserHome(username) == null) {
-                File userHome = new File(home + File.separator + getHomeName(username));
-                if (userHome.mkdir()) {
-                    if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
-                        KeyPair keys = getNewKeyPair();
+    public boolean create(String password) throws IOException {
 
-                    }
+        if (findUserHome(username) == null) {
+            File userHome = new File(home + File.separator + getHomeName(username));
+            if (userHome.mkdir()) {
+                if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
+                    KeyPair encryptionKeys = getNewKeyPair();
+                    KeyPair signingKeys = getNewKeyPair();
+                    
                 }
             }
-            return false;
-        } catch (IOException e) {
-            return false;
         }
+        return false;
     }
 
     public static File getLogFile(String username) {

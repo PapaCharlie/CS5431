@@ -20,19 +20,19 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public class AsymmetricUtils {
 
-    private static String RSA = "RSA";
-    private static String RSA_ALG = RSA + "/NONE/OAEPWithSHA512AndMGF1Padding";
-    private static String BCProvider = "BC";
     private static int keySize = 4096;
+
+    private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
+        return Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
+    }
 
     public static KeyPair getNewKeyPair() {
         KeyPair keyPair = null;
         try {
-            KeyPairGenerator gen = KeyPairGenerator.getInstance(RSA);
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA", "BC");
             gen.initialize(keySize, new SecureRandom());
             keyPair = gen.generateKeyPair();
-        } catch (NoSuchAlgorithmException err) {
-            System.err.println(RSA + " key generation algorithm does not exist!");
+        } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
         }
@@ -42,7 +42,7 @@ public class AsymmetricUtils {
     public static byte[] encrypt(Base64String content, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] ciphertext = null;
         try {
-            Cipher cipher = Cipher.getInstance(RSA_ALG, "BC");
+            Cipher cipher = getCipher();
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
             ciphertext = cipher.doFinal(content.getB64Bytes());
         } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
@@ -55,7 +55,7 @@ public class AsymmetricUtils {
     public static Base64String decrypt(byte[] encryptedContent, PrivateKey privateKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Base64String decryptedText = null;
         try {
-            Cipher cipher = Cipher.getInstance(RSA_ALG, "BC");
+            Cipher cipher = getCipher();
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
             decryptedText = Base64String.fromBase64(cipher.doFinal(encryptedContent));
         } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
@@ -74,7 +74,7 @@ public class AsymmetricUtils {
         PublicKey publicKey = null;
         try {
             byte[] key64 = Base64String.loadFromFile(keyfile).decodeBytes();
-            publicKey = KeyFactory.getInstance(RSA).generatePublic(new X509EncodedKeySpec(key64));
+            publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(key64));
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
@@ -84,7 +84,7 @@ public class AsymmetricUtils {
 
     private static SecretKey keyFromPassword(String password) {
         byte[] hashedPassword = hash256(new Base64String(password)).decodeBytes();
-        return new SecretKeySpec(hashedPassword, SymmetricUtils.AES);
+        return new SecretKeySpec(hashedPassword, "AES");
     }
 
     public static boolean savePrivateKey(File keyfile, PrivateKey privateKey, String password)
@@ -106,7 +106,7 @@ public class AsymmetricUtils {
                 byte[] encryptedPrivateKeyBytes = Arrays.copyOfRange(key64, SymmetricUtils.ivSize, key64.length);
                 SecretKey key = keyFromPassword(password);
                 byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedPrivateKeyBytes, key, new IvParameterSpec(iv)).decodeBytes();
-                privateKey = KeyFactory.getInstance(RSA).generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
+                privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
             }
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();

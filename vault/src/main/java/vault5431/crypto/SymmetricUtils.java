@@ -11,15 +11,17 @@ public class SymmetricUtils {
 
     private static final SecureRandom random = new SecureRandom();
 
-    public static String AES = "AES";
-    public static String AES_ALG = AES + "/CBC/PKCS5PADDING";
     public static int keySize = 256;
     public static int ivSize = 16;
+
+    private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
+        return Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC");
+    }
 
     public static SecretKey getNewKey() {
         SecretKey key = null;
         try {
-            KeyGenerator gen = KeyGenerator.getInstance(AES);
+            KeyGenerator gen = KeyGenerator.getInstance("AES");
             gen.init(keySize);
             key = gen.generateKey();
         } catch (NoSuchAlgorithmException err) {
@@ -39,7 +41,7 @@ public class SymmetricUtils {
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         byte[] ciphertext = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG, "BC");
+            Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
             ciphertext = aesCipher.doFinal(content.getB64Bytes());
         } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
@@ -53,7 +55,7 @@ public class SymmetricUtils {
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         Base64String decryptedText = null;
         try {
-            Cipher aesCipher = Cipher.getInstance(AES_ALG, "BC");
+            Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
             decryptedText = Base64String.fromBase64(aesCipher.doFinal(encryptedContent));
         } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
