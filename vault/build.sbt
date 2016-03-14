@@ -10,9 +10,10 @@ libraryDependencies ++= Seq(
   "com.sparkjava" % "spark-core" % "2.3",
   "commons-validator" % "commons-validator" % "1.5.0",
   "org.apache.commons" % "commons-csv" % "1.2",
+  "com.sparkjava" % "spark-template-freemarker" % "2.3",
+  "commons-io" % "commons-io" % "2.4",
   "junit" % "junit" % "4.12" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test,
-  "com.sparkjava" % "spark-template-freemarker" % "2.3"
+  "com.novocode" % "junit-interface" % "0.11" % Test
 )
 
 initialize := {

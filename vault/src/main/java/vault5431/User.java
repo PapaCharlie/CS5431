@@ -22,12 +22,12 @@ public class User {
     private String email;
     private String username;
 
-    private static final String log = "log";
-    private static final String privCryptoKey = "id_rsa.crypto";
-    private static final String pubCryptoKey = privCryptoKey + ".pub";
-    private static final String privSigningKey = "id_rsa.signing";
-    private static final String pubSigningKey = privSigningKey + ".pub";
-    private static final String passwordVault = "vault";
+    public static final String log = "log";
+    public static final String privCryptoKey = "id_rsa.crypto";
+    public static final String pubCryptoKey = privCryptoKey + ".pub";
+    public static final String privSigningKey = "id_rsa.signing";
+    public static final String pubSigningKey = privSigningKey + ".pub";
+    public static final String passwordVault = "vault";
 //    private static final String secureNotes = "notes";
 
     User(String username, String firstName, String lastName, String email) {
@@ -66,43 +66,38 @@ public class User {
         }
     }
 
-    public boolean create(String password) throws IOException {
+//    public boolean create(String password) throws IOException {
+//
+//        if (findUserHome(username) == null) {
+//            File userHome = new File(home + File.separator + getHomeName(username));
+//            if (userHome.mkdir()) {
+//                if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
+//                    KeyPair encryptionKeys = getNewKeyPair();
+//                    KeyPair signingKeys = getNewKeyPair();
+//
+//                }
+//            }
+//        }
+//        return false;
+//    }
 
-        if (findUserHome(username) == null) {
-            File userHome = new File(home + File.separator + getHomeName(username));
-            if (userHome.mkdir()) {
-                if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
-                    KeyPair encryptionKeys = getNewKeyPair();
-                    KeyPair signingKeys = getNewKeyPair();
-                    
-                }
-            }
-        }
-        return false;
-    }
-
-    public static File getLogFile(String username) {
-        return getFile(username, log);
-    }
-
-    public static File getPublicSigningKeyFile(String username) {
-        return getFile(username, pubSigningKey);
-    }
-
-    public static File getPrivateSigningKeyFile(String username) {
-        return getFile(username, privSigningKey);
-    }
-
-    public static File getPublicEncryptionKeyFile(String username) {
-        return getFile(username, pubCryptoKey);
-    }
-
-    public static File getPrivateEncryptionKeyFile(String username) {
-        return getFile(username, privCryptoKey);
-    }
-
-    public static File getPasswordVaultFile(String username) {
-        return getFile(username, passwordVault);
-    }
+//    public static File getLogFile(String username) {
+//        return getFile(username, log);
+//    }
+//    public static File getPublicSigningKeyFile(String username) {
+//        return getFile(username, pubSigningKey);
+//    }
+//    public static File getPrivateSigningKeyFile(String username) {
+//        return getFile(username, privSigningKey);
+//    }
+//    public static File getPublicEncryptionKeyFile(String username) {
+//        return getFile(username, pubCryptoKey);
+//    }
+//    public static File getPrivateEncryptionKeyFile(String username) {
+//        return getFile(username, privCryptoKey);
+//    }
+//    public static File getPasswordVaultFile(String username) {
+//        return getFile(username, passwordVault);
+//    }
 
 }

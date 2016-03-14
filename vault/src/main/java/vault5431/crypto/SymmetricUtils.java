@@ -11,8 +11,8 @@ public class SymmetricUtils {
 
     private static final SecureRandom random = new SecureRandom();
 
-    public static int keySize = 256;
-    public static int ivSize = 16;
+    public static final int keySize = 256;
+    public static final int ivSize = 16;
 
     private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC");

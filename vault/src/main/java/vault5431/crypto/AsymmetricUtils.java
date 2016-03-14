@@ -5,7 +5,6 @@ import org.bouncycastle.util.Arrays;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.security.*;
@@ -20,7 +19,7 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public class AsymmetricUtils {
 
-    private static int keySize = 4096;
+    private static final int keySize = 4096;
 
     private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
@@ -65,12 +64,12 @@ public class AsymmetricUtils {
         return decryptedText;
     }
 
-    public static boolean savePublicKey(File keyfile, PublicKey key) throws IOException {
+    public static boolean savePublicKey(String keyfile, PublicKey key) throws IOException {
         Base64String key64 = new Base64String(key.getEncoded());
         return key64.saveToFile(keyfile);
     }
 
-    public static PublicKey loadPublicKey(File keyfile) throws IOError, IOException, InvalidKeySpecException {
+    public static PublicKey loadPublicKey(String keyfile) throws IOError, IOException, InvalidKeySpecException {
         PublicKey publicKey = null;
         try {
             byte[] key64 = Base64String.loadFromFile(keyfile).decodeBytes();
@@ -87,7 +86,7 @@ public class AsymmetricUtils {
         return new SecretKeySpec(hashedPassword, "AES");
     }
 
-    public static boolean savePrivateKey(File keyfile, PrivateKey privateKey, String password)
+    public static boolean savePrivateKey(String keyfile, PrivateKey privateKey, String password)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException {
         SecretKey key = keyFromPassword(password);
         Base64String privateKey64 = new Base64String(privateKey.getEncoded());
@@ -96,7 +95,7 @@ public class AsymmetricUtils {
         return new Base64String(Arrays.concatenate(iv.getIV(), encryptedKey)).saveToFile(keyfile);
     }
 
-    public static PrivateKey loadPrivateKey(File keyfile, String password, File passwordFile)
+    public static PrivateKey loadPrivateKey(String keyfile, String password, String passwordFile)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
         PrivateKey privateKey = null;
         try {
@@ -114,6 +113,5 @@ public class AsymmetricUtils {
         }
         return privateKey;
     }
-
 
 }

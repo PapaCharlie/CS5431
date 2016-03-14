@@ -13,7 +13,6 @@ public class Password {
     private int maxWebsiteLength = 512;
     private int maxUsernameLength = 128;
     private int maxPaswordLength = 256;
-    private int passwordEntryLength = maxNameLength + maxPaswordLength + maxUsernameLength + maxWebsiteLength;
 
     private String name;
     private String website;

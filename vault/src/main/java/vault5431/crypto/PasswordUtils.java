@@ -63,11 +63,11 @@ public class PasswordUtils {
         return result;
     }
 
-    public static boolean savePassword(File passwordFile, String password) throws IOError, IOException {
+    public static boolean savePassword(String passwordFile, String password) throws IOError, IOException {
         return hashPassword(password).saveToFile(passwordFile);
     }
 
-    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOError, IOException, InvalidKeySpecException {
+    public static boolean verifyPasswordInFile(String passwordFile, String password) throws IOError, IOException, InvalidKeySpecException {
         return verifyHashedPassword(Base64String.loadFromFile(passwordFile), password);
     }
 

@@ -1,6 +1,8 @@
 package vault5431.crypto;
 
-import java.io.*;
+import vault5431.FileUtils;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 
@@ -23,7 +25,7 @@ public class Base64String {
     }
 
     public byte[] getB64Bytes() {
-        return b64data;
+        return b64data.clone();
     }
 
     public String decodeString() {
@@ -48,8 +50,17 @@ public class Base64String {
         return b46;
     }
 
-    public boolean equals(Base64String other) {
-        return Arrays.equals(other.getB64Bytes(), this.b64data);
+    public int hashCode() {
+        return Arrays.hashCode(b64data);
+    }
+
+    public boolean equals(Object other) {
+        if (other instanceof Base64String) {
+            Base64String other64 = (Base64String)other;
+            return Arrays.equals(other64.getB64Bytes(), this.b64data);
+        } else {
+            return false;
+        }
     }
 
     public Base64String append(Base64String other) {
@@ -74,22 +85,12 @@ public class Base64String {
         return new String(hexChars);
     }
 
-    public boolean saveToFile(File file) throws IOException {
-        if (file.canWrite() || (!file.exists() && file.createNewFile() && file.canWrite())) {
-            FileOutputStream out = new FileOutputStream(file);
-            out.write(this.getB64Bytes());
-            out.close();
-            return true;
-        } else {
-            return false;
-        }
+    public boolean saveToFile(String path) throws IOException {
+        return FileUtils.write(path, b64data);
     }
 
-    public static Base64String loadFromFile(File file) throws IOError, IOException {
-        FileInputStream in = new FileInputStream(file);
-        byte[] data = new byte[in.available()];
-        in.read(data);
-        return Base64String.fromBase64(data);
+    public static Base64String loadFromFile(String path) throws IOException {
+        return Base64String.fromBase64(FileUtils.read(path));
     }
 
     public static Base64String empty() {
