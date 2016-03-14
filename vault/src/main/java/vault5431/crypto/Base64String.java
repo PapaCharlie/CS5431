@@ -1,8 +1,8 @@
 package vault5431.crypto;
 
-import vault5431.io.FileUtils;
-import vault5431.io.LockedFile;
+import vault5431.FileUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
@@ -86,14 +86,27 @@ public class Base64String {
         return new String(hexChars);
     }
 
+    /**
+     * From: http://stackoverflow.com/questions/140131/convert-a-string-representation-of-a-hex-dump-to-a-byte-array-using-java
+     * @param s
+     * @return
+     */
+    public static Base64String fromHexString(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                    + Character.digit(s.charAt(i+1), 16));
+        }
+        return Base64String.fromBase64(data);
+    }
+
     public void saveToFile(String path) throws IOException {
-        LockedFile file = FileUtils.getLockedFile(path);
-        file.write(b64data);
+        FileUtils.write(new File(path), b64data);
     }
 
     public static Base64String loadFromFile(String path) throws IOException {
-        LockedFile file = FileUtils.getLockedFile(path);
-        return Base64String.fromBase64(file.read());
+        return FileUtils.read(new File(path));
     }
 
     public static Base64String empty() {

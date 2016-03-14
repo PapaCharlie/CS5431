@@ -1,20 +1,16 @@
 package vault5431;
 
-import static spark.Spark.*;
-
+import freemarker.template.Configuration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import spark.ModelAndView;
+import spark.template.freemarker.FreeMarkerEngine;
 
 import java.io.File;
 import java.security.Security;
-
-import spark.ModelAndView;
-import spark.template.freemarker.FreeMarkerEngine;
-import freemarker.template.Configuration;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import spark.template.freemarker.FreeMarkerEngine;
+import static spark.Spark.*;
 
 
 class Vault {
@@ -23,7 +19,7 @@ class Vault {
         Security.addProvider(new BouncyCastleProvider());
     }
 
-    public static final File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
+    public static File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
 
     public static void main(String[] args) throws Exception {
         if (!home.exists()) {

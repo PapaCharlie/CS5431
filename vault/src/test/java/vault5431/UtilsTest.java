@@ -2,7 +2,7 @@ package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-import vault5431.io.FileUtils;
+import vault5431.crypto.Base64String;
 import vault5431.logging.CSVUtils;
 
 import java.io.File;
@@ -27,12 +27,12 @@ public class UtilsTest extends VaultTest {
 
     @Test
     public void fileTest() throws Exception {
-        String tmpFile = File.createTempFile("test", null).getAbsolutePath();
+        File tmpFile = File.createTempFile("test", null);
         String line1 = "Hello! I'm a test";
         String line2 = "Hello! I'm another test";
-        FileUtils.append(tmpFile, line1.getBytes());
-        FileUtils.append(tmpFile, ("\n" + line2).getBytes());
-        String writtenFileContents = new String(FileUtils.read(tmpFile));
+        FileUtils.append(tmpFile, line1);
+        FileUtils.append(tmpFile, "\n" + line2);
+        String writtenFileContents = FileUtils.read(tmpFile).decodeString();
         String[] lines = writtenFileContents.split("\n");
         assertEquals(line1, lines[0]);
         assertEquals(line2, lines[1]);

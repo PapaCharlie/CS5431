@@ -1,16 +1,20 @@
 package vault5431;
 
+import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.Base64String;
-import vault5431.io.FileUtils;
-import vault5431.io.LockedFile;
+import vault5431.crypto.PasswordUtils;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.IOError;
 import java.io.IOException;
-import java.security.KeyPair;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static vault5431.Vault.home;
-import static vault5431.crypto.AsymmetricUtils.getNewKeyPair;
 import static vault5431.crypto.HashUtils.hash512;
 
 /**
@@ -19,53 +23,122 @@ import static vault5431.crypto.HashUtils.hash512;
  */
 public class User {
 
-    private String firstName;
-    private String lastName;
-    private String email;
-    private String username;
+    private final Base64String hash;
 
-    public final String logPath = getHome() + "log";
-    public final String privCryptoKeyPath = getHome() + "id_rsa.crypto";
-    public final String pubCryptoKeyPath = getHome() + privCryptoKeyPath + ".pub";
-    public final String privSigningKeyPath = getHome() + "id_rsa.signing";
-    public final String pubSigningKeyPath = getHome() + privSigningKeyPath + ".pub";
-    public final String passwordVaultPath = getHome() + "vault";
+    public final String logPath = getHome() + File.separator + "log";
+    public final String privCryptoKeyPath = getHome() + File.separator + "id_rsa.crypto";
+    public final String pubCryptoKeyPath = getHome() + File.separator + privCryptoKeyPath + ".pub";
+    public final String privSigningKeyPath = getHome() + File.separator + "id_rsa.signing";
+    public final String pubSigningKeyPath = getHome() + File.separator + privSigningKeyPath + ".pub";
+    public final String passwordVaultPath = getHome() + File.separator + "vault";
+    public final String passwordFile = getHome() + File.separator + "password";
 
-    User(String username, String firstName, String lastName, String email) {
-        this.username = username;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.email = email;
+    private static final Object mapLock = new Object();
+    private static Map<Base64String, User> users = new HashMap<>();
+
+    static {
+        for (String dirname : home.list((dir, name) -> dir.isDirectory())) {
+            Base64String hash = Base64String.fromHexString(dirname);
+            addUser(hash);
+        }
     }
 
-    User(String username) {
-        this.username = username;
-        firstName = "";
-        lastName = "";
-        email = "";
+    private User(String username) {
+        hash = hash512(new Base64String(username));
+    }
+
+    private User(Base64String hash) {
+        this.hash = hash;
+    }
+
+    private static User addUser(Base64String hash) {
+        synchronized (mapLock) {
+            return users.put(hash, new User(hash));
+        }
+    }
+
+    private static User addUser(String username) {
+        return addUser(hash512(new Base64String(username)));
+    }
+
+    public static boolean userExists(String username) {
+        synchronized (mapLock) {
+            return users.containsKey(hash512(new Base64String(username)));
+        }
+    }
+
+    public static User getUser(Base64String hash) {
+        synchronized (mapLock) {
+            return users.get(hash);
+        }
+    }
+
+    public static User getUser(String username) {
+        return getUser(hash512(new Base64String(username)));
     }
 
     private String getHome() {
-        return home + File.separator + hash512(new Base64String(username)).asHexString();
+        return home + File.separator + hash.asHexString();
     }
 
-    public boolean create(String password) throws IOException {
-        LockedFile userHome = FileUtils.getLockedFile(getHome());
-        userHome.lock();
-        try {
-            if (!userHome.exists()) {
-                if (userHome.mkdir()) {
-                    if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
-                        KeyPair encryptionKeys = getNewKeyPair();
-                        KeyPair signingKeys = getNewKeyPair();
-
-                    }
-                }
+    public synchronized static User create(String username, String password)
+            throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        User user = null;
+        synchronized (mapLock) {
+            if (userExists(username)) {
+                return null;
+            } else {
+                user = addUser(username);
             }
-            return false;
-        } finally {
-            userHome.unlock();
+        }
+        File homedir = new File(user.getHome());
+        if (homedir.mkdir()) {
+            KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
+            AsymmetricUtils.savePrivateKey(user.privSigningKeyPath, signingKeys.getPrivate(), password);
+            AsymmetricUtils.savePublicKey(user.pubSigningKeyPath, signingKeys.getPublic());
+            KeyPair cryptoKeys = AsymmetricUtils.getNewKeyPair();
+            AsymmetricUtils.savePrivateKey(user.privCryptoKeyPath, cryptoKeys.getPrivate(), password);
+            AsymmetricUtils.savePublicKey(user.pubCryptoKeyPath, cryptoKeys.getPublic());
+            PasswordUtils.savePassword(user.passwordFile, password);
+            return user;
+        } else {
+            return null;
         }
     }
+
+    public PublicKey loadPublicSigningKey() throws IOException, InvalidKeySpecException {
+        return AsymmetricUtils.loadPublicKey(pubSigningKeyPath);
+    }
+
+    public PrivateKey loadPrivateSigningKey(String password)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
+        return AsymmetricUtils.loadPrivateKey(privSigningKeyPath, password, passwordFile);
+    }
+
+    public PublicKey loadPublicCryptoKey() throws IOException, InvalidKeySpecException {
+        return AsymmetricUtils.loadPublicKey(pubCryptoKeyPath);
+    }
+
+    public PrivateKey loadPrivateCryptoKey(String password)
+            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
+        return AsymmetricUtils.loadPrivateKey(privCryptoKeyPath, password, passwordFile);
+    }
+
+    public synchronized void appendToLog(Base64String data, boolean encrypt)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        Base64String toWrite = data;
+        if (encrypt) {
+            AsymmetricUtils.encrypt(data, loadPublicCryptoKey());
+        }
+        FileUtils.append(new File(logPath), toWrite);
+    }
+
+    public void appendToLog(String data) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new Base64String(data), true);
+    }
+
+//    public Base64String readLog(String password) {
+//        loadPrivateCryptoKey(password);
+//    }
 
 }
