@@ -16,7 +16,6 @@ public class CSVUtils {
         return makeRecord(Arrays.asList(args));
     }
 
-
     public static String makeRecord(Iterable<?> args) throws IOException {
         StringBuffer record = new StringBuffer();
         CSVPrinter printer = new CSVPrinter(record, CSVFormat.DEFAULT);

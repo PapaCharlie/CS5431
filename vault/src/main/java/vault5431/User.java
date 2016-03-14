@@ -1,6 +1,8 @@
 package vault5431;
 
 import vault5431.crypto.Base64String;
+import vault5431.io.FileUtils;
+import vault5431.io.LockedFile;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -22,13 +24,12 @@ public class User {
     private String email;
     private String username;
 
-    public static final String log = "log";
-    public static final String privCryptoKey = "id_rsa.crypto";
-    public static final String pubCryptoKey = privCryptoKey + ".pub";
-    public static final String privSigningKey = "id_rsa.signing";
-    public static final String pubSigningKey = privSigningKey + ".pub";
-    public static final String passwordVault = "vault";
-//    private static final String secureNotes = "notes";
+    public final String logPath = getHome() + "log";
+    public final String privCryptoKeyPath = getHome() + "id_rsa.crypto";
+    public final String pubCryptoKeyPath = getHome() + privCryptoKeyPath + ".pub";
+    public final String privSigningKeyPath = getHome() + "id_rsa.signing";
+    public final String pubSigningKeyPath = getHome() + privSigningKeyPath + ".pub";
+    public final String passwordVaultPath = getHome() + "vault";
 
     User(String username, String firstName, String lastName, String email) {
         this.username = username;
@@ -37,67 +38,34 @@ public class User {
         this.email = email;
     }
 
-    private static String getHomeName(String username) {
-        return hash512(new Base64String(username)).asHexString();
+    User(String username) {
+        this.username = username;
+        firstName = "";
+        lastName = "";
+        email = "";
     }
 
-    private static File findUserHome(String username) {
-        String userHome = getHomeName(username);
-        FilenameFilter filter = (dir, name) -> dir.isDirectory() && name.equals(userHome);
-        File[] dirs = home.listFiles(filter);
-        if (dirs.length == 0) {
-            return null;
-        } else {
-            return dirs[0];
-        }
+    private String getHome() {
+        return home + File.separator + hash512(new Base64String(username)).asHexString();
     }
 
-    private static File getFile(String username, String file) {
-        File userHome = findUserHome(username);
-        if (userHome != null) {
-            File someFile = new File(userHome + File.separator + file);
-            if (someFile.exists()) {
-                return someFile;
-            } else {
-                return null;
+    public boolean create(String password) throws IOException {
+        LockedFile userHome = FileUtils.getLockedFile(getHome());
+        userHome.lock();
+        try {
+            if (!userHome.exists()) {
+                if (userHome.mkdir()) {
+                    if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
+                        KeyPair encryptionKeys = getNewKeyPair();
+                        KeyPair signingKeys = getNewKeyPair();
+
+                    }
+                }
             }
-        } else {
-            return null;
+            return false;
+        } finally {
+            userHome.unlock();
         }
     }
-
-//    public boolean create(String password) throws IOException {
-//
-//        if (findUserHome(username) == null) {
-//            File userHome = new File(home + File.separator + getHomeName(username));
-//            if (userHome.mkdir()) {
-//                if (getLogFile(username).createNewFile() && getPasswordVaultFile(username).createNewFile()) {
-//                    KeyPair encryptionKeys = getNewKeyPair();
-//                    KeyPair signingKeys = getNewKeyPair();
-//
-//                }
-//            }
-//        }
-//        return false;
-//    }
-
-//    public static File getLogFile(String username) {
-//        return getFile(username, log);
-//    }
-//    public static File getPublicSigningKeyFile(String username) {
-//        return getFile(username, pubSigningKey);
-//    }
-//    public static File getPrivateSigningKeyFile(String username) {
-//        return getFile(username, privSigningKey);
-//    }
-//    public static File getPublicEncryptionKeyFile(String username) {
-//        return getFile(username, pubCryptoKey);
-//    }
-//    public static File getPrivateEncryptionKeyFile(String username) {
-//        return getFile(username, privCryptoKey);
-//    }
-//    public static File getPasswordVaultFile(String username) {
-//        return getFile(username, passwordVault);
-//    }
 
 }

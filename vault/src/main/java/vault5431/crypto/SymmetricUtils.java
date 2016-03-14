@@ -11,8 +11,8 @@ public class SymmetricUtils {
 
     private static final SecureRandom random = new SecureRandom();
 
-    public static final int keySize = 256;
-    public static final int ivSize = 16;
+    public static final int KEY_SIZE = 256;
+    public static final int IV_SIZE = 16;
 
     private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC");
@@ -22,7 +22,7 @@ public class SymmetricUtils {
         SecretKey key = null;
         try {
             KeyGenerator gen = KeyGenerator.getInstance("AES");
-            gen.init(keySize);
+            gen.init(KEY_SIZE);
             key = gen.generateKey();
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
@@ -32,7 +32,7 @@ public class SymmetricUtils {
     }
 
     public static IvParameterSpec getNewIV() {
-        byte[] iv = new byte[ivSize];
+        byte[] iv = new byte[IV_SIZE];
         random.nextBytes(iv);
         return new IvParameterSpec(iv);
     }

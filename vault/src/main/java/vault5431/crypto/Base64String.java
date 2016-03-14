@@ -1,6 +1,7 @@
 package vault5431.crypto;
 
-import vault5431.FileUtils;
+import vault5431.io.FileUtils;
+import vault5431.io.LockedFile;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -56,7 +57,7 @@ public class Base64String {
 
     public boolean equals(Object other) {
         if (other instanceof Base64String) {
-            Base64String other64 = (Base64String)other;
+            Base64String other64 = (Base64String) other;
             return Arrays.equals(other64.getB64Bytes(), this.b64data);
         } else {
             return false;
@@ -86,11 +87,13 @@ public class Base64String {
     }
 
     public void saveToFile(String path) throws IOException {
-        FileUtils.write(path, b64data);
+        LockedFile file = FileUtils.getLockedFile(path);
+        file.write(b64data);
     }
 
     public static Base64String loadFromFile(String path) throws IOException {
-        return Base64String.fromBase64(FileUtils.read(path));
+        LockedFile file = FileUtils.getLockedFile(path);
+        return Base64String.fromBase64(file.read());
     }
 
     public static Base64String empty() {

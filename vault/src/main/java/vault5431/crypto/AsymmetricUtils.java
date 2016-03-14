@@ -19,7 +19,7 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public class AsymmetricUtils {
 
-    private static final int keySize = 4096;
+    private static final int KEY_SIZE = 4096;
 
     private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
@@ -29,7 +29,7 @@ public class AsymmetricUtils {
         KeyPair keyPair = null;
         try {
             KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA", "BC");
-            gen.initialize(keySize, new SecureRandom());
+            gen.initialize(KEY_SIZE, new SecureRandom());
             keyPair = gen.generateKeyPair();
         } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
@@ -101,8 +101,8 @@ public class AsymmetricUtils {
         try {
             if (PasswordUtils.verifyPasswordInFile(passwordFile, password)) {
                 byte[] key64 = Base64String.loadFromFile(keyfile).decodeBytes();
-                byte[] iv = Arrays.copyOfRange(key64, 0, SymmetricUtils.ivSize);
-                byte[] encryptedPrivateKeyBytes = Arrays.copyOfRange(key64, SymmetricUtils.ivSize, key64.length);
+                byte[] iv = Arrays.copyOfRange(key64, 0, SymmetricUtils.IV_SIZE);
+                byte[] encryptedPrivateKeyBytes = Arrays.copyOfRange(key64, SymmetricUtils.IV_SIZE, key64.length);
                 SecretKey key = keyFromPassword(password);
                 byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedPrivateKeyBytes, key, new IvParameterSpec(iv)).decodeBytes();
                 privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));

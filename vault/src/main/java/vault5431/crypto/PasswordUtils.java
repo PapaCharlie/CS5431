@@ -5,10 +5,8 @@ import org.bouncycastle.util.Arrays;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -18,13 +16,13 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class PasswordUtils {
 
-    public final static int iterations = 1000;
-    public final static int keySize = 256;
+    public static final int ITERATIONS = 1000;
+    public static final int KEY_SIZE = 256;
 
     private static final SecureRandom random = new SecureRandom();
 
     private static byte[] generateSalt() {
-        byte[] salt = new byte[keySize / 8];
+        byte[] salt = new byte[KEY_SIZE / 8];
         random.nextBytes(salt);
         return salt;
     }
@@ -36,7 +34,7 @@ public class PasswordUtils {
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
             byte[] salt = generateSalt();
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keySize);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
             SecretKey key = secretKeyFactory.generateSecret(spec);
             hashedPassword = new Base64String(Arrays.concatenate(salt, key.getEncoded()));
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
@@ -50,10 +48,10 @@ public class PasswordUtils {
         boolean result = false;
         try {
             byte[] decoded = hashedPassword.decodeBytes();
-            byte[] salt = Arrays.copyOfRange(decoded, 0, keySize / 8);
-            byte[] hash = Arrays.copyOfRange(decoded, keySize / 8, decoded.length);
+            byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
+            byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, keySize);
+            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
             SecretKey key = secretKeyFactory.generateSecret(spec);
             result = Arrays.areEqual(hash, key.getEncoded());
         } catch (NoSuchAlgorithmException err) {

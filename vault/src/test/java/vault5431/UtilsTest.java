@@ -1,12 +1,11 @@
 package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Test;
+import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 
 import java.io.File;
-import java.security.Security;
 
 import static org.junit.Assert.*;
 
@@ -17,12 +16,12 @@ public class UtilsTest extends VaultTest {
 
     @Test
     public void csvUtilsTest() throws Exception {
-        Object[] objects = new Object[]{1, 2, 3, "Hello! I\'m a bad string with \"\"quotes\'\", and commas\"."};
-        String record = CSVUtils.makeRecord(objects);
+        Object[] values = new Object[]{1, 2, 3, "Hello! I\'m a bad string with \"\"quotes\'\", and commas\"."};
+        String record = CSVUtils.makeRecord(values);
         assertEquals(1, CSVUtils.parseRecord(record).getRecords().size());
         CSVRecord parsedRecord = CSVUtils.parseRecord(record).getRecords().get(0);
         for (int i = 0; i < parsedRecord.size(); i++) {
-            assertEquals(objects[i].toString(), parsedRecord.get(i));
+            assertEquals(values[i].toString(), parsedRecord.get(i));
         }
     }
 
@@ -37,6 +36,18 @@ public class UtilsTest extends VaultTest {
         String[] lines = writtenFileContents.split("\n");
         assertEquals(line1, lines[0]);
         assertEquals(line2, lines[1]);
+    }
+
+    @Test
+    public void passwordTest() throws Exception {
+        Password password = new Password("Testpass", "https://www.test.com/", "test", "youknowit");
+        Password[] passwords = Password.fromCSV(CSVUtils.parseRecord(password.toRecord()));
+        assertTrue(passwords.length > 0);
+        Password deserialized = passwords[0];
+        assertEquals(password.getName(), deserialized.getName());
+        assertEquals(password.getWebsite(), deserialized.getWebsite());
+        assertEquals(password.getUsername(), deserialized.getUsername());
+        assertEquals(password.getPassword(), deserialized.getPassword());
     }
 
 }
