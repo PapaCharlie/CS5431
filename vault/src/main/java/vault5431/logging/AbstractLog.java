@@ -6,4 +6,5 @@ package vault5431.logging;
  * common functions.
  */
 public interface AbstractLog {
+    boolean checkSignature(String signature);
 }
