@@ -64,9 +64,9 @@ public class AsymmetricUtils {
         return decryptedText;
     }
 
-    public static boolean savePublicKey(String keyfile, PublicKey key) throws IOException {
+    public static void savePublicKey(String keyfile, PublicKey key) throws IOException {
         Base64String key64 = new Base64String(key.getEncoded());
-        return key64.saveToFile(keyfile);
+        key64.saveToFile(keyfile);
     }
 
     public static PublicKey loadPublicKey(String keyfile) throws IOError, IOException, InvalidKeySpecException {
@@ -86,13 +86,13 @@ public class AsymmetricUtils {
         return new SecretKeySpec(hashedPassword, "AES");
     }
 
-    public static boolean savePrivateKey(String keyfile, PrivateKey privateKey, String password)
+    public static void savePrivateKey(String keyfile, PrivateKey privateKey, String password)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException {
         SecretKey key = keyFromPassword(password);
         Base64String privateKey64 = new Base64String(privateKey.getEncoded());
         IvParameterSpec iv = SymmetricUtils.getNewIV();
         byte[] encryptedKey = SymmetricUtils.encrypt(privateKey64, key, iv);
-        return new Base64String(Arrays.concatenate(iv.getIV(), encryptedKey)).saveToFile(keyfile);
+        new Base64String(Arrays.concatenate(iv.getIV(), encryptedKey)).saveToFile(keyfile);
     }
 
     public static PrivateKey loadPrivateKey(String keyfile, String password, String passwordFile)

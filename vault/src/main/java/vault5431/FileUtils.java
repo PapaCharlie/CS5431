@@ -1,12 +1,9 @@
 package vault5431;
 
-import vault5431.crypto.Base64String;
-
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
@@ -22,41 +19,72 @@ public class FileUtils {
     private static final Lock r = rwl.readLock();
     private static final Lock w = rwl.writeLock();
 
+    private static void addFile(String path) {
+        r.unlock();
+        w.lock();
+        try {
+            map.putIfAbsent(path, new Object());
+        } finally {
+            w.unlock();
+            r.lock();
+        }
+    }
+
+    private static void tryRemove(String path) {
+        if (w.tryLock()) {
+            try {
+                map.remove(path);
+            } finally {
+                w.unlock();
+            }
+        }
+    }
+
     public static byte[] read(String path) throws IOException {
-        RandomAccessFile file = new RandomAccessFile(path, "r");
-        synchronized (file.getChannel()) {
-            try {
-                byte[] data = new byte[(int) file.length()];
-                file.readFully(data);
-                return data;
-            } finally {
-                file.close();
+        r.lock();
+        try {
+            while (!map.containsKey(path)) {
+                addFile(path);
             }
-        }
-    }
-
-    private static boolean write(String path, byte[] data, boolean append) throws IOException {
-        RandomAccessFile file = new RandomAccessFile(path, "rwd");
-        synchronized (file.getChannel()) {
-            try {
-                if (append) {
-                    file.seek(file.length());
+            synchronized (map.get(path)) {
+                try(FileInputStream in = new FileInputStream(new File(path))) {
+                    byte[] data = new byte[in.available()];
+                    in.read(data);
+                    return data;
                 }
-                file.write(data);
-                file.close();
-                return true;
-            } finally {
-                file.close();
             }
+        } finally {
+            r.unlock();
+            tryRemove(path);
         }
     }
 
-    public static boolean write(String path, byte[] data) throws IOException {
-        return write(path, data, false);
+    private static void write(String path, byte[] data, boolean append) throws IOException {
+        r.lock();
+        try {
+            while (!map.containsKey(path)) {
+                addFile(path);
+            }
+            synchronized (map.get(path)) {
+                try (FileWriter out = new FileWriter(new File(path), append)) {
+                    for (byte b : data) {
+                        out.write(b);
+                    }
+                    out.flush();
+                }
+            }
+        } finally {
+            r.unlock();
+            tryRemove(path);
+        }
     }
 
-    public static boolean append(String path, byte[] data) throws IOException {
-        return write(path, data, true);
+    public static void write(String path, byte[] data) throws IOException {
+        write(path, data, false);
+    }
+
+    public static void append(String path, byte[] data) throws IOException {
+        write(path, data, true);
     }
 
 }

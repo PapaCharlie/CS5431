@@ -85,8 +85,8 @@ public class Base64String {
         return new String(hexChars);
     }
 
-    public boolean saveToFile(String path) throws IOException {
-        return FileUtils.write(path, b64data);
+    public void saveToFile(String path) throws IOException {
+        FileUtils.write(path, b64data);
     }
 
     public static Base64String loadFromFile(String path) throws IOException {
