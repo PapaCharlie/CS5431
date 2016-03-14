@@ -9,13 +9,13 @@ import java.time.LocalDateTime;
 public class LogTest {
     @Test
     public void toStringUserTest() throws Exception {
-        UserLog testUserInfo = new UserLog(LogType.INFO, "0.0.0.0.0", "CYJ",
+        UserLogEntry testUserInfo = new UserLogEntry(LogType.INFO, "0.0.0.0.0", "CYJ",
                 LocalDateTime.now(), "Logged In", "[PLACEHOLDER]");
-        UserLog testUserDebug = new UserLog(LogType.DEBUG, "0.0.0.0.0", "CYJ",
+        UserLogEntry testUserDebug = new UserLogEntry(LogType.DEBUG, "0.0.0.0.0", "CYJ",
                 LocalDateTime.now(), "Vault Configuration Error", "[PLACEHOLDER]");
-        UserLog testUserWarning = new UserLog(LogType.WARNING, "0.0.0.0.0", "CYJ",
+        UserLogEntry testUserWarning = new UserLogEntry(LogType.WARNING, "0.0.0.0.0", "CYJ",
                 LocalDateTime.now(), "Password incorrect.", "[PLACEHOLDER]");
-        UserLog testUserError = new UserLog(LogType.ERROR, "0.0.0.0.0", "CYJ",
+        UserLogEntry testUserError = new UserLogEntry(LogType.ERROR, "0.0.0.0.0", "CYJ",
                 LocalDateTime.now(), "Vault has been locked", "[PLACEHOLDER]");
 
         System.out.println("USER LOG FORMATTING");
@@ -27,13 +27,13 @@ public class LogTest {
 
     @Test
     public void toStringSystemTest() throws Exception {
-        SystemLog testSystemInfo = new SystemLog(LogType.INFO, "CYJ",
+        SystemLogEntry testSystemInfo = new SystemLogEntry(LogType.INFO, "CYJ",
                 LocalDateTime.now(), "Logged In", "[PLACEHOLDER]");
-        SystemLog testSystemDebug = new SystemLog(LogType.DEBUG, "CYJ",
+        SystemLogEntry testSystemDebug = new SystemLogEntry(LogType.DEBUG, "CYJ",
                 LocalDateTime.now(), "Vault Configuration Error", "[PLACEHOLDER]");
-        SystemLog testSystemWarning = new SystemLog(LogType.WARNING, "CYJ",
+        SystemLogEntry testSystemWarning = new SystemLogEntry(LogType.WARNING, "CYJ",
                 LocalDateTime.now(), "Password incorrect.", "[PLACEHOLDER]");
-        SystemLog testSystemError = new SystemLog(LogType.ERROR, "CYJ",
+        SystemLogEntry testSystemError = new SystemLogEntry(LogType.ERROR, "CYJ",
                 LocalDateTime.now(), "Vault has been locked", "[PLACEHOLDER]");
 
         System.out.println("SYSTEM LOG FORMATTING");

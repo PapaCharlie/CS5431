@@ -5,6 +5,6 @@ package vault5431.logging;
  * Placeholder in case our System Log and User Log begin to deviate significantly but share
  * common functions.
  */
-public interface AbstractLog {
+public interface LogEntry {
     boolean checkSignature(String signature);
 }
