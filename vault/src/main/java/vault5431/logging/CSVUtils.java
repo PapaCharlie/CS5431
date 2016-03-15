@@ -28,5 +28,4 @@ public class CSVUtils {
     public static CSVParser parseRecord(String record) throws IOException {
         return CSVParser.parse(record, CSVFormat.DEFAULT);
     }
-
 }

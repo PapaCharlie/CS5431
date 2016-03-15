@@ -1,12 +1,12 @@
 package vault5431.logging;
 
 /**
- * Created by papacharlie on 3/14/16.
+ * Created by CYJ on 3/14/16.
+ * Placeholder in case our System Log and User Log begin to deviate significantly but share
+ * common functions.
  */
-public class LogEntry {
+public interface LogEntry {
 
-    public String toCSVEntry() {
-        return null;
-    }
+    boolean checkSignature(String signature);
 
 }
