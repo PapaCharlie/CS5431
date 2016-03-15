@@ -26,7 +26,7 @@ install:
 	tar xzf $(SBT_TAR)
 
 $(SBT_TASKS):
-	$(SBT) "$@"
+	"$(SBT)" "$@"
 
 verify:
 	test -d "lib" || mkdir "lib"

@@ -5,15 +5,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 /**
- * Created by papacharlie on 3/1/16.
+ * Hashing utilities
  */
 public class HashUtils {
 
-    private static Base64String hash(Base64String data, String alg) {
+    private static Base64String hash(byte[] data, String alg) {
         Base64String hash = null;
         try {
             MessageDigest hasher = MessageDigest.getInstance(alg, "BC");
-            hasher.update(data.getB64Bytes());
+            hasher.update(data);
             hash = new Base64String(hasher.digest());
         } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
@@ -22,11 +22,11 @@ public class HashUtils {
         return hash;
     }
 
-    public static Base64String hash512(Base64String data) {
+    public static Base64String hash512(byte[] data) {
         return hash(data, "SHA-512");
     }
 
-    public static Base64String hash256(Base64String data) {
+    public static Base64String hash256(byte[] data) {
         return hash(data, "SHA-256");
     }
 }

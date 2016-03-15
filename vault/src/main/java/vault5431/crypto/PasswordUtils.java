@@ -5,6 +5,7 @@ import org.bouncycastle.util.Arrays;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
+import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -12,7 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 /**
- * Created by papacharlie on 2016-03-12.
+ * Password hashing and verification utilities
  */
 public class PasswordUtils {
 
@@ -20,14 +21,13 @@ public class PasswordUtils {
     public static final int KEY_SIZE = 256;
 
     private static final SecureRandom random = new SecureRandom();
+    private static String HASH_ALG = "PBKDF2WithHmacSHA512";
 
     private static byte[] generateSalt() {
         byte[] salt = new byte[KEY_SIZE / 8];
         random.nextBytes(salt);
         return salt;
     }
-
-    private static String HASH_ALG = "PBKDF2WithHmacSHA512";
 
     public static Base64String hashPassword(String password) {
         Base64String hashedPassword = null;
@@ -61,12 +61,12 @@ public class PasswordUtils {
         return result;
     }
 
-    public static void savePassword(String passwordFile, String password) throws IOError, IOException {
+    public static void savePassword(File passwordFile, String password) throws IOError, IOException {
         hashPassword(password).saveToFile(passwordFile);
     }
 
-    public static boolean verifyPasswordInFile(String passwordFile, String password) throws IOError, IOException, InvalidKeySpecException {
-        return verifyHashedPassword(Base64String.loadFromFile(passwordFile), password);
+    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOError, IOException, InvalidKeySpecException {
+        return verifyHashedPassword(Base64String.loadFromFile(passwordFile)[0], password);
     }
 
 }

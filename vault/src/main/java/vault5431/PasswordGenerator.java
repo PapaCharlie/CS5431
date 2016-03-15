@@ -1,11 +1,10 @@
 package vault5431;
 
-import org.bouncycastle.util.Arrays;
-
 import java.security.SecureRandom;
 
 /**
- * Created by papacharlie on 2016-03-12.
+ * Basic password generator class
+ * TODO: Pronounceable passwords?
  */
 public class PasswordGenerator {
     private static final SecureRandom random = new SecureRandom();

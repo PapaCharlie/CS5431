@@ -18,62 +18,69 @@ import static org.junit.Assert.*;
  */
 public class CryptoTest extends VaultTest {
 
-    private String testString = "testString";
     private static final KeyPair keys = AsymmetricUtils.getNewKeyPair();
+    private String testString = "testString";
 
     @Test
     public void testAsymmetricEncDec() throws Exception {
-        byte[] encrypted = AsymmetricUtils.encrypt(new Base64String(testString), keys.getPublic());
-        Base64String decrypted = AsymmetricUtils.decrypt(encrypted, keys.getPrivate());
-        assertEquals(decrypted.decodeString(), testString);
+        Base64String encrypted = AsymmetricUtils.encrypt(testString.getBytes(), keys.getPublic());
+        String decrypted = new String(AsymmetricUtils.decrypt(encrypted, keys.getPrivate()));
+        assertEquals(decrypted, testString);
     }
 
     @Test
     public void testSymmetricEncDec() throws Exception {
         SecretKey key = SymmetricUtils.getNewKey();
         IvParameterSpec iv = SymmetricUtils.getNewIV();
-        byte[] encrypted = SymmetricUtils.encrypt(new Base64String(testString), key, iv);
-        Base64String decrypted = SymmetricUtils.decrypt(encrypted, key, iv);
-        assertEquals(decrypted.decodeString(), testString);
+        Base64String encrypted = SymmetricUtils.encrypt(testString.getBytes(), key, iv);
+        String decrypted = new String(SymmetricUtils.decrypt(encrypted, key, iv));
+        assertEquals(decrypted, testString);
     }
 
     @Test
     public void testHMAC() throws Exception {
         SecretKey key = SymmetricUtils.getNewKey();
-        Base64String signature1 = SigningUtils.getSignature(new Base64String(testString), key);
-        Base64String signature2 = SigningUtils.getSignature(new Base64String("somethingElse"), key);
+        Base64String signature1 = SigningUtils.getSignature(testString.getBytes(), key);
+        Base64String signature2 = SigningUtils.getSignature("somethingElse".getBytes(), key);
         assertFalse(signature1.equals(signature2));
-        assertTrue(SigningUtils.verifySignature(new Base64String(testString), signature1, key));
+        assertTrue(SigningUtils.verifySignature(testString.getBytes(), signature1, key));
     }
 
     @Test
     public void hashTest() throws Exception {
-        Base64String hash = HashUtils.hash512(new Base64String(testString));
-        Base64String diffHash = HashUtils.hash512(new Base64String("a"));
+        Base64String hash = HashUtils.hash512(testString.getBytes());
+        Base64String diffHash = HashUtils.hash512("a".getBytes());
         assertFalse(hash.equals(diffHash));
     }
 
     @Test
+    public void testSecretKeySaveToFile() throws Exception {
+        SecretKey key = SymmetricUtils.getNewKey();
+        File secretKeyFile = getTempFile("key", null);
+        SymmetricUtils.saveSecretKey(secretKeyFile, key, keys.getPublic());
+        SecretKey loadedKey = SymmetricUtils.loadSecretKey(secretKeyFile, keys.getPrivate());
+        assertArrayEquals(key.getEncoded(), loadedKey.getEncoded());
+    }
+
+    @Test
     public void testPublicKeySaveToFile() throws Exception {
-        File pubKeyFile = File.createTempFile("id_rsa", ".pub");
-        AsymmetricUtils.savePublicKey(pubKeyFile.getAbsolutePath(), keys.getPublic());
-        PublicKey pubkey = AsymmetricUtils.loadPublicKey(pubKeyFile.getAbsolutePath());
+        File pubKeyFile = getTempFile("id_rsa", ".pub");
+        AsymmetricUtils.savePublicKey(pubKeyFile, keys.getPublic());
+        PublicKey pubkey = AsymmetricUtils.loadPublicKey(pubKeyFile);
         assertArrayEquals(keys.getPublic().getEncoded(), pubkey.getEncoded());
-        pubKeyFile.deleteOnExit();
     }
 
     @Test
     public void testPrivateKeySaveToFile() throws Exception {
-        File privKeyFile = File.createTempFile("id_rsa", null);
+        File privKeyFile = getTempFile("id_rsa", null);
+        File privKeyIVFile = getTempFile("ivFile", null);
         String password = PasswordGenerator.generatePassword(20);
-        File passwordFile = File.createTempFile("password", null);
-        PasswordUtils.savePassword(passwordFile.getAbsolutePath(), password);
-        AsymmetricUtils.savePrivateKey(privKeyFile.getAbsolutePath(), keys.getPrivate(), password);
-        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile.getAbsolutePath(), password, passwordFile.getAbsolutePath());
+        File passwordFile = getTempFile("password", null);
+        PasswordUtils.savePassword(passwordFile, password);
+        AsymmetricUtils.savePrivateKey(privKeyFile, privKeyIVFile, keys.getPrivate(), password);
+        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, privKeyIVFile, password, passwordFile);
         assertNotNull(privateKey);
         assertArrayEquals(keys.getPrivate().getEncoded(), privateKey.getEncoded());
-        privKeyFile.deleteOnExit();
-        passwordFile.deleteOnExit();
     }
 
     @Test

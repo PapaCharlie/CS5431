@@ -3,22 +3,32 @@ package vault5431;
 import org.junit.Test;
 import vault5431.crypto.Base64String;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
- * Created by papacharlie on 3/14/16.
+ * Tests correct instantiation of User.
  */
 public class UserTest extends VaultTest {
 
     @Test
     public void testUserCreation() throws Exception {
-        String username = "testusername";
-        String password = "password";
-        User user = User.create(username, password);
+        String password = PasswordGenerator.generatePassword(10);
+        User user = getTempUser(password);
         assertNotNull(user);
-//        String data = "Hello!";
-//        user.appendToLog(data);
-
+        user.loadPrivateCryptoKey(password);
+        user.loadPublicCryptoKey();
+        user.loadPrivateSigningKey(password);
+        user.loadPublicSigningKey();
+        String log0 = "I'm a log entry!";
+        Base64String log0b64 = new Base64String(log0);
+        String log1 = "I'm another log entry!";
+        Base64String log1b64 = new Base64String(log1);
+        user.appendToLog(log0b64);
+        user.appendToLog(log1b64);
+        String[] loadedLog = user.loadLog(password);
+        assertEquals(log0, loadedLog[0]);
+        assertEquals(log1, loadedLog[1]);
     }
 
 }

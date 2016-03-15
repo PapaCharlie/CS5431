@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * Created by papacharlie on 2/26/16.
+ * Password class. Represents an entry in the password vault.
  */
 public class Password {
 
-    private static final int MAX_NAME_LENGTH = 128;
-    private static final int MAX_WEBSITE_LENGTH = 512;
-    private static final int MAX_USERNAME_LENGTH = 128;
-    private static final int MAX_PASWORD_LENGTH = 256;
+    public static final int MAX_NAME_LENGTH = 128;
+    public static final int MAX_WEBSITE_LENGTH = 512;
+    public static final int MAX_USERNAME_LENGTH = 128;
+    public static final int MAX_PASWORD_LENGTH = 256;
 
     private String name;
     private String website;
@@ -45,6 +45,24 @@ public class Password {
         }
     }
 
+    private static Password fromRecord(CSVRecord entry) throws IOException {
+        return new Password(
+                entry.get(0),
+                entry.get(1),
+                entry.get(2),
+                entry.get(3)
+        );
+    }
+
+    public static Password[] fromCSV(CSVParser entries) throws IOException {
+        List<CSVRecord> records = entries.getRecords();
+        Password[] passwords = new Password[records.size()];
+        for (int i = 0; i < passwords.length; i++) {
+            passwords[i] = fromRecord(records.get(i));
+        }
+        return passwords;
+    }
+
     public String getName() {
         return name;
     }
@@ -63,24 +81,6 @@ public class Password {
 
     public String toRecord() throws IOException {
         return CSVUtils.makeRecord(name, website, username, password);
-    }
-
-    private static Password fromRecord(CSVRecord entry) throws IOException {
-        return new Password(
-                entry.get(0),
-                entry.get(1),
-                entry.get(2),
-                entry.get(3)
-        );
-    }
-
-    public static Password[] fromCSV(CSVParser entries) throws IOException {
-        List<CSVRecord> records = entries.getRecords();
-        Password[] passwords = new Password[records.size()];
-        for (int i = 0; i < passwords.length; i++) {
-            passwords[i] = fromRecord(records.get(i));
-        }
-        return passwords;
     }
 
 }

@@ -7,10 +7,11 @@ import vault5431.logging.CSVUtils;
 
 import java.io.File;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Created by papacharlie on 2016-02-27.
+ * Tests utilities, among other things
  */
 public class UtilsTest extends VaultTest {
 
@@ -30,12 +31,11 @@ public class UtilsTest extends VaultTest {
         File tmpFile = File.createTempFile("test", null);
         String line1 = "Hello! I'm a test";
         String line2 = "Hello! I'm another test";
-        FileUtils.append(tmpFile, line1);
-        FileUtils.append(tmpFile, "\n" + line2);
-        String writtenFileContents = FileUtils.read(tmpFile).decodeString();
-        String[] lines = writtenFileContents.split("\n");
-        assertEquals(line1, lines[0]);
-        assertEquals(line2, lines[1]);
+        FileUtils.append(tmpFile, new Base64String(line1));
+        FileUtils.append(tmpFile, new Base64String(line2));
+        Base64String[] lines = FileUtils.read(tmpFile);
+        assertEquals(line1, lines[0].decodeString());
+        assertEquals(line2, lines[1].decodeString());
     }
 
     @Test
@@ -48,6 +48,22 @@ public class UtilsTest extends VaultTest {
         assertEquals(password.getWebsite(), deserialized.getWebsite());
         assertEquals(password.getUsername(), deserialized.getUsername());
         assertEquals(password.getPassword(), deserialized.getPassword());
+    }
+
+    @Test
+    public void testBase64StringSave() throws Exception {
+        File tmp = getTempFile("b64", null);
+        Base64String base64String = new Base64String("test");
+        base64String.saveToFile(tmp);
+        Base64String loadedb64 = Base64String.loadFromFile(tmp)[0];
+        assertEquals(base64String.getB64String(), loadedb64.getB64String());
+    }
+
+    @Test
+    public void b64Tests() throws Exception {
+        String string = "Hello\nWorld!";
+        Base64String b64String = new Base64String(string);
+        assertEquals(string, b64String.decodeString());
     }
 
 }

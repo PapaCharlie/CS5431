@@ -15,11 +15,11 @@ import static spark.Spark.*;
 
 class Vault {
 
+    public static File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
+
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
-
-    public static File home = new File(System.getProperty("user.home") + File.separator + ".vault5431");
 
     public static void main(String[] args) throws Exception {
         if (!home.exists()) {

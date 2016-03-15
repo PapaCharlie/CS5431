@@ -3,9 +3,11 @@ package vault5431;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.Base64String;
 import vault5431.crypto.PasswordUtils;
+import vault5431.crypto.SymmetricUtils;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOError;
 import java.io.IOException;
@@ -15,55 +17,69 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static vault5431.Vault.home;
-import static vault5431.crypto.HashUtils.hash512;
+import static vault5431.crypto.HashUtils.hash256;
 
 /**
  * User class.
  * TODO: Provide enc and dec methods
  */
-public class User {
-
-    private final Base64String hash;
-
-    public final String logPath = getHome() + File.separator + "log";
-    public final String privCryptoKeyPath = getHome() + File.separator + "id_rsa.crypto";
-    public final String pubCryptoKeyPath = getHome() + File.separator + privCryptoKeyPath + ".pub";
-    public final String privSigningKeyPath = getHome() + File.separator + "id_rsa.signing";
-    public final String pubSigningKeyPath = getHome() + File.separator + privSigningKeyPath + ".pub";
-    public final String passwordVaultPath = getHome() + File.separator + "vault";
-    public final String passwordFile = getHome() + File.separator + "password";
+public final class User {
 
     private static final Object mapLock = new Object();
     private static Map<Base64String, User> users = new HashMap<>();
 
     static {
         for (String dirname : home.list((dir, name) -> dir.isDirectory())) {
-            Base64String hash = Base64String.fromHexString(dirname);
-            addUser(hash);
+            Base64String hash = Base64String.fromBase64(dirname);
+            addUser(new User(hash));
         }
     }
 
+    public final File logFile;
+    public final File privCryptoKeyfile;
+    public final File privCryptoIVFile;
+    public final File pubCryptoKeyFile;
+    public final File privSigningKeyFile;
+    public final File privSigningIVFile;
+    public final File pubSigningKeyFile;
+    public final File passwordVaultFile;
+    public final File passwordHashFile;
+    public final File signingKeyFile;
+    public final File cryptoKeyFile;
+    private final Base64String hash;
+
     private User(String username) {
-        hash = hash512(new Base64String(username));
+        this(hashUsername(username));
     }
 
     private User(Base64String hash) {
         this.hash = hash;
+        logFile = new File(getHome() + File.separator + "log");
+        privCryptoKeyfile = new File(getHome() + File.separator + "id_rsa.crypto");
+        privCryptoIVFile = new File(getHome() + File.separator + "iv.crypto");
+        pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
+        privSigningKeyFile = new File(getHome() + File.separator + "id_rsa.signing");
+        privSigningIVFile = new File(getHome() + File.separator + "iv.signing");
+        pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
+        passwordVaultFile = new File(getHome() + File.separator + "vault");
+        passwordHashFile = new File(getHome() + File.separator + "password.hash");
+        signingKeyFile = new File(getHome() + File.separator + "signing.key");
+        cryptoKeyFile = new File(getHome() + File.separator + "crypto.key");
     }
 
-    private static User addUser(Base64String hash) {
+    private static User addUser(User user) {
         synchronized (mapLock) {
-            return users.put(hash, new User(hash));
+            return users.put(user.hash, user);
         }
     }
 
-    private static User addUser(String username) {
-        return addUser(hash512(new Base64String(username)));
+    private static Base64String hashUsername(String username) {
+        return hash256(username.getBytes());
     }
 
     public static boolean userExists(String username) {
         synchronized (mapLock) {
-            return users.containsKey(hash512(new Base64String(username)));
+            return users.containsKey(hashUsername(username));
         }
     }
 
@@ -74,71 +90,106 @@ public class User {
     }
 
     public static User getUser(String username) {
-        return getUser(hash512(new Base64String(username)));
+        return getUser(hashUsername(username));
     }
 
-    private String getHome() {
-        return home + File.separator + hash.asHexString();
+    public static String getHome(String username) {
+        return home + File.separator + hashUsername(username).getB64String();
     }
 
     public synchronized static User create(String username, String password)
             throws IOException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        User user = null;
+        User user;
         synchronized (mapLock) {
             if (userExists(username)) {
                 return null;
             } else {
-                user = addUser(username);
+                user = new User(username);
+                addUser(user);
             }
         }
         File homedir = new File(user.getHome());
         if (homedir.mkdir()) {
+            PasswordUtils.savePassword(user.passwordHashFile, password);
+
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
-            AsymmetricUtils.savePrivateKey(user.privSigningKeyPath, signingKeys.getPrivate(), password);
-            AsymmetricUtils.savePublicKey(user.pubSigningKeyPath, signingKeys.getPublic());
+            AsymmetricUtils.savePrivateKey(user.privSigningKeyFile, user.privSigningIVFile, signingKeys.getPrivate(), password);
+            AsymmetricUtils.savePublicKey(user.pubSigningKeyFile, signingKeys.getPublic());
             KeyPair cryptoKeys = AsymmetricUtils.getNewKeyPair();
-            AsymmetricUtils.savePrivateKey(user.privCryptoKeyPath, cryptoKeys.getPrivate(), password);
-            AsymmetricUtils.savePublicKey(user.pubCryptoKeyPath, cryptoKeys.getPublic());
-            PasswordUtils.savePassword(user.passwordFile, password);
+            AsymmetricUtils.savePrivateKey(user.privCryptoKeyfile, user.privCryptoIVFile, cryptoKeys.getPrivate(), password);
+            AsymmetricUtils.savePublicKey(user.pubCryptoKeyFile, cryptoKeys.getPublic());
+
+            SecretKey signingKey = SymmetricUtils.getNewKey();
+            SymmetricUtils.saveSecretKey(user.signingKeyFile, signingKey, cryptoKeys.getPublic());
+            SecretKey cryptoKey = SymmetricUtils.getNewKey();
+            SymmetricUtils.saveSecretKey(user.cryptoKeyFile, cryptoKey, cryptoKeys.getPublic());
+
             return user;
         } else {
             return null;
         }
     }
 
+    public String getHome() {
+        return home + File.separator + hash.getB64String();
+    }
+
     public PublicKey loadPublicSigningKey() throws IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPublicKey(pubSigningKeyPath);
+        return AsymmetricUtils.loadPublicKey(pubSigningKeyFile);
     }
 
     public PrivateKey loadPrivateSigningKey(String password)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPrivateKey(privSigningKeyPath, password, passwordFile);
+        synchronized (privSigningKeyFile) {
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, privSigningIVFile, password, passwordHashFile);
+        }
     }
 
     public PublicKey loadPublicCryptoKey() throws IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPublicKey(pubCryptoKeyPath);
+        return AsymmetricUtils.loadPublicKey(pubCryptoKeyFile);
     }
 
     public PrivateKey loadPrivateCryptoKey(String password)
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPrivateKey(privCryptoKeyPath, password, passwordFile);
-    }
-
-    public synchronized void appendToLog(Base64String data, boolean encrypt)
-            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Base64String toWrite = data;
-        if (encrypt) {
-            AsymmetricUtils.encrypt(data, loadPublicCryptoKey());
+        synchronized (privCryptoKeyfile) {
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, privCryptoIVFile, password, passwordHashFile);
         }
-        FileUtils.append(new File(logPath), toWrite);
     }
 
-    public void appendToLog(String data) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        appendToLog(new Base64String(data), true);
+    public void appendToLog(byte[] data)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(AsymmetricUtils.encrypt(data, loadPublicCryptoKey()));
     }
 
-//    public Base64String readLog(String password) {
-//        loadPrivateCryptoKey(password);
-//    }
+    public void appendToLog(Base64String data)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        synchronized (logFile) {
+            FileUtils.append(logFile, data);
+        }
+    }
+
+    public String[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+        synchronized (logFile) {
+            Base64String[] encryptedEntries = FileUtils.read(logFile);
+            String[] decryptedEntries = new String[encryptedEntries.length];
+            for (int i = 0; i < encryptedEntries.length; i++) {
+                decryptedEntries[i] = encryptedEntries[i].decodeString();
+            }
+            return decryptedEntries;
+        }
+    }
+
+    public String[] loadLog(String password) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+//        PrivateKey privateKey = loadPrivateCryptoKey(password);
+//        synchronized (logFile) {
+//            Base64String[] encryptedEntries = FileUtils.read(logFile);
+//            String[] decryptedEntries = new String[encryptedEntries.length];
+//            for (int i = 0; i < encryptedEntries.length; i ++) {
+//                decryptedEntries[i] = new String(AsymmetricUtils.decrypt(encryptedEntries[i], privateKey));
+//            }
+//            return decryptedEntries;
+//        }
+        return loadLog();
+    }
 
 }
