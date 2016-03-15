@@ -44,11 +44,11 @@ public class SystemLogEntry implements LogEntry {
     }
 
     public String toCSV() throws IOException {
-        return CSVUtils.makeRecord(logType, affectedUser, timestamp, message, signature);
+        return CSVUtils.makeRecord(logType, ip, affectedUser, timestamp, message, signature);
     }
 
     public static SystemLogEntry fromCSV(CSVRecord entry) {
-        return new SystemLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2),LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+        return new SystemLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
     }
 
     public boolean equals(Object object) {

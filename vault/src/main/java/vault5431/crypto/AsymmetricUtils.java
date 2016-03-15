@@ -20,7 +20,7 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public class AsymmetricUtils {
 
-    private static final int KEY_SIZE = 4096;
+    public static final int KEY_SIZE = 4096;
 
     private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
         return Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");

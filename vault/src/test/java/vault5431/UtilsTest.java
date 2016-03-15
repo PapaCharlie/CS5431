@@ -29,7 +29,7 @@ public class UtilsTest extends VaultTest {
 
     @Test
     public void fileTest() throws Exception {
-        File tmpFile = File.createTempFile("test", null);
+        File tmpFile = getTempFile("test");
         String line1 = "Hello! I'm a test";
         String line2 = "Hello! I'm another test";
         FileUtils.append(tmpFile, new Base64String(line1));
@@ -53,7 +53,7 @@ public class UtilsTest extends VaultTest {
 
     @Test
     public void testBase64StringSave() throws Exception {
-        File tmp = getTempFile("b64", null);
+        File tmp = getTempFile("b64");
         Base64String base64String = new Base64String("test");
         base64String.saveToFile(tmp);
         Base64String loadedb64 = Base64String.loadFromFile(tmp)[0];

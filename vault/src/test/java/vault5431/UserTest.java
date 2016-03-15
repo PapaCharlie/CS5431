@@ -1,8 +1,8 @@
 package vault5431;
 
 import org.junit.Test;
-import vault5431.io.Base64String;
 import vault5431.logging.LogEntry;
+import vault5431.users.User;
 
 import java.util.Arrays;
 

@@ -1,5 +1,6 @@
 package vault5431.crypto;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import vault5431.PasswordGenerator;
 import vault5431.VaultTest;
@@ -57,7 +58,7 @@ public class CryptoTest extends VaultTest {
     @Test
     public void testSecretKeySaveToFile() throws Exception {
         SecretKey key = SymmetricUtils.getNewKey();
-        File secretKeyFile = getTempFile("key", null);
+        File secretKeyFile = getTempFile("key");
         SymmetricUtils.saveSecretKey(secretKeyFile, key, keys.getPublic());
         SecretKey loadedKey = SymmetricUtils.loadSecretKey(secretKeyFile, keys.getPrivate());
         assertArrayEquals(key.getEncoded(), loadedKey.getEncoded());
@@ -73,10 +74,10 @@ public class CryptoTest extends VaultTest {
 
     @Test
     public void testPrivateKeySaveToFile() throws Exception {
-        File privKeyFile = getTempFile("id_rsa", null);
-        File privKeyIVFile = getTempFile("ivFile", null);
+        File privKeyFile = getTempFile("id_rsa");
+        File privKeyIVFile = getTempFile("ivFile");
         String password = PasswordGenerator.generatePassword(20);
-        File passwordFile = getTempFile("password", null);
+        File passwordFile = getTempFile("password");
         PasswordUtils.savePassword(passwordFile, password);
         AsymmetricUtils.savePrivateKey(privKeyFile, privKeyIVFile, keys.getPrivate(), password);
         PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, privKeyIVFile, password, passwordFile);
@@ -91,6 +92,16 @@ public class CryptoTest extends VaultTest {
             assertEquals(20, password.length());
             Base64String hashedPassword = PasswordUtils.hashPassword(password);
             assertTrue(PasswordUtils.verifyHashedPassword(hashedPassword, password));
+        }
+    }
+
+    @Ignore
+    public void testMaxRSALength() throws Exception {
+        String s = "";
+        while (s.length() < AsymmetricUtils.KEY_SIZE) {
+            System.out.printf("String length: %d\n", s.length());
+            AsymmetricUtils.encrypt(s.getBytes(), keys.getPublic());
+            s += "=";
         }
     }
 

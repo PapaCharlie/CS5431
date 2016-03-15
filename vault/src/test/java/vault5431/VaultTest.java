@@ -2,6 +2,8 @@ package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.AfterClass;
+import vault5431.users.User;
+import vault5431.users.UserManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,10 +37,10 @@ public class VaultTest {
 
     public static User getTempUser(String password) throws Exception {
         String username = PasswordGenerator.generatePassword(10);
-        while (User.userExists(username)) {
+        while (UserManager.userExists(username)) {
             username = PasswordGenerator.generatePassword(10);
         }
-        User user = User.create(username, password);
+        User user = UserManager.create(username, password);
         createdUsers.push(username);
         return user;
     }
@@ -46,7 +48,7 @@ public class VaultTest {
     @AfterClass
     public static void deleteCreatedUsers() throws Exception {
         for (String user : createdUsers) {
-            deleteDirectory(new File(User.getHome(user)));
+            deleteDirectory(new File(UserManager.getHome(user)));
         }
     }
 

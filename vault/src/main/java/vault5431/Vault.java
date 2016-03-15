@@ -17,7 +17,7 @@ import java.util.Map;
 import static spark.Spark.*;
 
 
-class Vault {
+public class Vault {
 
     public static final File home = new File(java.lang.System.getProperty("user.home") + File.separator + ".vault5431");
 
