@@ -8,7 +8,7 @@ public enum LogType {
 
     @Override
     public String toString() {
-        switch(this) {
+        switch (this) {
             case INFO:
                 return "INFO:";
             case DEBUG:
@@ -20,4 +20,22 @@ public enum LogType {
         }
         return super.toString();
     }
+
+    public static LogType fromString(String t) {
+        switch (t) {
+            case "INFO:":
+                return INFO;
+            case "DEBUG:":
+                return DEBUG;
+            case "WARNING:":
+                return WARNING;
+            case "ERROR:":
+                return ERROR;
+            default:
+                return null;
+        }
+
+    }
+
+
 }

@@ -1,6 +1,4 @@
-package vault5431.crypto;
-
-import vault5431.FileUtils;
+package vault5431.io;
 
 import java.io.File;
 import java.io.IOException;

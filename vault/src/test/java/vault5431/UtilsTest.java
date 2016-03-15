@@ -2,7 +2,8 @@ package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
 import org.junit.Test;
-import vault5431.crypto.Base64String;
+import vault5431.io.Base64String;
+import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 
 import java.io.File;

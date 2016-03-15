@@ -1,9 +1,14 @@
 package vault5431;
 
+import org.apache.commons.csv.CSVRecord;
 import vault5431.crypto.AsymmetricUtils;
-import vault5431.crypto.Base64String;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SymmetricUtils;
+import vault5431.io.Base64String;
+import vault5431.io.FileUtils;
+import vault5431.logging.CSVUtils;
+import vault5431.logging.LogType;
+import vault5431.logging.UserLogEntry;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -13,9 +18,12 @@ import java.io.IOError;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static vault5431.Sys.NO_IP;
+import static vault5431.Sys.SYS;
 import static vault5431.Vault.home;
 import static vault5431.crypto.HashUtils.hash256;
 
@@ -25,6 +33,7 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public final class User {
 
+    public static final String NO_USER = "NOUSER";
     private static final Object mapLock = new Object();
     private static Map<Base64String, User> users = new HashMap<>();
 
@@ -156,30 +165,86 @@ public final class User {
         }
     }
 
-    public void appendToLog(byte[] data)
-            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        appendToLog(AsymmetricUtils.encrypt(data, loadPublicCryptoKey()));
-    }
-
-    public void appendToLog(Base64String data)
+    public void appendToLog(UserLogEntry entry)
             throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
         synchronized (logFile) {
-            FileUtils.append(logFile, data);
+            FileUtils.append(logFile, new Base64String(entry.toCSV()));
         }
     }
 
-    public String[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public void error(String ip, String affectedUser, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void error(String ip, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void error(String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void warning(String ip, String affectedUser, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void warning(String ip, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void warning(String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.WARNING, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void info(String ip, String affectedUser, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void info(String ip, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void info(String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void debug(String ip, String affectedUser, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void debug(String ip, String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.DEBUG, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public void debug(String message)
+            throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+        appendToLog(new UserLogEntry(LogType.DEBUG, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
+    public UserLogEntry[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         synchronized (logFile) {
             Base64String[] encryptedEntries = FileUtils.read(logFile);
-            String[] decryptedEntries = new String[encryptedEntries.length];
+            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
             for (int i = 0; i < encryptedEntries.length; i++) {
-                decryptedEntries[i] = encryptedEntries[i].decodeString();
+                CSVRecord record = CSVUtils.parseRecord(encryptedEntries[i].decodeString()).getRecords().get(0);
+                decryptedEntries[i] = UserLogEntry.fromCSV(record);
             }
             return decryptedEntries;
         }
     }
 
-    public String[] loadLog(String password) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public UserLogEntry[] loadLog(String password) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 //        PrivateKey privateKey = loadPrivateCryptoKey(password);
 //        synchronized (logFile) {
 //            Base64String[] encryptedEntries = FileUtils.read(logFile);

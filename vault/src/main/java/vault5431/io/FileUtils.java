@@ -1,6 +1,7 @@
-package vault5431;
+package vault5431.io;
 
-import vault5431.crypto.Base64String;
+import vault5431.Sys;
+import vault5431.io.Base64String;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -17,7 +18,7 @@ public class FileUtils {
             while ((line = br.readLine()) != null) {
                 lines.add(Base64String.fromBase64(line.trim()));
             }
-            System.out.printf("Read %d lines from %s. \n", lines.size(), file.getCanonicalFile());
+//            Sys.debug(String.format("Read %d lines from %s. \n", lines.size(), file.getCanonicalFile()));
             while (lines.getFirst().decodeString().length() == 0) {
                 lines.removeFirst();
             }
@@ -33,7 +34,7 @@ public class FileUtils {
             for (byte b : data) {
                 out.write(b);
             }
-            System.out.printf("Wrote %d bytes to %s. \n", data.length, file.getCanonicalFile());
+//            Sys.debug(String.format("Wrote %d bytes to %s. \n", data.length, file.getCanonicalFile()));
             out.flush();
         }
     }

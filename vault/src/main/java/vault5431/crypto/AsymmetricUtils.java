@@ -1,5 +1,7 @@
 package vault5431.crypto;
 
+import vault5431.io.Base64String;
+
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;

@@ -1,5 +1,7 @@
 package vault5431.crypto;
 
+import vault5431.io.Base64String;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;

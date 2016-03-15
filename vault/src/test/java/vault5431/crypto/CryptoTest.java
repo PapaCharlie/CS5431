@@ -3,6 +3,7 @@ package vault5431.crypto;
 import org.junit.Test;
 import vault5431.PasswordGenerator;
 import vault5431.VaultTest;
+import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
