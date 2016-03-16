@@ -74,10 +74,18 @@
     </tbody>
   </table>
 </div> -->
+<#if storedpasswords?has_content>
+    <#list storedpasswords as password>
+        <li>${password.name}</li>
+    </#list>
+</#if>
 
-<#list storedpasswords as password>
-<li>${password.name}</li>
-</#list>
+
+<#--<#list storedpasswords as password>-->
+<#--<li>${password.name}</li>-->
+<#--<#else>-->
+
+<#--</#list>-->
 
 <div class="col-sm-9 col-md-10 newpass">
     <form method="post" action="/savepassword" class="form-signin">

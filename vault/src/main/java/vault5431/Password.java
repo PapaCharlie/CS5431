@@ -5,7 +5,9 @@ import org.apache.commons.csv.CSVRecord;
 import vault5431.logging.CSVUtils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Password class. Represents an entry in the password vault.
@@ -73,6 +75,15 @@ public class Password {
             passwords[i] = fromCSV(records.get(i));
         }
         return passwords;
+    }
+
+    public Map<String, String> toMap() {
+        Map<String, String> hash = new HashMap<>();
+        hash.put("name", name);
+        hash.put("website", website);
+        hash.put("username", username);
+        hash.put("password", password);
+        return hash;
     }
 
     public String getName() {
