@@ -160,6 +160,10 @@ public final class User {
         appendToLog(new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
 
+    public void info(String message, String ip) {
+        appendToLog(new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
     public void info(String message, User affectedUser) {
         appendToLog(new UserLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
     }

@@ -23,3 +23,5 @@ initialize := {
 }
 
 unmanagedBase := baseDirectory.value / "lib"
+
+mainClass in assembly := Some("vault5431.Vault")
