@@ -95,7 +95,7 @@
     </form>
 </div>
 
-<div class="col-sm-9 col-md-10 col-md-offset-2">
+<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
     <h4 class="storedpasswords-heading">Stored Accounts</h4>
     <div class="panel-group" id="accordion">
         <div class="panel panel-default">

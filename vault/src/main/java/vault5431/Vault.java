@@ -104,10 +104,9 @@ public class Vault {
 
         post("/savepassword", (req, res) -> {
             Sys.debug(req.ip(), "Serving /savepassword.");
-//            Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("saving new password");
             String w = req.queryParams("web");
-            demoUser.info("Saved Password from "+w); //type check this. incorrect types
+            demoUser.info("Saved Password from "+w, demoUser); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });
@@ -121,17 +120,15 @@ public class Vault {
             }
             System.out.println("cookie "+p);
             attributes.put("randompassword", p);
-
             java.lang.System.out.println("generator");
+            res.removeCookie("randompass");
             return new ModelAndView(attributes, "generator.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         get("/generate", (req, res) -> {
             Sys.debug(req.ip(), "Serving /savepassword.");
-            Map<String, Object> attributes = new HashMap<>();
             String len = req.queryParams("length");
-            PasswordGenerator pg = new PasswordGenerator();
-            String pass = pg.generatePassword(Integer.parseInt(len));
+            String pass = PasswordGenerator.generatePassword(Integer.parseInt(len));
             res.cookie("randompass", pass);
             res.redirect("/generator");
             return "";
@@ -142,31 +139,13 @@ public class Vault {
             java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
 
-            String[] mylist = {"1", "2", "3"};
+            List<String[]> loglst = new ArrayList<String[]>();
 
-            List<UserLogEntry> ule = Arrays.asList(demoUser.loadLog());
-            List<String> list2 = Arrays.asList(mylist);
-
-            attributes.put("list", mylist);
-//            attributes.put("userloglist", ule);
-            attributes.put("big", true);
-            List<String[]> lst = new ArrayList<String[]>();
-            int count = 0;
             for (UserLogEntry u : demoUser.loadLog()) {
                 System.out.println(u);
-                lst.add(u.asArray());
-                attributes.put("log" + count, u);
-                count++;
+                loglst.add(u.asArray());
             }
-            attributes.put("userloglist", lst);
-//            StringWriter out = new StringWriter();
-//            Configuration cfg = new Configuration();
-//            cfg.setClassForTemplateLoading( FreemarkerUtils.class, "/templates" );
-//            cfg.setObjectWrapper(new DefaultObjectWrapper());
-//            Template temp = cfg.getTemplate("userlog.ftl");
-//            temp.process(attributes, out);
-//            return "val";
-//        });
+            attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
     }

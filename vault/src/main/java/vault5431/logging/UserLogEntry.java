@@ -48,7 +48,7 @@ public class UserLogEntry extends LogEntry {
     }
 
     public String[] asArray() {
-        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature};
+        return new String[]{logType.toString(), ip, timestamp.toString(), message};
     }
 
     public String toCSV() throws IOException {
