@@ -13,7 +13,7 @@
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
         <li><a href="/vault">Vault</a></li>
-        <li><a href="">Password Generator</a></li>
+        <li><a href="/generator">Password Generator</a></li>
         <li><a href="">Settings</a></li>
         <li><a href="">Preferences</a></li>
         <li><a href="">Logs?</a></li>

@@ -112,6 +112,31 @@ public class Vault {
             return "";
         });
 
+        get("/generator", (req, res) -> {
+            Sys.debug(req.ip(), "Serving /password generator.");
+            Map<String, Object> attributes = new HashMap<>();
+            String p = req.cookie("randompass");
+            if (p == null){
+                p = "";
+            }
+            System.out.println("cookie "+p);
+            attributes.put("randompassword", p);
+
+            java.lang.System.out.println("generator");
+            return new ModelAndView(attributes, "generator.ftl");
+        }, new FreeMarkerEngine(freeMarkerConfiguration));
+
+        get("/generate", (req, res) -> {
+            Sys.debug(req.ip(), "Serving /savepassword.");
+            Map<String, Object> attributes = new HashMap<>();
+            String len = req.queryParams("length");
+            PasswordGenerator pg = new PasswordGenerator();
+            String pass = pg.generatePassword(Integer.parseInt(len));
+            res.cookie("randompass", pass);
+            res.redirect("/generator");
+            return "";
+        });
+
         get("/log", (req, res) -> {
             Sys.debug(req.ip(), "Serving /log.");
             java.lang.System.out.println("user log");
