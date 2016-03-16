@@ -84,8 +84,15 @@ public class UserManager {
         File homedir = user.getHome();
         if (homedir.mkdir()) {
             Sys.debug("Created user home directory.", user);
-            PasswordUtils.savePassword(user.passwordHashFile, password);
+            if (!user.vaultFile.createNewFile()) {
+                Sys.error("Could not create vault file!.", user);
+                return null;
+            } else {
+                Sys.info("Created vault file.", user);
+            }
 
+            PasswordUtils.savePassword(user.passwordHashFile, password);
+            
             Sys.debug("Generating signing keypair.", user);
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
             AsymmetricUtils.savePrivateKey(user.privSigningKeyFile, user.privSigningIVFile, signingKeys.getPrivate(), password);
