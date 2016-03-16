@@ -11,7 +11,8 @@ import java.util.List;
 /**
  * Created by CYJ on 3/14/16.
  */
-public class UserLogEntry implements LogEntry {
+public class UserLogEntry extends LogEntry {
+
     private LogType logType;
     private String ip;
     private String affectedUser;
@@ -29,6 +30,11 @@ public class UserLogEntry implements LogEntry {
         this.signature = signature;
     }
 
+    public UserLogEntry(LogType logType, String ip, User affectedUser,
+                        LocalDateTime timestamp, String message, String signature) {
+        this(logType, ip, affectedUser.getShortHash(), timestamp, message, signature);
+    }
+
     public boolean checkSignature(String signature) {
         return signature.equals(this.signature);
     }
@@ -36,13 +42,13 @@ public class UserLogEntry implements LogEntry {
     @Override
     public String toString() {
         StringBuilder logString = new StringBuilder();
-        return logString.append(logType).append(" ").append(ip)
+        return logString.append("[").append(logType).append("]").append(" ").append(ip)
                 .append(" ").append(affectedUser).append(" ").append(timestamp)
                 .append(" ").append(message).append(" ").toString();
     }
 
     public String[] asArray() {
-        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature};
+        return new String[]{logType.toString(), ip, timestamp.toString(), message};
     }
 
     public String toCSV() throws IOException {

@@ -48,7 +48,7 @@ public class VaultTest {
     @AfterClass
     public static void deleteCreatedUsers() throws Exception {
         for (String user : createdUsers) {
-            deleteDirectory(new File(UserManager.getHome(user)));
+            deleteDirectory(UserManager.getHome(user));
         }
     }
 

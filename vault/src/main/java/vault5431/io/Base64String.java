@@ -54,7 +54,7 @@ public class Base64String {
         return Base64.getUrlDecoder().decode(b64String);
     }
 
-    public int size() {
+    public int length() {
         return b64String.length();
     }
 

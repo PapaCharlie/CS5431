@@ -6,6 +6,7 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.SystemLogEntry;
+import vault5431.users.User;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,59 +21,81 @@ public class Sys {
 
     public static final String SYS = "SYS";
     public static final String NO_IP = "0.0.0.0";
-    public static final File logFile = new File(home + File.separator + "log");
+    public static final File logFile = new File(home, "log");
 
-    public static void error(String ip, String affectedUser, String message) throws IOException {
+    public static void error(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
 
-    public static void error(String ip, String message) throws IOException {
+    public static void error(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void error(String message) throws IOException {
+    public static void error(String message, User affectedUser) {
+        appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public static void error(String message) {
         appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void warning(String ip, String affectedUser, String message) throws IOException {
+    public static void warning(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
 
-    public static void warning(String ip, String message) throws IOException {
+    public static void warning(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.WARNING, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void warning(String message) throws IOException {
+    public static void warning(String message, User affectedUser) {
+        appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public static void warning(String message) {
         appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void info(String ip, String affectedUser, String message) throws IOException {
+    public static void info(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
 
-    public static void info(String ip, String message) throws IOException {
+    public static void info(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.INFO, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void info(String message) throws IOException {
+    public static void info(String message, User affectedUser) {
+        appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public static void info(String message) {
         appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void debug(String ip, String affectedUser, String message) throws IOException {
+    public static void debug(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
 
-    public static void debug(String ip, String message) throws IOException {
+    public static void debug(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void debug(String message) throws IOException {
+    public static void debug(String message, User affectedUser) {
+        appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public static void debug(String message) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
-    public static void appendToLog(SystemLogEntry entry) throws IOException {
+
+    public static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
-            FileUtils.append(logFile, new Base64String(entry.toCSV()));
+            try {
+                FileUtils.append(logFile, new Base64String(entry.toCSV()));
+            } catch (IOException err) {
+                err.printStackTrace();
+                System.err.println("[WARNING] Failed to log as System! Continuing.");
+            }
         }
     }
 
