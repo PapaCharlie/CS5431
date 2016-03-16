@@ -69,7 +69,7 @@ public final class User {
     }
 
     public File getHome() {
-        return new File(home , hash.getB64String());
+        return new File(home, hash.getB64String());
     }
 
     public PublicKey loadPublicSigningKey() throws IOException, InvalidKeySpecException {
@@ -121,6 +121,7 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
+                System.out.println(entry.toString());
                 FileUtils.append(logFile, new Base64String(entry.toCSV()));
             } catch (IOException err) {
                 err.printStackTrace();
@@ -140,12 +141,20 @@ public final class User {
         appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
     }
 
+    public void error(String message, String ip) {
+        appendToLog(new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message, ""));
+    }
+
     public void error(String message) {
         appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
     }
 
     public void warning(String message, User affectedUser, String ip) {
         appendToLog(new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void warning(String message, String ip) {
+        appendToLog(new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message, ""));
     }
 
     public void warning(String message, User affectedUser) {
@@ -174,6 +183,10 @@ public final class User {
 
     public void debug(String message, User affectedUser, String ip) {
         appendToLog(new UserLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
+    }
+
+    public void debug(String message, String ip) {
+        appendToLog(new UserLogEntry(LogType.DEBUG, ip, NO_USER, LocalDateTime.now(), message, ""));
     }
 
     public void debug(String message, User affectedUser) {

@@ -103,8 +103,7 @@ public class Vault {
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         post("/savepassword", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /savepassword.");
-            java.lang.System.out.println("saving new password");
+            Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("web");
             demoUser.info("Saved Password from "+w, req.ip()); //type check this. incorrect types
             res.redirect("/vault");
@@ -112,7 +111,7 @@ public class Vault {
         });
 
         get("/generator", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /password generator.");
+            Sys.debug("Serving /password generator.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             String p = req.cookie("randompass");
             if (p == null){
@@ -126,7 +125,7 @@ public class Vault {
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         get("/generate", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /savepassword.");
+            Sys.debug("Serving /savepassword.", req.ip());
             String len = req.queryParams("length");
             String pass = PasswordGenerator.generatePassword(Integer.parseInt(len));
             res.cookie("randompass", pass);
@@ -135,7 +134,7 @@ public class Vault {
         });
 
         get("/log", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /log.");
+            Sys.debug("Serving /log.", req.ip());
             java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
 

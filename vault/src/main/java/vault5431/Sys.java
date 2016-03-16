@@ -91,6 +91,7 @@ public class Sys {
     public static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
             try {
+                System.out.println(entry.toString());
                 FileUtils.append(logFile, new Base64String(entry.toCSV()));
             } catch (IOException err) {
                 err.printStackTrace();
