@@ -74,6 +74,12 @@
     </tbody>
   </table>
 </div> -->
+<#if storedpasswords?has_content>
+    <#list storedpasswords as password>
+        <li>${password.name}</li>
+    </#list>
+</#if>
+
 
 <div>
 <#list storedpasswords as password>
