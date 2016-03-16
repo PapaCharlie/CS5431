@@ -52,6 +52,7 @@ public class Vault {
 
     private static final String demoUsername = "demoUser";
     private static final String demoPassword = "password";
+
     static {
         if (!UserManager.userExists(demoUsername)) {
             try {
@@ -63,6 +64,7 @@ public class Vault {
             }
         }
     }
+
     public static final User demoUser = UserManager.getUser(demoUsername);
 
     public static void main(String[] args) throws Exception {
@@ -74,21 +76,21 @@ public class Vault {
         Configuration freeMarkerConfiguration = new Configuration();
         freeMarkerConfiguration.setDirectoryForTemplateLoading(templateDir);
         get("/", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /.");
+            Sys.debug("Serving /.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("Here");
             return new ModelAndView(attributes, "login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         post("/authenticate", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /authenticate.");
+            Sys.debug("Serving /authenticate.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("authenticate login");
             return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
         get("/vault", (req, res) -> {
-            Sys.debug(req.ip(), "Serving /vault.");
+            Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("vault page");
             return new ModelAndView(attributes, "vault.ftl");

@@ -10,32 +10,31 @@ public enum LogType {
     public String toString() {
         switch (this) {
             case INFO:
-                return "INFO:";
+                return "INFO";
             case DEBUG:
-                return "DEBUG:";
+                return "DEBUG";
             case WARNING:
-                return "WARNING:";
+                return "WARNING";
             case ERROR:
-                return "ERROR:";
+                return "ERROR";
         }
         return super.toString();
     }
 
     public static LogType fromString(String t) {
         switch (t) {
-            case "INFO:":
+            case "INFO":
                 return INFO;
-            case "DEBUG:":
+            case "DEBUG":
                 return DEBUG;
-            case "WARNING:":
+            case "WARNING":
                 return WARNING;
-            case "ERROR:":
+            case "ERROR":
                 return ERROR;
             default:
                 return null;
         }
 
     }
-
 
 }
