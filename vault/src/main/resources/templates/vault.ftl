@@ -109,7 +109,9 @@
                 <div class="panel-body">
                     <div class="col-sm-4 col-md-4">myusername</div>
                     <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
+                    <form method="post" action="/changePassword">
+                    <button class="btn btn-warning" type="submit">Change password</button>
+                        </form>
                 </div>
             </div>
         </div>
@@ -125,7 +127,9 @@
                 <div class="panel-body">
                     <div class="col-sm-4 col-md-4">myusername</div>
                     <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
+                    <form method="post" action="/changePassword">
+                    <button class="btn btn-warning" type="submit">Change password</button>
+                    </form>
                 </div>
             </div>
         </div>

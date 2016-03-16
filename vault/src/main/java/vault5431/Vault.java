@@ -102,7 +102,7 @@ public class Vault {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             String message = "Action: Log In";
-            demoUser.info(message, demoUser, req.ip());
+            //demoUser.info(message, demoUser, req.ip());
             return new ModelAndView(attributes, "vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
@@ -130,6 +130,13 @@ public class Vault {
             Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("web");
             demoUser.info("Saved Password from " + w, req.ip()); //type check this. incorrect types
+            res.redirect("/vault");
+            return "";
+        });
+
+        post("/changePassword", (req, res)->{
+            Sys.debug("Serving /changePassword.", req.ip());
+            demoUser.info("Changing Password", req.ip()); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });
