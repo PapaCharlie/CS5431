@@ -157,12 +157,12 @@ public class Vault {
             java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
 
-            List<Map<String, String>> loglst = new ArrayList<Map<String, String>>();
+            List<Map<String, String>> loglst = new ArrayList<>();
 
             for (UserLogEntry u : demoUser.loadLog()) {
                 loglst.add(u.toMap());
-//                System.out.println(u.toMap());
             }
+
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
         }, freeMarkerEnfgine);

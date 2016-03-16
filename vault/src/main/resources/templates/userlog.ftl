@@ -36,11 +36,12 @@
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
-    <#list userloglist as entry>
+    <#list userloglist as log>
         <tr>
-            <#list entry as col>
-                <td>${col}</td>
-            </#list>
+            <td>${log.logType}</td>
+            <td>${log.ip}</td>
+            <td>${log.timestamp}</td>
+            <td>${log.message}</td>
         </tr>
     </#list>
     </table>
