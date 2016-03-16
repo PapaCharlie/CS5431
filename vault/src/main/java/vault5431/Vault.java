@@ -81,18 +81,20 @@ public class Vault {
         get("/", (req, res) -> {
             Sys.debug("Serving /.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
-            java.lang.System.out.println("Here");
-//            demoUser.appendToLog(new UserLogEntry(LogType.INFO, "some ip", "alicia", LocalDateTime.now(), "hi", "hi"));
             return new ModelAndView(attributes, "login.ftl");
         }, freeMarkerEnfgine);
 
         post("/authenticate", (req, res) -> {
             Sys.debug("Serving /authenticate.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            java.lang.System.out.println("authenticate login");
-
-            return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
-        }, freeMarkerEnfgine);
+            if (UserManager.userExists(req.queryParams("username"))){
+                System.out.println("exists");
+                res.redirect("/vault");
+            }
+            else{
+                res.redirect("/");
+            }
+            return "";
+        });
 
         get("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
