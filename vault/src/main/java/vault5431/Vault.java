@@ -24,7 +24,7 @@ import static spark.Spark.*;
 
 public class Vault {
 
-    public static final File home = new File(java.lang.System.getProperty("user.home") + File.separator + ".vault5431");
+    public static final File home = new File(java.lang.System.getProperty("user.home"), ".vault5431");
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -75,7 +75,7 @@ public class Vault {
         staticFileLocation("templates");
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
-        java.lang.System.out.println("Hosting at: https://localhost:5431");
+        System.out.println("Hosting at: https://localhost:5431");
         Configuration freeMarkerConfiguration = new Configuration();
         freeMarkerConfiguration.setDirectoryForTemplateLoading(templateDir);
 

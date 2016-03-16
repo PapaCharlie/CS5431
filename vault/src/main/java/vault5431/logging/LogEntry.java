@@ -23,4 +23,6 @@ public abstract class LogEntry {
 
     public abstract String toString();
 
+    public abstract String[] asArray();
+
 }

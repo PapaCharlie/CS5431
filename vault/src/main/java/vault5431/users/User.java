@@ -2,7 +2,6 @@ package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
-import vault5431.Sys;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
@@ -52,25 +51,25 @@ public final class User {
 
     protected User(Base64String hash) {
         this.hash = hash;
-        logFile = new File(getHome() + File.separator + "log");
-        privCryptoKeyfile = new File(getHome() + File.separator + "id_rsa.crypto");
-        privCryptoIVFile = new File(getHome() + File.separator + "iv.crypto");
-        pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
-        privSigningKeyFile = new File(getHome() + File.separator + "id_rsa.signing");
-        privSigningIVFile = new File(getHome() + File.separator + "iv.signing");
-        pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
-        vaultFile = new File(getHome() + File.separator + "vault");
-        passwordHashFile = new File(getHome() + File.separator + "password.hash");
-        signingKeyFile = new File(getHome() + File.separator + "signing.key");
-        cryptoKeyFile = new File(getHome() + File.separator + "crypto.key");
+        logFile = new File(getHome(), "log");
+        privCryptoKeyfile = new File(getHome(), "id_rsa.crypto");
+        privCryptoIVFile = new File(getHome(), "iv.crypto");
+        pubCryptoKeyFile = new File(privCryptoKeyfile, ".pub");
+        privSigningKeyFile = new File(getHome(), "id_rsa.signing");
+        privSigningIVFile = new File(getHome(), "iv.signing");
+        pubSigningKeyFile = new File(privSigningKeyFile, ".pub");
+        vaultFile = new File(getHome(), "vault");
+        passwordHashFile = new File(getHome(), "password.hash");
+        signingKeyFile = new File(getHome(), "signing.key");
+        cryptoKeyFile = new File(getHome(), "crypto.key");
     }
 
     public String getShortHash() {
-        return hash.getB64String().substring(10);
+        return hash.getB64String().substring(0, Integer.min(hash.length(), 10));
     }
 
-    public String getHome() {
-        return home + File.separator + hash.getB64String();
+    public File getHome() {
+        return new File(home , hash.getB64String());
     }
 
     public PublicKey loadPublicSigningKey() throws IOException, InvalidKeySpecException {
