@@ -31,7 +31,6 @@
         <tr>
             <th>Log Type</th>
             <th>IP</th>
-            <th>Affected User</th>
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
