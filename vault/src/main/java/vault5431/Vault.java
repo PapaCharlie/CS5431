@@ -107,8 +107,8 @@ public class Vault {
             String username = req.queryParams("username");
             //String user_ip = req.queryParams("ip");
             String message = "Action: Log In";
-            demoUser.appendToLog(new UserLogEntry(LogType.INFO,req.ip(),username,LocalDateTime.now(),message, "signature"));
-            for(int i=0; i < demoUser.loadLog().length; i++){
+            demoUser.appendToLog(new UserLogEntry(LogType.INFO, req.ip(), username, LocalDateTime.now(), message, "signature"));
+            for (int i = 0; i < demoUser.loadLog().length; i++) {
                 System.out.println(demoUser.loadLog()[i]);
             }
 
@@ -123,15 +123,10 @@ public class Vault {
             return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
-
-    }
-
-
-
         post("/savepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("web");
-            demoUser.info("Saved Password from "+w, req.ip()); //type check this. incorrect types
+            demoUser.info("Saved Password from " + w, req.ip()); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });
@@ -140,10 +135,10 @@ public class Vault {
             Sys.debug("Serving /password generator.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             String p = req.cookie("randompass");
-            if (p == null){
+            if (p == null) {
                 p = "";
             }
-            System.out.println("cookie "+p);
+            System.out.println("cookie " + p);
             attributes.put("randompassword", p);
             java.lang.System.out.println("generator");
             res.removeCookie("randompass");
@@ -174,5 +169,5 @@ public class Vault {
             return new ModelAndView(attributes, "userlog.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
     }
-
-
+    
+}
