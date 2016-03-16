@@ -22,7 +22,9 @@
 
 </div>
 <div class="page-header mainheader">
-    <h1>Vault 5431 <small>Your trusty password manager</small></h1>
+    <h1>Vault 5431
+        <small>Your trusty password manager</small>
+    </h1>
 </div>
 
 
@@ -34,50 +36,17 @@
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
-        <#--<tr>-->
-            <#--<td>Jill</td>-->
-            <#--<td>Smith</td>-->
-            <#--<td>50</td>-->
-        <#--</tr>-->
-        <#--<tr>-->
-            <#--<td>Eve</td>-->
-            <#--<td>Jackson</td>-->
-            <#--<td>94</td>-->
-        <#--</tr>-->
-        <#list userloglist as entry>
+    <#list userloglist as log>
         <tr>
-            <#list entry as col>
-                <td>${col}</td>
-            </#list>
+            <td>${log.logType}</td>
+            <td>${log.ip}</td>
+            <td>${log.timestamp}</td>
+            <td>${log.message}</td>
         </tr>
-        </#list>
+    </#list>
     </table>
 </div>
-<#--<li>${log0}</li>-->
-
-<#--<li>${log1}</li>-->
-<#--<li>${log2}</li>-->
-<#--<li>${log3}</li>-->
-<#--<li>${log4}</li>-->
-<#--&lt;#&ndash;${list[0]}&ndash;&gt;-->
-<#--<#if big>-->
-<#--say hi-->
-<#--</#if>-->
-
 
 </body>
-
-<#--<#list [1,2,3]>-->
-<#--<ul>-->
-    <#--<#items as x>-->
-        <#--<li>${x?index}</li>-->
-    <#--</#items>-->
-<#--</ul>-->
-<#--</#list>-->
-<#--<#list userloglist as entry>-->
-    <#--<#list entry as col>-->
-        <#--<li>${col}</li>-->
-    <#--</#list>-->
-<#--</#list>-->
 
 </html>

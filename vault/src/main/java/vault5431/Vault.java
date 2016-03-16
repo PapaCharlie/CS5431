@@ -1,24 +1,17 @@
 package vault5431;
 
 import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.SimpleHash;
-import freemarker.template.Template;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
-import vault5431.logging.LogType;
-import vault5431.logging.SystemLogEntry;
 import vault5431.logging.UserLogEntry;
 import vault5431.users.User;
 import vault5431.users.UserManager;
-import vault5431.logging.UserLogEntry;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.security.Security;
-import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -182,11 +175,12 @@ public class Vault {
             java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
 
-            List<String[]> loglst = new ArrayList<String[]>();
+            List<Map<String, String>> loglst = new ArrayList<>();
 
             for (UserLogEntry u : demoUser.loadLog()) {
-                loglst.add(u.asArray());
+                loglst.add(u.toMap());
             }
+
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
         }, freeMarkerEnfgine);
