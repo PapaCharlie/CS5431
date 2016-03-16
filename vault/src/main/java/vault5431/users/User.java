@@ -3,6 +3,7 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
 import vault5431.crypto.AsymmetricUtils;
+import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
@@ -98,6 +99,17 @@ public final class User {
         synchronized (vaultFile) {
             info(String.format("Adding password: %s.", password.getName()));
             FileUtils.append(vaultFile, new Base64String(password.toRecord()));
+        }
+    }
+
+    public boolean verifyPassword(String password) throws IOException {
+        synchronized (passwordHashFile) {
+            try {
+                return PasswordUtils.verifyPasswordInFile(passwordHashFile, password);
+            } catch (InvalidKeySpecException err) {
+                warning("Failed password verification attempt.");
+                return false;
+            }
         }
     }
 
