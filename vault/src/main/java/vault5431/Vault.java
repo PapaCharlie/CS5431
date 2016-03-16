@@ -167,7 +167,6 @@ public class Vault {
             List<String[]> loglst = new ArrayList<String[]>();
 
             for (UserLogEntry u : demoUser.loadLog()) {
-                System.out.println(u);
                 loglst.add(u.asArray());
             }
             attributes.put("userloglist", loglst);
