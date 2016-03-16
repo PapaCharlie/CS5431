@@ -83,7 +83,7 @@ public class Vault {
             Sys.debug("Serving /.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("Here");
-            demoUser.appendToLog(new UserLogEntry(LogType.INFO, "some ip", "alicia", LocalDateTime.now(), "hi", "hi"));
+//            demoUser.appendToLog(new UserLogEntry(LogType.INFO, "some ip", "alicia", LocalDateTime.now(), "hi", "hi"));
             return new ModelAndView(attributes, "login.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
@@ -107,7 +107,7 @@ public class Vault {
 //            Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("saving new password");
             String w = req.queryParams("web");
-            demoUser.appendToLog(new UserLogEntry(LogType.INFO, "some ip", demoUsername, LocalDateTime.now(), "Saved Password from "+w, "temp sig"));
+            demoUser.info("Saved Password from "+w); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });

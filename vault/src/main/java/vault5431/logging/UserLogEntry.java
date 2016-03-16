@@ -47,6 +47,10 @@ public class UserLogEntry extends LogEntry {
                 .append(" ").append(message).append(" ").toString();
     }
 
+    public String[] asArray() {
+        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature};
+    }
+
     public String toCSV() throws IOException {
         return CSVUtils.makeRecord(logType, ip, affectedUser, timestamp, message, signature);
     }
