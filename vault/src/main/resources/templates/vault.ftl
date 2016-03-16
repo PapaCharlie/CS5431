@@ -81,11 +81,13 @@
 </#if>
 
 
+<div>
 <#list storedpasswords as password>
-<li>${password.name}</li>
+    <li>${password.name}</li>
 <#else>
-Zerp!
+    Zerp!
 </#list>
+</div>
 
 <div class="col-sm-9 col-md-10 newpass">
     <form method="post" action="/savepassword" class="form-signin">
