@@ -45,7 +45,19 @@ public class Password {
         }
     }
 
-    private static Password fromRecord(CSVRecord entry) throws IOException {
+    public boolean equals(Object object) {
+        if (object instanceof Password) {
+            Password other = (Password) object;
+            return name.equals(other.name) &&
+                    website.equals(other.website) &&
+                    username.equals(other.username) &&
+                    password.equals(other.password);
+        } else {
+            return false;
+        }
+    }
+
+    public static Password fromCSV(CSVRecord entry) throws IOException {
         return new Password(
                 entry.get(0),
                 entry.get(1),
@@ -58,7 +70,7 @@ public class Password {
         List<CSVRecord> records = entries.getRecords();
         Password[] passwords = new Password[records.size()];
         for (int i = 0; i < passwords.length; i++) {
-            passwords[i] = fromRecord(records.get(i));
+            passwords[i] = fromCSV(records.get(i));
         }
         return passwords;
     }

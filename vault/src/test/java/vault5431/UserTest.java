@@ -6,19 +6,29 @@ import vault5431.users.User;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * Tests correct instantiation of User.
  */
 public class UserTest extends VaultTest {
 
+    static String username = PasswordGenerator.generatePassword(10);
+    static String password = PasswordGenerator.generatePassword(10);
+    static User user;
+
+    static {
+        try {
+            user = getTempUser(username);
+        } catch (Exception err) {
+            err.printStackTrace();
+            System.out.println("Could not create temp user!");
+            System.exit(1);
+        }
+    }
+
     @Test
     public void testUserCreation() throws Exception {
-        String password = PasswordGenerator.generatePassword(10);
-        User user = getTempUser(password);
-        assertNotNull(user);
         user.loadPrivateCryptoKey(password);
         user.loadPublicCryptoKey();
         user.loadPrivateSigningKey(password);
@@ -27,6 +37,16 @@ public class UserTest extends VaultTest {
         user.debug("I'm another log entry!");
         LogEntry[] loadedLog = user.loadLog(password);
         System.out.println(Arrays.toString(loadedLog));
+    }
+
+    @Test
+    public void testLoadPasswords() throws Exception {
+        String testPassword = PasswordGenerator.generatePassword(10);
+        Password password = new Password("Test", "www.test.com", username, "password!");
+        user.addPassword(password);
+        Password[] passwords = user.loadPasswords();
+        assertTrue(passwords.length > 0);
+        assertTrue(password.equals(passwords[0]));
     }
 
 }

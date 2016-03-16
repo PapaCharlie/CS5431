@@ -33,6 +33,7 @@ public class FileUtils {
             }
 //            Sys.debug(String.format("Wrote %d bytes to %s. \n", data.length, file.getCanonicalFile()));
             out.flush();
+            out.close();
         }
     }
 

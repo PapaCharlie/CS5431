@@ -6,6 +6,8 @@ import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 import vault5431.logging.LogType;
 import vault5431.logging.SystemLogEntry;
+import vault5431.users.User;
+import vault5431.users.UserManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +49,21 @@ public class Vault {
             }
         }
     }
+
+    private static final String demoUsername = "demoUser";
+    private static final String demoPassword = "password";
+    static {
+        if (!UserManager.userExists(demoUsername)) {
+            try {
+                UserManager.create(demoUsername, demoPassword);
+            } catch (Exception err) {
+                err.printStackTrace();
+                System.err.println("Could not create demo user!");
+                System.exit(1);
+            }
+        }
+    }
+    public static final User demoUser = UserManager.getUser(demoUsername);
 
     public static void main(String[] args) throws Exception {
         File templateDir = new File(Vault.class.getResource("/templates").getFile());

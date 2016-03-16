@@ -1,6 +1,7 @@
 package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
+import vault5431.Password;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
@@ -38,7 +39,7 @@ public final class User {
     public final File privSigningKeyFile;
     public final File privSigningIVFile;
     public final File pubSigningKeyFile;
-    public final File passwordVaultFile;
+    public final File vaultFile;
     public final File passwordHashFile;
     public final File signingKeyFile;
     public final File cryptoKeyFile;
@@ -57,7 +58,7 @@ public final class User {
         privSigningKeyFile = new File(getHome() + File.separator + "id_rsa.signing");
         privSigningIVFile = new File(getHome() + File.separator + "iv.signing");
         pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
-        passwordVaultFile = new File(getHome() + File.separator + "vault");
+        vaultFile = new File(getHome() + File.separator + "vault");
         passwordHashFile = new File(getHome() + File.separator + "password.hash");
         signingKeyFile = new File(getHome() + File.separator + "signing.key");
         cryptoKeyFile = new File(getHome() + File.separator + "crypto.key");
@@ -86,6 +87,23 @@ public final class User {
             throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
         synchronized (privCryptoKeyfile) {
             return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, privCryptoIVFile, password, passwordHashFile);
+        }
+    }
+
+    public void addPassword(Password newPassword) throws IOException {
+        synchronized (vaultFile) {
+            FileUtils.append(vaultFile, new Base64String(newPassword.toRecord()));
+        }
+    }
+
+    public Password[] loadPasswords() throws IOException {
+        synchronized (vaultFile) {
+            Base64String[] encodedPasswords = FileUtils.read(vaultFile);
+            Password[] passwords = new Password[encodedPasswords.length];
+            for (int i = 0; i < encodedPasswords.length; i++) {
+                passwords[i] = Password.fromCSV(CSVUtils.parseRecord(encodedPasswords[i].decodeString()).getRecords().get(0));
+            }
+            return passwords;
         }
     }
 

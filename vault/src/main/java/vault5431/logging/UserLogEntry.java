@@ -1,9 +1,12 @@
 package vault5431.logging;
 
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import vault5431.users.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Created by CYJ on 3/14/16.
@@ -49,6 +52,17 @@ public class UserLogEntry implements LogEntry {
     public static UserLogEntry fromCSV(CSVRecord entry) {
         return new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
     }
+
+    public static UserLogEntry[] fromCSV(CSVParser entries) throws IOException {
+        List<CSVRecord> records = entries.getRecords();
+        UserLogEntry[] parsedEntries = new UserLogEntry[records.size()];
+        for (int i = 0; i < parsedEntries.length; i++) {
+            CSVRecord entry = records.get(i);
+            parsedEntries[i] = new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+        }
+        return parsedEntries;
+    }
+
 
     public boolean equals(Object object) {
         if (object instanceof UserLogEntry) {
