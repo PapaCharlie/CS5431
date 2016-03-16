@@ -24,7 +24,7 @@
   <h2 class="login-header">Log in</h2>
 
 
-    <form  action= "/vault" id="form" class="login-container"   method="post">
+    <form action= "/authenticate" method="post" id="form" class="login-container">
         <p><input type="text" name="username" placeholder="Username"></p>
         <p><input type="password" name="password" placeholder="Password"></p>
         <input type="hidden" name="ip">
