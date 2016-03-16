@@ -2,6 +2,7 @@ package vault5431;
 
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.SimpleHash;
 import freemarker.template.Template;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import spark.ModelAndView;
@@ -103,8 +104,23 @@ public class Vault {
         get("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
-            String message = "Action: Log In";
-            demoUser.info(message, demoUser, req.ip());
+            Password[] plist = demoUser.loadPasswords();
+
+            List<Map<String, String>> listofmaps = new ArrayList<>();
+
+            for(Password p: plist){
+                Map<String, String> passhash = new HashMap<String, String>(){
+                    {
+                        put("name", p.getName());
+                        put("website", p.getWebsite());
+                        put("username", p.getUsername());
+                        put("password", p.getPassword());
+                    }
+                };
+                listofmaps.add(passhash);
+            }
+
+            attributes.put("storedpasswords", listofmaps);
             return new ModelAndView(attributes, "vault.ftl");
         }, freeMarkerEnfgine);
 
@@ -131,6 +147,8 @@ public class Vault {
         post("/savepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("web");
+            Password p = new Password(w, req.queryParams("url"), req.queryParams("username"), req.queryParams("password"));
+            demoUser.addPassword(p);
             demoUser.info("Saved Password from " + w, req.ip()); //type check this. incorrect types
             res.redirect("/vault");
             return "";
@@ -167,7 +185,6 @@ public class Vault {
             List<String[]> loglst = new ArrayList<String[]>();
 
             for (UserLogEntry u : demoUser.loadLog()) {
-                System.out.println(u);
                 loglst.add(u.asArray());
             }
             attributes.put("userloglist", loglst);
