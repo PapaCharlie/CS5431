@@ -11,6 +11,7 @@ import vault5431.logging.SystemLogEntry;
 import vault5431.logging.UserLogEntry;
 import vault5431.users.User;
 import vault5431.users.UserManager;
+import vault5431.logging.UserLogEntry;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +19,7 @@ import java.io.StringWriter;
 import java.security.Security;
 import java.time.LocalDateTime;
 import java.util.*;
+
 
 import static spark.Spark.*;
 
@@ -71,6 +73,7 @@ public class Vault {
     public static final User demoUser = UserManager.getUser(demoUsername);
 
     public static void main(String[] args) throws Exception {
+        System.out.println(home);
         File templateDir = new File(Vault.class.getResource("/templates").getFile());
         staticFileLocation("templates");
         port(5431);
@@ -95,12 +98,35 @@ public class Vault {
             return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
-        get("/vault", (req, res) -> {
+        post("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("vault page");
+            //This is just a test for now.
+
+            String username = req.queryParams("username");
+            //String user_ip = req.queryParams("ip");
+            String message = "Action: Log In";
+            demoUser.appendToLog(new UserLogEntry(LogType.INFO,req.ip(),username,LocalDateTime.now(),message, "signature"));
+            for(int i=0; i < demoUser.loadLog().length; i++){
+                System.out.println(demoUser.loadLog()[i]);
+            }
+
+
             return new ModelAndView(attributes, "vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
+
+        post("/genPasswordLog", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            String user_ip = req.queryParams("ip");
+            System.out.println(user_ip);
+            return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
+        }, new FreeMarkerEngine(freeMarkerConfiguration));
+
+
+    }
+
+
 
         post("/savepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
@@ -149,4 +175,4 @@ public class Vault {
         }, new FreeMarkerEngine(freeMarkerConfiguration));
     }
 
-}
+
