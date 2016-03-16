@@ -107,7 +107,7 @@ public class Vault {
 //            Map<String, Object> attributes = new HashMap<>();
             java.lang.System.out.println("saving new password");
             String w = req.queryParams("web");
-            demoUser.info("Saved Password from "+w); //type check this. incorrect types
+            demoUser.info("Saved Password from "+w, null, req.ip()); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });
