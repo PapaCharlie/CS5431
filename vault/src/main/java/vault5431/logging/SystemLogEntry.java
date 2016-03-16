@@ -2,6 +2,7 @@ package vault5431.logging;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import vault5431.users.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -10,7 +11,7 @@ import java.util.List;
 /**
  * Created by CYJ on 3/14/16.
  */
-public class SystemLogEntry implements LogEntry {
+public class SystemLogEntry extends LogEntry {
     private LogType logType;
     private String ip;
     private String affectedUser;
@@ -28,6 +29,11 @@ public class SystemLogEntry implements LogEntry {
         this.signature = signature;
     }
 
+    public SystemLogEntry(LogType logType, String ip, User affectedUser,
+                          LocalDateTime timestamp, String message, String signature) {
+        this(logType, ip, affectedUser.getShortHash(), timestamp, message, signature);
+    }
+
     public boolean checkSignature(String signature) {
         return signature.equals(this.signature);
     }
@@ -35,14 +41,9 @@ public class SystemLogEntry implements LogEntry {
     @Override
     public String toString() {
         StringBuilder logString = new StringBuilder();
-        return logString.append(logType).append(" ").append(affectedUser)
+        return logString.append("[").append(logType).append("]").append(" ").append(affectedUser)
                 .append(" ").append(timestamp).append(" ")
                 .append(message).append(" ").toString();
-    }
-
-    public String[] asArray() {
-        String[] csvArray = {logType.toString(), affectedUser, timestamp.toString(), message, signature};
-        return csvArray;
     }
 
     public String toCSV() throws IOException {
