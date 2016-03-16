@@ -103,15 +103,7 @@ public class Vault {
             List<Map<String, String>> listofmaps = new ArrayList<>();
 
             for(Password p: plist){
-                Map<String, String> passhash = new HashMap<String, String>(){
-                    {
-                        put("name", p.getName());
-                        put("website", p.getWebsite());
-                        put("username", p.getUsername());
-                        put("password", p.getPassword());
-                    }
-                };
-                listofmaps.add(passhash);
+                listofmaps.add(p.toMap());
             }
 
             attributes.put("storedpasswords", listofmaps);

@@ -30,10 +30,10 @@
 </div>
 
 
-
-
 <div class="page-header mainheader">
-    <h1>Vault 5431 <small>Your trusty password manager</small></h1>
+    <h1>Vault 5431
+        <small>Your trusty password manager</small>
+    </h1>
 </div>
 
 <!-- <div class="col-sm-9 col-md-10 sidebar">
@@ -74,10 +74,20 @@
     </tbody>
   </table>
 </div> -->
+<#if storedpasswords?has_content>
+    <#list storedpasswords as password>
+        <li>${password.name}</li>
+    </#list>
+</#if>
 
+
+<div>
 <#list storedpasswords as password>
-<li>${password.name}</li>
+    <li>${password.name}</li>
+<#else>
+    Zerp!
 </#list>
+</div>
 
 <div class="col-sm-9 col-md-10 newpass">
     <form method="post" action="/savepassword" class="form-signin">
@@ -85,9 +95,11 @@
         <input type="text" name="web" class="form-control" placeholder="Website Name" required="" autofocus="">
         <input type="text" name="url" id="url" class="form-control" placeholder="URL" required="" autofocus="">
         <!-- <label for="inputEmail" class="sr-only">Email address</label> -->
-        <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required="" autofocus="">
+        <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required=""
+               autofocus="">
         <!-- <label for="inputPassword" class="sr-only">Password</label> -->
-        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password"
+               required="">
         <!-- <div class="checkbox">
           <label>
             <input type="checkbox" value="remember-me"> Remember me
@@ -186,7 +198,6 @@
 
     </div>
 </div>
-
 
 
 </body>

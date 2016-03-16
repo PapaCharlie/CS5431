@@ -15,11 +15,10 @@ public class FileUtils {
             while ((line = br.readLine()) != null) {
                 lines.add(Base64String.fromBase64(line.trim()));
             }
-//            Sys.debug(String.format("Read %d lines from %s. \n", lines.size(), file.getCanonicalFile()));
-            while (lines.getFirst().decodeString().length() == 0) {
+            while (lines.peekFirst() != null && lines.getFirst().decodeString().length() == 0) {
                 lines.removeFirst();
             }
-            while (lines.getLast().decodeString().length() == 0) {
+            while (lines.peekFirst() != null && lines.getLast().decodeString().length() == 0) {
                 lines.removeLast();
             }
             return lines.toArray(new Base64String[lines.size()]);
