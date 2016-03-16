@@ -98,6 +98,14 @@ public class Vault {
             return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
+        get("/vault", (req, res) -> {
+            Sys.debug("Serving /vault.", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+            String message = "Action: Log In";
+            demoUser.info(message, demoUser, req.ip());
+            return new ModelAndView(attributes, "vault.ftl");
+        }, new FreeMarkerEngine(freeMarkerConfiguration));
+
         post("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
