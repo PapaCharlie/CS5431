@@ -54,10 +54,10 @@ public final class User {
         logFile = new File(getHome(), "log");
         privCryptoKeyfile = new File(getHome(), "id_rsa.crypto");
         privCryptoIVFile = new File(getHome(), "iv.crypto");
-        pubCryptoKeyFile = new File(privCryptoKeyfile, ".pub");
+        pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         privSigningKeyFile = new File(getHome(), "id_rsa.signing");
         privSigningIVFile = new File(getHome(), "iv.signing");
-        pubSigningKeyFile = new File(privSigningKeyFile, ".pub");
+        pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
         vaultFile = new File(getHome(), "vault");
         passwordHashFile = new File(getHome(), "password.hash");
         signingKeyFile = new File(getHome(), "signing.key");

@@ -41,7 +41,6 @@ public class UserTest extends VaultTest {
 
     @Test
     public void testLoadPasswords() throws Exception {
-        String testPassword = PasswordGenerator.generatePassword(10);
         Password password = new Password("Test", "www.test.com", username, "password!");
         user.addPassword(password);
         Password[] passwords = user.loadPasswords();

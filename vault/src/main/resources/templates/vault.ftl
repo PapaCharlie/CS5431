@@ -75,17 +75,19 @@
   </table>
 </div> -->
 
-
+<#list storedpasswords as password>
+<li>${password.name}</li>
+</#list>
 
 <div class="col-sm-9 col-md-10 newpass">
     <form method="post" action="/savepassword" class="form-signin">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="web" class="form-control" placeholder="Website Name" required="" autofocus="">
-        <input type="text" id="url" class="form-control" placeholder="URL" required="" autofocus="">
+        <input type="text" name="url" id="url" class="form-control" placeholder="URL" required="" autofocus="">
         <!-- <label for="inputEmail" class="sr-only">Email address</label> -->
-        <input type="text" id="username" class="form-control" placeholder="Account username" required="" autofocus="">
+        <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required="" autofocus="">
         <!-- <label for="inputPassword" class="sr-only">Password</label> -->
-        <input type="password" id="inputPassword" class="form-control" placeholder="Password" required="">
+        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required="">
         <!-- <div class="checkbox">
           <label>
             <input type="checkbox" value="remember-me"> Remember me

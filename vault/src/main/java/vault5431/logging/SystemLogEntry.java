@@ -6,7 +6,9 @@ import vault5431.users.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by CYJ on 3/14/16.
@@ -82,5 +84,17 @@ public class SystemLogEntry extends LogEntry {
             return false;
         }
     }
+
+    public Map<String, String> toMap() {
+        Map<String, String> hash = new HashMap<>();
+        hash.put("logType", logType.toString());
+        hash.put("ip", ip);
+        hash.put("affectedUser", affectedUser);
+        hash.put("timestamp", timestamp.toString());
+        hash.put("message", message);
+        hash.put("signature", signature);
+        return hash;
+    }
+
 
 }
