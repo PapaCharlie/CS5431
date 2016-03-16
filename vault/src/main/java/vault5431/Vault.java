@@ -107,12 +107,7 @@ public class Vault {
             String username = req.queryParams("username");
             //String user_ip = req.queryParams("ip");
             String message = "Action: Log In";
-            demoUser.appendToLog(new UserLogEntry(LogType.INFO, req.ip(), username, LocalDateTime.now(), message, "signature"));
-            for (int i = 0; i < demoUser.loadLog().length; i++) {
-                System.out.println(demoUser.loadLog()[i]);
-            }
-
-
+            demoUser.info(message, demoUser, req.ip());
             return new ModelAndView(attributes, "vault.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
 
@@ -169,5 +164,5 @@ public class Vault {
             return new ModelAndView(attributes, "userlog.ftl");
         }, new FreeMarkerEngine(freeMarkerConfiguration));
     }
-    
+
 }
