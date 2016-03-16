@@ -21,7 +21,7 @@ public class Sys {
 
     public static final String SYS = "SYS";
     public static final String NO_IP = "0.0.0.0";
-    public static final File logFile = new File(home + File.separator + "log");
+    public static final File logFile = new File(home, "log");
 
     public static void error(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));

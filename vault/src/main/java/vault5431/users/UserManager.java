@@ -29,11 +29,14 @@ public class UserManager {
     private static Map<Base64String, User> users = new HashMap<>();
 
     static {
-        for (String dirname : home.list((dir, name) -> dir.isDirectory())) {
-            Base64String hash = Base64String.fromBase64(dirname);
-            User user = new User(hash);
-            Sys.debug(String.format("Loaded %s from disk.", user));
-            addUser(user);
+        synchronized (mapLock) {
+            addUser(new User(Sys.SYS));
+            for (String dirname : home.list((dir, name) -> new File(dir, name).isDirectory())) {
+                Base64String hash = Base64String.fromBase64(dirname);
+                User user = new User(hash);
+                Sys.debug("Loaded user from disk.", user);
+                addUser(user);
+            }
         }
     }
 
@@ -63,8 +66,8 @@ public class UserManager {
         return getUser(hashUsername(username));
     }
 
-    public static String getHome(String username) {
-        return home + File.separator + hashUsername(username).getB64String();
+    public static File getHome(String username) {
+        return new File(home, hashUsername(username).getB64String());
     }
 
     public synchronized static User create(String username, String password)
@@ -78,7 +81,7 @@ public class UserManager {
             }
         }
         Sys.debug("Creating user home directory.", user);
-        File homedir = new File(user.getHome());
+        File homedir = user.getHome();
         if (homedir.mkdir()) {
             Sys.debug("Created user home directory.", user);
             PasswordUtils.savePassword(user.passwordHashFile, password);

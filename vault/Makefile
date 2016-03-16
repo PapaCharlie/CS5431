@@ -32,3 +32,6 @@ verify:
 	test -d "lib" || mkdir "lib"
 	test -e "lib/$(BOUNCY_CASTLE_JAR)" || wget -O "lib/$(BOUNCY_CASTLE_JAR)" $(BOUNCY_CASTLE_LINK)
 	test $(shell sha1sum lib/$(BOUNCY_CASTLE_JAR) | cut -d' ' -f 1) = $(BOUNCY_CASTLE_SHA1_SIG)
+
+log:
+	cat ~/.vault5431/log | base64 --decode
