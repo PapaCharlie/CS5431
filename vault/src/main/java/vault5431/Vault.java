@@ -106,7 +106,7 @@ public class Vault {
             Sys.debug(req.ip(), "Serving /savepassword.");
             java.lang.System.out.println("saving new password");
             String w = req.queryParams("web");
-            demoUser.info("Saved Password from "+w, null, req.ip()); //type check this. incorrect types
+            demoUser.info("Saved Password from "+w, req.ip()); //type check this. incorrect types
             res.redirect("/vault");
             return "";
         });
