@@ -116,6 +116,9 @@ public final class User {
     public Password[] loadPasswords() throws IOException {
         synchronized (vaultFile) {
             debug("Loading passwords.");
+            if (!vaultFile.exists()) {
+                vaultFile.createNewFile();
+            }
             try {
                 Base64String[] encodedPasswords = FileUtils.read(vaultFile);
                 Password[] passwords = new Password[encodedPasswords.length];
