@@ -22,16 +22,33 @@
 
 </div>
 <div class="page-header mainheader">
-    <h1>Vault 5431 <small>Your trusty password manager</small></h1>
+    <h1>Vault 5431
+        <small>Your trusty password manager</small>
+    </h1>
 </div>
-<div class="col-sm-9 col-md-10">
-    <form action="/generate">
-        <input style="width: 20%; display: inline-block" type="number" min="1" name="length" class="form-control" placeholder="Password Length" required="" autofocus="">
-        <button class="btn btn-success" type="submit">Generate</button>
-    </form>
 
-    ${randompassword}
+
+<div class="col-sm-9 col-md-10">
+    <table class="logtable" style="width:100%">
+        <tr>
+            <th>Log Type</th>
+            <th>IP</th>
+            <th>Affected User</th>
+            <th>Timestamp</th>
+            <th>Message</th>
+        </tr>
+    <#list sysloglist as log>
+        <tr>
+            <td>${log.logType}</td>
+            <td>${log.ip}</td>
+            <td>${log.affectedUser}</td>
+            <td>${log.timestamp}</td>
+            <td>${log.message}</td>
+        </tr>
+    </#list>
+    </table>
 </div>
+
 </body>
 
 </html>

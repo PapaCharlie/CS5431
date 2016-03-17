@@ -5,6 +5,7 @@ import freemarker.template.Configuration;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
+import vault5431.logging.SystemLogEntry;
 import vault5431.logging.UserLogEntry;
 import vault5431.users.User;
 import vault5431.users.UserManager;
@@ -163,7 +164,7 @@ public class Vault {
             return "";
         });
 
-        get("/log", (req, res) -> {
+        get("/userlog", (req, res) -> {
             Sys.debug("Serving /log.", req.ip());
             java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
@@ -176,6 +177,20 @@ public class Vault {
 
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
+        }, freeMarkerEngine);
+
+        get("/syslog", (req, res) -> {
+            Sys.debug("Serving /syslog.", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+
+            List<Map<String, String>> sysloglist = new ArrayList<>();
+
+            for (SystemLogEntry e : Sys.loadLog()) {
+                sysloglist.add(e.toMap());
+            }
+
+            attributes.put("sysloglist", sysloglist);
+            return new ModelAndView(attributes, "syslog.ftl");
         }, freeMarkerEngine);
     }
 
