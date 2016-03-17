@@ -20,13 +20,7 @@
         <li><a href="/log">Logs?</a></li>
         <li><a href="">Logout</a></li>
     </ul>
-    <!-- <ul class="nav nav-sidebar">
-      <li><a href="">Home</a></li>
-      <li><a href="">Password Generator</a></li>
-      <li><a href="">Settings</a></li>
-      <li><a href="">Logs?</a></li>
-      <li><a href="">Logout</a></li>
-    </ul>     -->
+
 </div>
 
 
@@ -36,58 +30,15 @@
     </h1>
 </div>
 
-<!-- <div class="col-sm-9 col-md-10 sidebar">
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Header</th>
-        <th>Header</th>
-        <th>Header</th>
-        <th>Header</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>1,001</td>
-        <td>Lorem</td>
-        <td>ipsum</td>
-        <td>dolor</td>
-        <td>sit</td>
-      </tr>
-      <tr>
-        <td>1,002</td>
-        <td>amet</td>
-        <td>consectetur</td>
-        <td>adipiscing</td>
-        <td>elit</td>
-      </tr>
-      <tr>
-        <td>1,003</td>
-        <td>Integer</td>
-        <td>nec</td>
-        <td>odio</td>
-        <td>Praesent</td>
-      </tr>
+
+<#--<#if storedpasswords?has_content>-->
+    <#--<#list storedpasswords as password>-->
+        <#--<li>${password.name}</li>-->
+    <#--</#list>-->
+<#--</#if>-->
 
 
-    </tbody>
-  </table>
-</div> -->
-<#if storedpasswords?has_content>
-    <#list storedpasswords as password>
-        <li>${password.name}</li>
-    </#list>
-</#if>
 
-
-<div>
-<#list storedpasswords as password>
-    <li>${password.name}</li>
-<#else>
-    Zerp!
-</#list>
-</div>
 
 <div class="col-sm-9 col-md-10 newpass">
     <form method="post" action="/savepassword" class="form-signin">
@@ -112,85 +63,52 @@
 <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
     <h4 class="storedpasswords-heading">Stored Accounts</h4>
     <div class="panel-group" id="accordion">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse1">
-                        www.gmail.com</a>
-                </h4>
-            </div>
-            <div id="collapse1" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <div class="col-sm-4 col-md-4">myusername</div>
-                    <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse2">
-                        www.facebook.com</a>
-                </h4>
-            </div>
-            <div id="collapse2" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <div class="col-sm-4 col-md-4">myusername</div>
-                    <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
+        <#list storedpasswords as password>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#${password.name}">
+                        ${password.name}</a>
+                    </h4>
                 </div>
-            </div>
-        </div>
+                <div id="${password.name}" class="panel-collapse collapse">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-sm-4 col-md-4">URL: ${password.website}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-4 col-md-4">Username: ${password.username}</div>
+                            <div class="col-sm-4 col-md-4">Password: ${password.password}</div>
+                            <form method="post" action="/changepassword">
+                                <input type="hidden" name="name" value="${password.name}">
+                                <button class="btn btn-warning" type="submit">Change password</button>
+                            </form>
 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse3">
-                        www.twitter.com</a>
-                </h4>
-            </div>
-            <div id="collapse3" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <div class="col-sm-4 col-md-4">myusername</div>
-                    <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        <#else>
+            No stored passwords!
+        </#list>
+        <#--<div class="panel panel-default">-->
+            <#--<div class="panel-heading">-->
+                <#--<h4 class="panel-title">-->
+                    <#--<a data-toggle="collapse" data-parent="#accordion" href="#collapse1">-->
+                        <#--www.gmail.com</a>-->
+                <#--</h4>-->
+            <#--</div>-->
+            <#--<div id="collapse1" class="panel-collapse collapse">-->
+                <#--<div class="panel-body">-->
+                    <#--<div class="col-sm-4 col-md-4">myusername</div>-->
+                    <#--<div class="col-sm-4 col-md-4">mypassword</div>-->
+                    <#--<button class="btn btn-warning" type="button">Change password</button>-->
+                <#--</div>-->
+            <#--</div>-->
+        <#--</div>-->
 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse4">
-                        Cornell NetID</a>
-                </h4>
-            </div>
-            <div id="collapse4" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <div class="col-sm-4 col-md-4">myusername</div>
-                    <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion" href="#collapse5">
-                        www.spotify.com</a>
-                </h4>
-            </div>
-            <div id="collapse5" class="panel-collapse collapse">
-                <div class="panel-body">
-                    <div class="col-sm-4 col-md-4">myusername</div>
-                    <div class="col-sm-4 col-md-4">mypassword</div>
-                    <button class="btn btn-warning" type="button">Change password</button>
-                </div>
-            </div>
-        </div>
 
     </div>
 </div>

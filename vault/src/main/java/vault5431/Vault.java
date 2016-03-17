@@ -65,7 +65,7 @@ public class Vault {
     }
 
     public static final Configuration freeMarkerConfiguration = new Configuration();
-    public static final FreeMarkerEngine freeMarkerEnfgine =  new FreeMarkerEngine(freeMarkerConfiguration);
+    public static final FreeMarkerEngine freeMarkerEngine =  new FreeMarkerEngine(freeMarkerConfiguration);
 
     public static final User demoUser = UserManager.getUser(demoUsername);
 
@@ -82,7 +82,7 @@ public class Vault {
             Sys.debug("Serving /.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             return new ModelAndView(attributes, "login.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
 
         post("/authenticate", (req, res) -> {
             Sys.debug("Serving /authenticate.", req.ip());
@@ -93,6 +93,7 @@ public class Vault {
             else{
                 res.redirect("/");
             }
+            demoUser.info("Action: Log In", demoUser, req.ip());
             return "";
         });
 
@@ -109,34 +110,36 @@ public class Vault {
 
             attributes.put("storedpasswords", listofmaps);
             return new ModelAndView(attributes, "vault.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
 
         post("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
-            java.lang.System.out.println("vault page");
-            //This is just a test for now.
-
-            String username = req.queryParams("username");
-            //String user_ip = req.queryParams("ip");
-            String message = "Action: Log In";
-            demoUser.info(message, demoUser, req.ip());
             return new ModelAndView(attributes, "vault.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
 
         post("/genPasswordLog", (req, res) -> {
             Map<String, Object> attributes = new HashMap<>();
             String user_ip = req.queryParams("ip");
             System.out.println(user_ip);
             return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
+
+        post("/changepassword", (req, res) -> {
+            Sys.debug("Serving /savepassword.", req.ip());
+            String w = req.queryParams("name");
+            //changepassword
+            demoUser.info("Changed Password for " + w, req.ip());
+            res.redirect("/vault");
+            return "";
+        });
 
         post("/savepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("web");
             Password p = new Password(w, req.queryParams("url"), req.queryParams("username"), req.queryParams("password"));
             demoUser.addPassword(p);
-            demoUser.info("Saved Password from " + w, req.ip()); //type check this. incorrect types
+            demoUser.info("Saved Password from " + w, req.ip());
             res.redirect("/vault");
             return "";
         });
@@ -153,7 +156,7 @@ public class Vault {
             java.lang.System.out.println("generator");
             res.removeCookie("randompass");
             return new ModelAndView(attributes, "generator.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
 
         get("/generate", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
@@ -177,7 +180,7 @@ public class Vault {
 
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
-        }, freeMarkerEnfgine);
+        }, freeMarkerEngine);
     }
 
 }
