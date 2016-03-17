@@ -36,7 +36,7 @@
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
-    <#list userloglist as log>
+    <#list userloglist?reverse as log>
         <tr>
             <td>${log.logType}</td>
             <td>${log.ip}</td>

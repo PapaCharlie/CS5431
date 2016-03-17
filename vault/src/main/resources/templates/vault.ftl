@@ -79,7 +79,10 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4 col-md-4">Username: ${password.username}</div>
-                            <div class="col-sm-4 col-md-4">Password: ${password.password}</div>
+                            <div id="${password.name}pass" class="col-sm-4 col-md-4">Password:
+                                <input type="password" value="${password.password}">
+                                <button class="reveal" id="${password.name}reveal">Reveal</button>
+                            </div>
                             <form method="post" action="/changepassword">
                                 <input type="hidden" name="name" value="${password.name}">
                                 <button class="btn btn-warning" type="submit">Change password</button>
@@ -115,4 +118,19 @@
 
 
 </body>
+<script>
+    $(document).on("click", ".reveal", function(){
+        var type = $(this).siblings("input").attr('type');
+        if(type == 'password'){
+            console.log("reveal");
+            $(this).siblings("input").attr('type', 'text');
+            $(this).html("Hide");
+        }
+        else{
+            console.log("hide");
+            $(this).siblings("input").attr('type', 'password');
+            $(this).html("Reveal");
+        }
+    })
+</script>
 </html>

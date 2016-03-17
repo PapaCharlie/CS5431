@@ -156,12 +156,19 @@ public class Vault {
         }, freeMarkerEngine);
 
         get("/generate", (req, res) -> {
-            Sys.debug("Serving /savepassword.", req.ip());
-            String len = req.queryParams("length");
-            String pass = PasswordGenerator.generatePassword(Integer.parseInt(len));
-            res.cookie("randompass", pass);
-            res.redirect("/generator");
-            return "";
+            try{
+                Sys.debug("Serving /savepassword.", req.ip());
+                String len = req.queryParams("length");
+                String pass = PasswordGenerator.generatePassword(Integer.parseInt(len));
+                res.cookie("randompass", pass);
+                res.redirect("/generator");
+                return "";
+            } catch (NumberFormatException e){
+                res.status(404);
+                res.body("Not found");
+                return "404 Resource not found";
+            }
+
         });
 
         get("/userlog", (req, res) -> {
