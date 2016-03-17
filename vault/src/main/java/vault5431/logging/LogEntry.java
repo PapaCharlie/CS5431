@@ -10,12 +10,12 @@ import java.time.LocalDateTime;
  */
 public abstract class LogEntry {
 
-    private LogType logType;
-    private String ip;
-    private String affectedUser;
-    private LocalDateTime timestamp;
-    private String message;
-    private String signature;
+    LogType logType;
+    String ip;
+    String affectedUser;
+    LocalDateTime timestamp;
+    String message;
+    String signature;
 
     public abstract boolean checkSignature(String signature);
 

@@ -2,6 +2,7 @@ package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
+import vault5431.Sys;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
@@ -116,8 +117,9 @@ public final class User {
     public Password[] loadPasswords() throws IOException {
         synchronized (vaultFile) {
             debug("Loading passwords.");
-            if (!vaultFile.exists()) {
-                vaultFile.createNewFile();
+            if (!vaultFile.exists() && !vaultFile.createNewFile()) {
+                Sys.error("Could not create password vault file.", this);
+                return new Password[0];
             }
             try {
                 Base64String[] encodedPasswords = FileUtils.read(vaultFile);
@@ -140,7 +142,8 @@ public final class User {
                 FileUtils.append(logFile, new Base64String(entry.toCSV()));
             } catch (IOException err) {
                 err.printStackTrace();
-                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).\n", hash.getB64String().substring(10));
+                warning("Failed to log for user! Continuing (not recommended).", this);
+                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", hash.getB64String().substring(10));
 //            } catch (InvalidKeySpecException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException err) {
 //                err.printStackTrace();
 //                Sys.error("Could not append to user log.", this);

@@ -70,15 +70,19 @@ public class SystemLogEntry extends LogEntry {
         return parsedEntries;
     }
 
+    public int hashCode() {
+        return (logType.toString() + ip + affectedUser + timestamp.toString() + message + signature).hashCode();
+    }
+
     public boolean equals(Object object) {
         if (object instanceof SystemLogEntry) {
             SystemLogEntry other = (SystemLogEntry) object;
-            return (this.logType.equals(other.logType) &&
-                    this.ip.equals(other.ip) &&
-                    this.affectedUser.equals(other.affectedUser) &&
-                    this.timestamp.equals(other.timestamp) &&
-                    this.message.equals(other.message) &&
-                    this.signature.equals(signature)
+            return (logType.equals(other.logType) &&
+                    ip.equals(other.ip) &&
+                    affectedUser.equals(other.affectedUser) &&
+                    timestamp.equals(other.timestamp) &&
+                    message.equals(other.message) &&
+                    signature.equals(other.signature)
             );
         } else {
             return false;

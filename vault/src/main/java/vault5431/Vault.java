@@ -20,7 +20,9 @@ import static spark.Spark.*;
 
 public class Vault {
 
-    public static final File home = new File(java.lang.System.getProperty("user.home"), ".vault5431");
+    public static final File home = new File(System.getProperty("user.home"), ".vault5431");
+    private static final String demoUsername = "demoUser";
+    private static final String demoPassword = "password";
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -38,21 +40,15 @@ public class Vault {
         if (!Sys.logFile.exists()) {
             try {
                 if (!Sys.logFile.createNewFile()) {
-                    java.lang.System.err.printf("Could not create system log file at %s!\n", Sys.logFile.getAbsoluteFile());
+                    java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
                     java.lang.System.exit(2);
                 }
             } catch (IOException err) {
                 err.printStackTrace();
-                java.lang.System.err.printf("Could not create system log file at %s!\n", Sys.logFile.getAbsoluteFile());
+                java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
                 java.lang.System.exit(2);
             }
         }
-    }
-
-    private static final String demoUsername = "demoUser";
-    private static final String demoPassword = "password";
-
-    static {
         if (!UserManager.userExists(demoUsername)) {
             try {
                 UserManager.create(demoUsername, demoPassword);

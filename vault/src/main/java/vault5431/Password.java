@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Password class. Represents an entry in the password vault.
@@ -23,8 +24,9 @@ public class Password {
     private String website;
     private String username;
     private String password;
+    private UUID uuid;
 
-    Password(String name, String website, String username, String password) throws IllegalArgumentException {
+    Password(String name, String website, String username, String password, UUID uuid) throws IllegalArgumentException {
         if (name.length() < MAX_NAME_LENGTH) {
             this.name = name;
         } else {
@@ -45,6 +47,15 @@ public class Password {
         } else {
             throw new IllegalArgumentException("Password is too long.");
         }
+        this.uuid = uuid;
+    }
+
+    Password(String name, String website, String username, String password) {
+        this(name, website, username, password, UUID.randomUUID());
+    }
+
+    public int hashCode() {
+        return uuid.hashCode();
     }
 
     public boolean equals(Object object) {
@@ -53,7 +64,8 @@ public class Password {
             return name.equals(other.name) &&
                     website.equals(other.website) &&
                     username.equals(other.username) &&
-                    password.equals(other.password);
+                    password.equals(other.password) &&
+                    uuid.equals(other.uuid);
         } else {
             return false;
         }
@@ -64,7 +76,8 @@ public class Password {
                 entry.get(0),
                 entry.get(1),
                 entry.get(2),
-                entry.get(3)
+                entry.get(3),
+                UUID.fromString(entry.get(4))
         );
     }
 
@@ -83,6 +96,7 @@ public class Password {
         hash.put("website", website);
         hash.put("username", username);
         hash.put("password", password);
+        hash.put("uuid", uuid.toString());
         return hash;
     }
 
@@ -102,8 +116,12 @@ public class Password {
         return password;
     }
 
+    public UUID getUUID() {
+        return uuid;
+    }
+
     public String toRecord() throws IOException {
-        return CSVUtils.makeRecord(name, website, username, password);
+        return CSVUtils.makeRecord(name, website, username, password, uuid.toString());
     }
 
 }
