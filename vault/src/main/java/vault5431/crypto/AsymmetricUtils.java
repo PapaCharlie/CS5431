@@ -20,12 +20,34 @@ import static vault5431.crypto.HashUtils.hash256;
  */
 public class AsymmetricUtils {
 
+    /**
+     * Asymmetric key size
+     */
     public static final int KEY_SIZE = 4096;
 
-    private static Cipher getCipher() throws NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException {
-        return Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
+    /**
+     * Acquire RSA algorithm.
+     * Will cause system exit if RSA algorithm not found (impossible, tried and tested)
+     *
+     * @return RSA Cipher object.
+     */
+    private static Cipher getCipher() {
+        Cipher cipher = null;
+        try {
+            cipher = Cipher.getInstance("RSA/NONE/OAEPWithSHA512AndMGF1Padding", "BC");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | NoSuchPaddingException err) {
+            err.printStackTrace();
+            System.exit(1);
+        }
+        return cipher;
     }
 
+    /**
+     * Acquire RSA keypair.
+     * WARNING: expensive function. Call at your own risk.
+     *
+     * @return Generated pair of KEY_SIZE bits
+     */
     public static KeyPair getNewKeyPair() {
         KeyPair keyPair = null;
         try {
@@ -40,29 +62,15 @@ public class AsymmetricUtils {
     }
 
     public static Base64String encrypt(byte[] content, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Base64String ciphertext = null;
-        try {
-            Cipher cipher = getCipher();
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            ciphertext = new Base64String(cipher.doFinal(content));
-        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
-            err.printStackTrace();
-            System.exit(1);
-        }
-        return ciphertext;
+        Cipher cipher = getCipher();
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        return new Base64String(cipher.doFinal(content));
     }
 
     public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        byte[] decryptedText = null;
-        try {
-            Cipher cipher = getCipher();
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-            decryptedText = cipher.doFinal(encryptedContent.decodeBytes());
-        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
-            err.printStackTrace();
-            System.exit(1);
-        }
-        return decryptedText;
+        Cipher cipher = getCipher();
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        return cipher.doFinal(encryptedContent.decodeBytes());
     }
 
     public static void savePublicKey(File keyfile, PublicKey key) throws IOException {

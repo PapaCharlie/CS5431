@@ -23,6 +23,12 @@ public class Sys {
     public static final String NO_IP = "0.0.0.0";
     public static final File logFile = new File(home, "log");
 
+    /**
+     * Logs an error in the system log
+     * @param message Reason for error
+     * @param affectedUser Affected user
+     * @param ip IP causing error
+     */
     public static void error(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -39,6 +45,12 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
+    /**
+     * Logs a warning in the system log
+     * @param message Reason for warning
+     * @param affectedUser Affected user
+     * @param ip IP causing warning
+     */
     public static void warning(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -55,6 +67,12 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
+    /**
+     * Logs an info message in the system log
+     * @param message Message contents
+     * @param affectedUser Affected user
+     * @param ip Relevant IP
+     */
     public static void info(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -71,6 +89,12 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, SYS, LocalDateTime.now(), message, ""));
     }
 
+    /**
+     * Logs a debug message in the system log
+     * @param message Message contents
+     * @param affectedUser Affected user
+     * @param ip Relevant IP
+     */
     public static void debug(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -88,6 +112,12 @@ public class Sys {
     }
 
 
+    /**
+     * Append LogEntry to system log.
+     * TODO: Encrypt system log
+     * Suppresses most errors
+     * @param entry Entry to log
+     */
     public static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
             try {
@@ -100,15 +130,26 @@ public class Sys {
         }
     }
 
-    public static SystemLogEntry[] loadLog() throws IOException {
+    /**
+     * Load system log from disk, only for demonstration purposes. System should be decryptable by anyone but sys admins
+     * @return Set of LogEntries loaded from disk.
+     * @throws IOException
+     */
+    public static SystemLogEntry[] loadLog() {
         synchronized (logFile) {
-            Base64String[] encryptedEntries = FileUtils.read(logFile);
-            SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
-            for (int i = 0; i < encryptedEntries.length; i++) {
-                CSVRecord record = CSVUtils.parseRecord(encryptedEntries[i].decodeString()).getRecords().get(0);
-                decryptedEntries[i] = SystemLogEntry.fromCSV(record);
+            try {
+                Base64String[] encryptedEntries = FileUtils.read(logFile);
+                SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
+                for (int i = 0; i < encryptedEntries.length; i++) {
+                    CSVRecord record = CSVUtils.parseRecord(encryptedEntries[i].decodeString()).getRecords().get(0);
+                    decryptedEntries[i] = SystemLogEntry.fromCSV(record);
+                }
+                return decryptedEntries;
+            } catch (IOException err) {
+                err.printStackTrace();
+                System.err.println("[WARNING] Failed to load system log! Continuing.");
+                return new SystemLogEntry[0];
             }
-            return decryptedEntries;
         }
     }
 
