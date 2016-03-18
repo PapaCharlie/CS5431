@@ -69,12 +69,12 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion" href="#${password.name}">
+                        <a data-toggle="collapse" data-parent="#accordion" href="#${password.uuid}">
                         ${password.name}</a>
                     </h4>
 
                 </div>
-                <div id="${password.name}" class="panel-collapse collapse">
+                <div id="${password.uuid}" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div class="row">
                             <div class="col-sm-4 col-md-4">URL: ${password.website}</div>
