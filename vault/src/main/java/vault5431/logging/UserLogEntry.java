@@ -15,13 +15,6 @@ import java.util.Map;
  */
 public class UserLogEntry extends LogEntry {
 
-    private LogType logType;
-    private String ip;
-    private String affectedUser;
-    private LocalDateTime timestamp;
-    private String message;
-    private String signature;
-
     public UserLogEntry(LogType logType, String ip, String affectedUser,
                         LocalDateTime timestamp, String message, String signature) {
         this.logType = logType;
@@ -71,16 +64,19 @@ public class UserLogEntry extends LogEntry {
         return parsedEntries;
     }
 
+    public int hashCode() {
+        return (logType.toString() + ip + affectedUser + timestamp.toString() + message + signature).hashCode();
+    }
 
     public boolean equals(Object object) {
         if (object instanceof UserLogEntry) {
             UserLogEntry other = (UserLogEntry) object;
-            return (this.logType.equals(other.logType) &&
-                    this.ip.equals(other.ip) &&
-                    this.affectedUser.equals(other.affectedUser) &&
-                    this.timestamp.equals(other.timestamp) &&
-                    this.message.equals(other.message) &&
-                    this.signature.equals(signature)
+            return (logType.equals(other.logType) &&
+                    ip.equals(other.ip) &&
+                    affectedUser.equals(other.affectedUser) &&
+                    timestamp.equals(other.timestamp) &&
+                    message.equals(other.message) &&
+                    signature.equals(other.signature)
             );
         } else {
             return false;

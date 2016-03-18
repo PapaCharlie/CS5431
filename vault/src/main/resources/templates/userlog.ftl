@@ -16,8 +16,8 @@
         <li><a href="/vault">Vault</a></li>
         <li><a href="/generator">Password Generator</a></li>
         <li><a href="">Settings</a></li>
-        <li><a href="">Preferences</a></li>
-        <li><a href="">Logs?</a></li>
+        <li><a href="/userlog">User Log</a></li>
+        <li><a href="/syslog">System Log</a></li>
         <li><a href="">Logout</a></li>
     </ul>
 
@@ -64,7 +64,7 @@
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
-    <#list userloglist as log>
+    <#list userloglist?reverse as log>
         <tr>
             <td>${log.logType}</td>
             <td>${log.ip}</td>
