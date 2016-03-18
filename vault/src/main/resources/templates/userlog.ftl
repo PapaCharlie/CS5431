@@ -7,6 +7,7 @@
     <link href="vault.css" rel="stylesheet">
     <script src="jquery-1.11.3.min.js"></script>
     <script src="/bootstrap.min.js"></script>
+    <script type="text/javascript" src="userlog.js"></script>
 
 </head>
 <body>
@@ -28,7 +29,34 @@
 </div>
 
 
+
 <div class="col-sm-9 col-md-10">
+
+    <div class="input-group">
+
+        <div class="input-group-btn">
+        <button class="btn btn-primary dropdown-toggle"  type="button" data-toggle="dropdown">Search
+            <span class="caret"></span>
+        </button>
+
+        <ul class="dropdown-menu" id="logTypes">
+            <li><a href="#">Display All</a></li>
+            <li value="Info"><a href = "#" >Info</a></li>
+            <li value="Debug"><a href = "#">Debug</a></li>
+            <li vaue="Error"><a href = "#">Error</a></li>
+            <li value="Warning"><a href="#">Warning</a></li>
+        </ul>
+        </div>
+        <input id="filter" type="text" class="form-control" placeholder="Type here...">
+
+     </div>
+
+
+
+
+
+    <!--<input id="filter" type="text" class="form-control" placeholder="Type here...">-->
+<div>
     <table class="logtable" style="width:100%">
         <tr>
             <th>Log Type</th>
@@ -45,8 +73,9 @@
         </tr>
     </#list>
     </table>
-</div>
 
+</div>
+</div>
 </body>
 
 </html>
