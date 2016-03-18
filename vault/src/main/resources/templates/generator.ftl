@@ -27,7 +27,7 @@
     </h1>
 </div>
 <div class="col-sm-9 col-md-10">
-    <form action="/generate" class="form-inline">
+    <form action="/generate" method="post" class="form-inline">
         <div class="input-group">
             <input style="width: 100px;" type="number" min="5" max="99" name="length"
                    class="form-control" placeholder="Password Length" required="" autofocus="" value="12">
