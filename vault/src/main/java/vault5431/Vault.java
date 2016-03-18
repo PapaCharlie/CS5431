@@ -62,7 +62,7 @@ public class Vault {
     }
 
     public static final Configuration freeMarkerConfiguration = new Configuration();
-    public static final FreeMarkerEngine freeMarkerEngine =  new FreeMarkerEngine(freeMarkerConfiguration);
+    public static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
 
     public static final User demoUser = UserManager.getUser(demoUsername);
 
@@ -83,14 +83,14 @@ public class Vault {
 
         post("/authenticate", (req, res) -> {
             Sys.debug("Serving /authenticate.", req.ip());
-            if (UserManager.userExists(req.queryParams("username"))){
-                System.out.println("exists");
-                res.redirect("/vault");
+            if (req.queryParams("username") != null) {
+                if (UserManager.userExists(req.queryParams("username"))) {
+                    System.out.println("exists");
+                    res.redirect("/vault");
+                    demoUser.info("Action: Log In", demoUser, req.ip());
+                }
             }
-            else{
-                res.redirect("/");
-            }
-            demoUser.info("Action: Log In", demoUser, req.ip());
+            res.redirect("/");
             return "";
         });
 
@@ -101,7 +101,7 @@ public class Vault {
 
             List<Map<String, String>> listofmaps = new ArrayList<>();
 
-            for(Password p: plist){
+            for (Password p : plist) {
                 listofmaps.add(p.toMap());
             }
 
@@ -115,28 +115,30 @@ public class Vault {
             return new ModelAndView(attributes, "vault.ftl");
         }, freeMarkerEngine);
 
-        post("/genPasswordLog", (req, res) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            String user_ip = req.queryParams("ip");
-            System.out.println(user_ip);
-            return new ModelAndView(attributes, "vault5431/templates/vault.ftl");
-        }, freeMarkerEngine);
-
         post("/changepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
             String w = req.queryParams("name");
-            //changepassword
-            demoUser.info("Changed Password for " + w, req.ip());
+            if (w != null && w.length() > 0) {
+                demoUser.info("Changed Password for " + w, req.ip());
+            }
             res.redirect("/vault");
             return "";
         });
 
         post("/savepassword", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
-            String w = req.queryParams("web");
-            Password p = new Password(w, req.queryParams("url"), req.queryParams("username"), req.queryParams("password"));
-            demoUser.addPassword(p);
-            demoUser.info("Saved Password from " + w, req.ip());
+            String web = req.queryParams("web");
+            String url = req.queryParams("url");
+            String username = req.queryParams("username");
+            String password = req.queryParams("password");
+            if (web != null && url != null && username != null && password != null) {
+                try {
+                    Password p = new Password(web, url, username, password);
+                    demoUser.addPassword(p);
+                } catch (IllegalArgumentException err) {
+                    String errorMessage = err.getLocalizedMessage();
+                }
+            }
             res.redirect("/vault");
             return "";
         });
@@ -155,20 +157,24 @@ public class Vault {
             return new ModelAndView(attributes, "generator.ftl");
         }, freeMarkerEngine);
 
-        get("/generate", (req, res) -> {
-            try{
-                Sys.debug("Serving /savepassword.", req.ip());
-                String len = req.queryParams("length");
-                String pass = PasswordGenerator.generatePassword(Integer.parseInt(len));
-                res.cookie("randompass", pass);
-                res.redirect("/generator");
-                return "";
-            } catch (NumberFormatException e){
-                res.status(404);
-                res.body("Not found");
-                return "404 Resource not found";
+        post("/generate", (req, res) -> {
+            Sys.debug("Serving /savepassword.", req.ip());
+            String len = req.queryParams("length");
+            if (len != null) {
+                try {
+                    int chars = Integer.parseInt(len);
+                    if (chars > 4 && chars < 100) {
+                        String pass = PasswordGenerator.generatePassword(chars);
+                        res.cookie("randompass", pass);
+                    } else {
+                        res.cookie("randompass", "");
+                    }
+                } catch (NumberFormatException err) {
+                    res.cookie("randompass", "");
+                    res.redirect("/generator");
+                }
             }
-
+            return "";
         });
 
         get("/userlog", (req, res) -> {
