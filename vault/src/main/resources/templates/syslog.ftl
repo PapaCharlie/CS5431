@@ -37,7 +37,7 @@
             <th>Timestamp</th>
             <th>Message</th>
         </tr>
-    <#list sysloglist as log>
+    <#list sysloglist?reverse as log>
         <tr>
             <td>${log.logType}</td>
             <td>${log.ip}</td>

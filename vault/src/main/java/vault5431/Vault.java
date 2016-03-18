@@ -97,6 +97,7 @@ public class Vault {
         get("/vault", (req, res) -> {
             Sys.debug("Serving /vault.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
+
             Password[] plist = demoUser.loadPasswords();
 
             List<Map<String, String>> listofmaps = new ArrayList<>();
@@ -106,6 +107,7 @@ public class Vault {
             }
 
             attributes.put("storedpasswords", listofmaps);
+
             return new ModelAndView(attributes, "vault.ftl");
         }, freeMarkerEngine);
 
@@ -143,6 +145,13 @@ public class Vault {
             return "";
         });
 
+        post("/changePassword", (req, res)->{
+            Sys.debug("Serving /changePassword.", req.ip());
+            demoUser.info("Changing Password", req.ip()); //type check this. incorrect types
+            res.redirect("/vault");
+            return "";
+        });
+
         get("/generator", (req, res) -> {
             Sys.debug("Serving /password generator.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
@@ -157,7 +166,7 @@ public class Vault {
             return new ModelAndView(attributes, "generator.ftl");
         }, freeMarkerEngine);
 
-        get("/generate", (req, res) -> {
+        post("/generate", (req, res) -> {
             Sys.debug("Serving /savepassword.", req.ip());
             String len = req.queryParams("length");
             if (len != null) {

@@ -217,7 +217,7 @@ public final class User {
 
     public UserLogEntry[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         synchronized (logFile) {
-            info("Loading log.");
+            debug("Loading log.");
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
             for (int i = 0; i < encryptedEntries.length; i++) {
