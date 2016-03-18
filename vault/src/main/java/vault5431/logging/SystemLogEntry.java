@@ -12,14 +12,10 @@ import java.util.Map;
 
 /**
  * Created by CYJ on 3/14/16.
+ * Represents a system log entry for use by the system admins to check
+ * for suspicious activity.
  */
 public class SystemLogEntry extends LogEntry {
-    private LogType logType;
-    private String ip;
-    private String affectedUser;
-    private LocalDateTime timestamp;
-    private String message;
-    private String signature;
 
     public SystemLogEntry(LogType logType, String ip, String affectedUser,
                           LocalDateTime timestamp, String message, String signature) {
@@ -36,6 +32,12 @@ public class SystemLogEntry extends LogEntry {
         this(logType, ip, affectedUser.getShortHash(), timestamp, message, signature);
     }
 
+    /**
+     * Checks the signature of a log to ensure that the log entry is written by the
+     * system and not an outsider user/attacker
+     * @param signature
+     * @return true if there if signatures match, false otherwise.
+     */
     public boolean checkSignature(String signature) {
         return signature.equals(this.signature);
     }
@@ -48,18 +50,36 @@ public class SystemLogEntry extends LogEntry {
                 .append(message).append(" ").toString();
     }
 
+    /**
+     * @return a String[] representation of the SystemLogEntry
+     */
     public String[] asArray() {
         return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature};
     }
 
+    /**
+     * @return CSV formatted String representation of a SystemLogEntry
+     * @throws IOException
+     */
     public String toCSV() throws IOException {
         return CSVUtils.makeRecord(logType, ip, affectedUser, timestamp, message, signature);
     }
 
+    /**
+     * @param entry is a CSV record representation of a SystemLogEntry
+     * @return a SystemLogEntry with the relevant information from the CSV string
+     */
     public static SystemLogEntry fromCSV(CSVRecord entry) {
         return new SystemLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
     }
 
+    /**
+     *
+     * @param entries is a CSVParser containing multiple CSVRecords, each of which represents
+     *                a SystemLogEntry
+     * @return Array of SystemLogEntries derived from the CSVParser
+     * @throws IOException
+     */
     public static SystemLogEntry[] fromCSV(CSVParser entries) throws IOException {
         List<CSVRecord> records = entries.getRecords();
         SystemLogEntry[] parsedEntries = new SystemLogEntry[records.size()];
@@ -70,10 +90,17 @@ public class SystemLogEntry extends LogEntry {
         return parsedEntries;
     }
 
+    /**
+     * @return the hashcode of the concatenation of the fields as strings
+     */
     public int hashCode() {
         return (logType.toString() + ip + affectedUser + timestamp.toString() + message + signature).hashCode();
     }
 
+    /**
+     * @param object
+     * @return true if the objects contain the same information and false otherwise
+     */
     public boolean equals(Object object) {
         if (object instanceof SystemLogEntry) {
             SystemLogEntry other = (SystemLogEntry) object;
@@ -89,6 +116,9 @@ public class SystemLogEntry extends LogEntry {
         }
     }
 
+    /**
+     * @return a Map representation of a SystemLogEntry
+     */
     public Map<String, String> toMap() {
         Map<String, String> hash = new HashMap<>();
         hash.put("logType", logType.toString());

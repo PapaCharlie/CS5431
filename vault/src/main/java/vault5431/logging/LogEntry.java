@@ -5,17 +5,17 @@ import java.time.LocalDateTime;
 
 /**
  * Created by CYJ on 3/14/16.
- * Placeholder in case our Sys Log and User Log begin to deviate significantly but share
- * common functions.
+ * An abstract class containing the basic fields all logs in our system will have.
+ * All types of LogEntry will extend this class.
  */
 public abstract class LogEntry {
 
-    LogType logType;
-    String ip;
-    String affectedUser;
-    LocalDateTime timestamp;
-    String message;
-    String signature;
+    LogType logType; //INFO, DEBUG, WARNING, ERROR
+    String ip; //IP from which log entry was made
+    String affectedUser; //Whose log the entry was written in
+    LocalDateTime timestamp; //When the log was generated
+    String message; //The message of the log
+    String signature; //Signature of the creator of the log
 
     public abstract boolean checkSignature(String signature);
 
