@@ -65,7 +65,7 @@
             <th>Message</th>
         </tr>
     <#list userloglist?reverse as log>
-        <tr>
+        <tr class="filterable">
             <td>${log.logType}</td>
             <td>${log.ip}</td>
             <td>${log.timestamp}</td>

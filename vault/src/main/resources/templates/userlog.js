@@ -5,8 +5,8 @@ $(document).ready(function () {
         $('#filter').keyup(function () {
 
             var rex = new RegExp($(this).val(), 'i');
-            $('.logtable tr').hide();
-            $('.logtable tr').filter(function () {
+            $('.filterable').hide();
+            $('.filterable').filter(function () {
                 return rex.test($(this).text());
             }).show();
 
@@ -24,8 +24,8 @@ $(document).on('click', '.dropdown-menu li a',function(){
         $('.logtable tr').show();
     } else {
         var rex = new RegExp($(this).text(), 'i');
-        $('.logtable tr').hide();
-        $('.logtable tr').filter(function () {
+        $('.filterable').hide();
+        $('.filterable').filter(function () {
             return rex.test($(this).text());
         }).show();
     }
