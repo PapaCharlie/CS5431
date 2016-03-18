@@ -178,6 +178,7 @@ public class Vault {
                     } else {
                         res.cookie("randompass", "");
                     }
+                    res.redirect("/generator");
                 } catch (NumberFormatException err) {
                     res.cookie("randompass", "");
                     res.redirect("/generator");

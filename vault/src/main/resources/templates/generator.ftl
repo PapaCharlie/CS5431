@@ -22,15 +22,25 @@
 
 </div>
 <div class="page-header mainheader">
-    <h1>Vault 5431 <small>Your trusty password manager</small></h1>
+    <h1>Vault 5431
+        <small>Your trusty password manager</small>
+    </h1>
 </div>
 <div class="col-sm-9 col-md-10">
-    <form action="/generate">
-        <input style="width: 20%; display: inline-block" type="number" min="1" name="length" class="form-control" placeholder="Password Length" required="" autofocus="">
-        <button class="btn btn-success" type="submit">Generate</button>
+    <form action="/generate" class="form-inline">
+        <div class="input-group">
+            <input style="width: 100px;" type="number" min="5" max="99" name="length"
+                   class="form-control" placeholder="Password Length" required="" autofocus="" value="12">
+            <span class="input-group-btn">
+                <button class="btn btn-success" type="submit">Generate</button>
+            </span>
+        </div>
     </form>
-
-    ${randompassword}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            ${randompassword}
+        </div>
+    </div>
 </div>
 </body>
 
