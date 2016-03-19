@@ -8,7 +8,8 @@ import java.io.IOException;
 import java.util.Arrays;
 
 /**
- * Basic CSV utils built upon the Apache Commons CSV classes
+ * Basic CSV utils built upon the Apache Commons CSV classes. Provides functionality to serialize and deserialize
+ * arbitrary objects to and from the CSV standard.
  */
 public class CSVUtils {
 

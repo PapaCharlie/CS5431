@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by CYJ on 3/14/16.
  * Represents a system log entry for use by the system admins to check
  * for suspicious activity.
  */

@@ -4,7 +4,8 @@ import java.io.*;
 import java.util.LinkedList;
 
 /**
- *
+ * Provides basic file I/O utilities.
+ * WARNING: DOES NOT SYNCHRONIZE FILE ACCESS
  */
 public class FileUtils {
 

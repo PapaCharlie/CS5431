@@ -21,7 +21,9 @@ import static vault5431.Vault.home;
 import static vault5431.crypto.HashUtils.hash256;
 
 /**
- * Created by papacharlie on 3/15/16.
+ * User manager. The goal of this class is to ensure that all user creation is done properly, and to manage file access
+ * in a synchronous manner. As long as all User instances are acquired through this class, there should be no race
+ * conditions.
  */
 public class UserManager {
 

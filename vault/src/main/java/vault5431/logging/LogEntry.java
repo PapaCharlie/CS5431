@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 /**
- * Created by CYJ on 3/14/16.
  * An abstract class containing the basic fields all logs in our system will have.
  * All types of LogEntry will extend this class.
  */

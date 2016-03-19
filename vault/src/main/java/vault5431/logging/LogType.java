@@ -1,7 +1,6 @@
 package vault5431.logging;
 
 /**
- * Created by CYJ on 3/14/16.
  * An enum of types that a log can be.
  */
 public enum LogType {
