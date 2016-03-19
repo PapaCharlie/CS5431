@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs,dirtree,subcaption}
+
+\title{Vault 5431 - Design}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Sprint Report}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\section{Filesystem Design}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.3\textwidth}
+    \dirtree{%
+    .1 .vault5431/.
+    .2 (username hash).
+    .3 crypto.key.
+    .3 id\_rsa.crypto.
+    .3 id\_rsa.crypto.pub.
+    .3 id\_rsa.signing.
+    .3 id\_rsa.signing.pub.
+    .3 iv.crypto.
+    .3 iv.signing.
+    .3 log.
+    .3 password.hash.
+    .3 signing.key.
+    .3 vault.
+    .2 log.
+    }
+    \caption{Planned Structure}
+  \end{subfigure}~
+  \begin{subfigure}[b]{0.3\textwidth}
+
+    \dirtree{%
+    .1 .vault5431/.
+    .2 (username hash).
+    .3 id\_rsa.crypto.
+    .3 id\_rsa.signing.
+    .3 log.
+    .3 password.hash.
+    .3 vault.
+    .2 log.
+    .2 pubkey\_dict.
+    .2 pubkey\_dict.sig.
+    }
+    \caption{Planned Structure}
+  \end{subfigure}
+  \caption{Directory Structure}
+  \label{fig:directory_structure}
+\end{figure}
+
+subfig
+
+\subsection{Root Directory}
+\par All of the relevant data is stored in a directory called \texttt{.vault5431} in server's root. All of a given user's information and data is stored in their respective sub-directories. As of right now, a
+\subsection{Rationale}
+\par We decided to use a filesystem design over a database for two main reasons. First, it immediately prevents SQL injections from occurring, which is one less thing our system needs to worry about. Second, it makes it simpler to manage encryption of and signatures for individual files, which we will be extensively using to ensure the integrity and confidentiality of the user data.
+
+\section{Audit}
+For the audit section of our project, we organized our logs based on two types- the user logs and the system log. Currently, they are formatted very similarly but we made the distinction in case their uses begin to deviate in later sprints.
+\subsection{User Logs}
+\par All the information in our system is organized in a file system structure. Therefore, each user has his own directory containing his log files (base64 encoded), password files, keys, and other information found in his vault (possibly secure notes time permitting). Refer to section 1 for this directory layout. Each user log entry has six fields - log type (debug, info, warning, or error), the IP address that completed the specified action, the hashed username, the timestamp of when the action was initiated, signature, and a message that specifies the type of action that took place. The Vault username is hashed to prevent a user's username from being discovered in the case where an attacker somehow manages to get the log. We believe that because it is reasonable for a user to use same username in multiple places (to reduce memorization burden), an attacker should not be able to discover a username even if he successfully attacks our system. The signature is a system signature that is produced to indicate that the log entry was written by the system rather than some outside attacker.\\
+
+\par Currently, a log entry is created every time a new password is created or changed, or when the log is accessed. Later, log entries will be created when a password is deleted, when there is an unsuccessful login attempt to a given username, and when settings are changed. These do not yet exist because their corresponding functionalities were not implemented in this sprint.  The log entries are currently stored in CSV format as base64 encoded strings. We plan to encrypt them in later sprints.\\
+
+\par Finally, a user can currently see his personal log by successfully logging into his account and clicking on the log link on their dashboard. From there, he will be able to see each log entry with four fields – the log type, the IP address, timestamp, and message with the action. The signature validation, when it is implemented, will be done behind the scenes before the log is displayed.
+
+\subsection{System Log}
+The system log should only be viewed by the admins of our system (the four of us). We will have our own system keys to be able to access the system log (currently base64 encoded), and the system log entry fields are the same as for the user log. We create log entries for actions done by the server, as well as log entries for error events (ex: unsuccessful login events, user creation, etc.), so we have the information to recognize a potential attack on our system. Later on, we hope to use this log to help us implement the functionality of freezing a user vault when too many unsuccessful login attempts are made.
+
+\section{Authentication}
+\section{Authorization}
+\section{Confidentiality}
+\section{Integrity}
+
+\end{document}
