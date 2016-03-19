@@ -4,7 +4,7 @@
 \usepackage{array,booktabs}
 
 \title{Vault 5431 - Sprint Report}
-\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnaisa}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
 \date{\today}
 
 \pagestyle{fancy}
@@ -22,5 +22,21 @@
 \maketitle
 \thispagestyle{empty}
 
+\section{Activity Breakdown}
+\subsection{Paul}
+\par In this sprint, I focused mostly on writing and testing the boilerplate code. My goal was that, moving forward, we could focus on the development of the functionality and security, using set of tools I was developing. I began with setting up the build manager using \texttt{sbt}. Then, once everybody was up and running with the same software, I began implementing and testing the encryption framework, including encryption, signing, hashing and key generation. After that, I implemented all of the I/O functionality in a thread-safe manner, upon which the auditing was built. While working on all of this, I gave a lot of thought on the architecture of the Vault itself and after talking about it with the rest of the team, I believe that we have set ourselves on a very clear path to designing a very secure password manager. Hours spent: 20.
 
+\subsection{Chang}
+\par During this sprint, I primarily worked on creating the class and functionalities for the log entries (LogEntry abstract class) and writing test cases for them to ensure that the CSV utility functions that Paul wrote were working as expected. Furthermore, I, as well as the rest of my group, worked together to create our overall Vault5431 system design. Finally, I did the write up for this report and edited the audit design portion of the design.pdf. Overall, including meeting times, I worked approximately 10 hours. On my own, I worked approximately 2-3 hours. I plan on putting in more time for the project for further sprints.
+\subsection{Britney}
+\par For this sprint, I mainly worked on the front end portion of our system. These included choosing some of the frameworks and also making the login page and recording some of the logging actions to the log. For this sprint, I spent too much time trying to get the IP address from a third party source and figuring out why certain AJAX calls did not work, but familiarized myself with the frameworks so I can move faster on the next sprint. Hours Spent: 12
+\subsection{Alicia}
+\par During this sprint, I worked on designing and creating the UI and its functionalities. This also includes routing the webpages to certain endpoints and calling server functions written by Paul and Chang. We all worked together to design the overall vault system. I worked approximately 12 hours, and I plan on spending more time next sprint.
+
+\section{Productivity Analysis}
+\par For this sprint, we planned to meet together in order to create a high-level design of our system as a whole, focus on the way we were structuring our data, and determine the format of our log entries for the auditing system. Throughout this sprint, we not only achieved what we wanted to achieve, but set up the foundation for future sprints as well. First, we designed an auditing system that, we believe, can be easily extended for other features. We also discussed how the logging system can still be used even when integrity and confidentiality requirements are introduced to our system. Second, we have created a web client that can be used to access the Vault5431 service. Third, groundwork has been made to introduce cryptography into our system for future sprints. Finally, we added some quality of life features into the web client such as filtering log by type and searching logs for keywords, and generating random passwords of certain lengths.\\
+
+\par From a time commitment standpoint, we believe that nothing took significantly more time than expected. However, we had to deal with some synchronization issues, which was a more difficult and time-consuming problem than we first expected. As it turns out, synchronizing file access under the constraint of not keeping some potentially very large map of filenames to locks is a rather difficult problem. There were additional issues with Spark and Freemarker, the web framework and templating engine respectively, but those were resolved rather quickly. The implementation of the logging system itself took less time than we expected.\\
+
+\par Organizationally, we believe we did a fairly good job this sprint. Overall, our meetings were useful in making headway towards our sprint end goal. One aspect we will improve on for later sprints is to make a more concrete catalog of features we wish to complete in a given sprint. For this sprint, we knew we wanted to finish the auditing system and without writing down all of the tasks, we simply did them as they occurred. In retrospect, it would have saved us some time if we had a more specific catalog of goals.
 \end{document}

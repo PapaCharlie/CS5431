@@ -28,3 +28,8 @@ clean:
 links:
 	-rm $(PDF)
 	ln -s .build/*.pdf .
+
+submission:
+	cd ../vault && make submission
+	cp ../vault/src.zip .
+	zip -r alpha.zip *.pdf FindBugsResult.html src.zip

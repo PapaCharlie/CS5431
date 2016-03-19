@@ -42,10 +42,9 @@
     .3 vault.
     .2 log.
     }
-    \caption{Planned Structure}
+    \caption{Current Structure}
   \end{subfigure}~
   \begin{subfigure}[b]{0.3\textwidth}
-
     \dirtree{%
     .1 .vault5431/.
     .2 (username hash).
@@ -64,10 +63,11 @@
   \label{fig:directory_structure}
 \end{figure}
 
-subfig
+\subsection{Home Directories}
+\par All of the relevant data is stored in a directory called \texttt{.vault5431} in server's root. All of a given user's information and data is stored in their respective sub-directories.
+\paragraph{Current structure} As of right now, each user is assigned a pair of encryption keys, a pair of signing keys, a symmetric encryption key and a symmetric signing key at user creation. Both private keys are encrypted under the user's master password. The symmetric keys are encrypted under the encryption private key. A hashed version of the password is created using PBKDF2 and stored in under \texttt{password.hash}. An empty log file is created and encrypted under the user's public key. An empty vault file is created and encrypted under the symmetric cryptographic key. Though the encryption is currently turned off, the system is set up in such a way that when it wants to append to a given user's log, it encrypts under their private key, and simply appends it to the corresponding \texttt{log} file. Similarly, to decrypt the vault, the user must provide the master password to decrypt the private encryption key, which will first be checked against the hashed version, then used to decrypt the symmetric key and finally decrypt the vault if it is correct. The point of this nested encryption was to be able to avoid having to reencrypt the entire vault upon master password change. Though the signing keys are not currently in use, they will serve to sign passwords when/if we implement password sharing.
+\paragraph{Planned structure} Much of the current structure will be kept, but a lot of files will be removed from the user's directory. In the case that an attacker has compromised the machine and is able to edit the filesystem, there is currently nothing in place to prevent them from swapping out a user's public key and gaining access to all further log entries. Additionally, it was decided that having to reencrypt the whole Vault every time the master password was easier than having the nested encryption mentioned above. Additionally, it does not make cracking the Vault so much harder for the attacker than the lost time was made up. Therefore the symmetric keys \texttt{crypto.key} and \texttt{signing.key} will be phased out in the next iteration, and each public key will stored in a signed and trusted ``phonebook'' of sorts (see \texttt{pubkey\_dict} and \texttt{pubkey\_dict.sig}), out of the reach of attackers. All of this will alleviate runtime costs, reduce potential errors and increase the Integrity of the logs, at no measurable cost to the Integrity and Confidentiality of the Vault. The master admin signing and encryption keys will be derived from a master password that only the fours of us know. Even if this password were to be leaked, the user's logs and Vaults will not be at risk.
 
-\subsection{Root Directory}
-\par All of the relevant data is stored in a directory called \texttt{.vault5431} in server's root. All of a given user's information and data is stored in their respective sub-directories. As of right now, a
 \subsection{Rationale}
 \par We decided to use a filesystem design over a database for two main reasons. First, it immediately prevents SQL injections from occurring, which is one less thing our system needs to worry about. Second, it makes it simpler to manage encryption of and signatures for individual files, which we will be extensively using to ensure the integrity and confidentiality of the user data.
 

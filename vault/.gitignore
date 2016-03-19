@@ -5,4 +5,4 @@ target
 .history
 *.log
 sbt/
-submission.zip
+src.zip

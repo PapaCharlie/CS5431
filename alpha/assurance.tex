@@ -4,7 +4,7 @@
 \usepackage{array,booktabs}
 
 \title{Vault 5431 - Assurance}
-\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnaisa}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
 \date{\today}
 
 \pagestyle{fancy}
@@ -21,6 +21,11 @@
 \begin{document}
 \maketitle
 \thispagestyle{empty}
+\section{Alpha}
+\par Every method written for this release was tested using JUnit tests. In addition to functionality related to Auditing, all of the boilerplate related to encryption and disk I/O was extensively tested. Due to the concurrent nature of a web server, all methods handling file access were carefully designed to be thread safe. Sadly, this is much harder (if not impossible) to test, and these methods were only tested in a serial manner. But, there is reason to believe that because proper design principles with respect to concurrency were employed when building this and that as long as each file is accessed using the proper methods, race conditions will be avoided.
 
+\par Additionally, the codebase was checked using FindBug. There are no bugs that are deemed "Scary" or "Scariest". The build manager checksums all dependencies and verifies before using them, but the Bouncy Castle cryptographic library is pulled in and checked manually, along with the build manager itself at first install. There is a final web dependency that needed to be edited and was compiled directly from source, and is therefore trusted.
+
+\par In the alpha, we also made a user interface that the client can interact with. We tested the forms for odd or malformed inputs, tested every page to ensure that there are no unexpected outputs, and ensured that the server handled incorrect inputs or requests correctly. For example, the server warns the user when inputs are incorrect and fails gracefully when receiving such inputs by responding with the associated error code (i.e. not 500 Internal Error).
 
 \end{document}

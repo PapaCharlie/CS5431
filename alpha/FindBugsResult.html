@@ -1,0 +1,365 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+		.tablerow0 {
+			background: #EEEEEE;
+		}
+
+		.tablerow1 {
+			background: white;
+		}
+
+		.detailrow0 {
+			background: #EEEEEE;
+		}
+
+		.detailrow1 {
+			background: white;
+		}
+
+		.tableheader {
+			background: #b9b9fe;
+			font-size: larger;
+		}
+		</style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project: 
+			vault</p>
+<h2>Metrics</h2>
+<p>982 lines of code analyzed,
+	in 20 classes, 
+	in 5 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right">10</td>
+<td align="right">10.18</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">4</td>
+<td align="right">4.07</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>14</b>
+</td>
+<td align="right">
+<b>14.26</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">10</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">4</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>14</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+	    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.crypto.AsymmetricUtils.keyFromPassword(String): String.getBytes()<br/>
+<br/>
+<br/>In file AsymmetricUtils.java,
+					
+						line 94<br/>In class vault5431.crypto.AsymmetricUtils<br/>In method vault5431.crypto.AsymmetricUtils.keyFromPassword(String)<br/>Called method String.getBytes()<br/>At AsymmetricUtils.java:[line 94]<br/>At AsymmetricUtils.java:[line 94]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in new vault5431.io.Base64String(String): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 16<br/>In class vault5431.io.Base64String<br/>In method new vault5431.io.Base64String(String)<br/>Called method String.getBytes()<br/>At Base64String.java:[line 16]<br/>At Base64String.java:[line 16]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.decodeString(): new String(byte[])<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 50<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.decodeString()<br/>Called method new String(byte[])<br/>At Base64String.java:[line 50]<br/>At Base64String.java:[line 50]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.fromBase64(String): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 30<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.fromBase64(String)<br/>Called method String.getBytes()<br/>At Base64String.java:[line 30]<br/>At Base64String.java:[line 30]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.getB64Bytes(): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 42<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.getB64Bytes()<br/>Called method String.getBytes()<br/>At Base64String.java:[line 42]<br/>At Base64String.java:[line 42]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.setB64data(byte[]): new String(byte[])<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 62<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.setB64data(byte[])<br/>Called method new String(byte[])<br/>At Base64String.java:[line 62]<br/>At Base64String.java:[line 62]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.append(File, Base64String): String.getBytes()<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 45<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.append(File, Base64String)<br/>Called method String.getBytes()<br/>At FileUtils.java:[line 45]<br/>At FileUtils.java:[line 45]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.read(File): new java.io.FileReader(File)<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 13<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.read(File)<br/>Called method new java.io.FileReader(File)<br/>At FileUtils.java:[line 13]<br/>At FileUtils.java:[line 13]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.write(File, byte[], boolean): new java.io.FileWriter(File, boolean)<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 29<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.write(File, byte[], boolean)<br/>Called method new java.io.FileWriter(File, boolean)<br/>At FileUtils.java:[line 29]<br/>At FileUtils.java:[line 29]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.UserManager.hashUsername(String): String.getBytes()<br/>
+<br/>
+<br/>In file UserManager.java,
+					
+						line 50<br/>In class vault5431.users.UserManager<br/>In method vault5431.users.UserManager.hashUsername(String)<br/>Called method String.getBytes()<br/>At UserManager.java:[line 50]<br/>At UserManager.java:[line 50]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#IC_INIT_CIRCULARITY">Initialization circularity</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Initialization circularity between vault5431.Sys and vault5431.Vault<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						lines 20
+						    to 153<br/>In class vault5431.Sys<br/>In class vault5431.Vault<br/>At Sys.java:[lines 20-153]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#IC_INIT_CIRCULARITY">Initialization circularity</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Initialization circularity between vault5431.Sys and vault5431.users.UserManager<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						lines 20
+						    to 153<br/>In class vault5431.Sys<br/>In class vault5431.users.UserManager<br/>At Sys.java:[lines 20-153]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#IC_INIT_CIRCULARITY">Initialization circularity</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Initialization circularity between vault5431.Vault and vault5431.users.UserManager<br/>
+<br/>
+<br/>In file Vault.java,
+					
+						lines 22
+						    to 218<br/>In class vault5431.Vault<br/>In class vault5431.users.UserManager<br/>At Vault.java:[lines 22-218]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference in vault5431.users.UserManager.&lt;static initializer for UserManager&gt;() due to return value of called method<br/>
+<br/>
+<br/>In file UserManager.java,
+					
+						line 34<br/>In class vault5431.users.UserManager<br/>In method vault5431.users.UserManager.&lt;static initializer for UserManager&gt;()<br/>Value loaded from ?<br/>Dereferenced at UserManager.java:[line 34]<br/>Known null at UserManager.java:[line 34]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="IC_INIT_CIRCULARITY">Initialization circularity</a>
+</h2>
+
+  <p> A circularity was detected in the static initializers of the two
+  classes referenced by the bug instance.&nbsp; Many kinds of unexpected
+  behavior may arise from such circularity.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</h2>
+      
+<p> The return value from a method is dereferenced without a null check,
+and the return value of that method is one that should generally be checked
+for null.  This may lead to a <code>NullPointerException</code> when the code is executed.
+</p>
+      
+   
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>
