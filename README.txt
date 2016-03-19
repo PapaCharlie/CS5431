@@ -1,0 +1,11 @@
+# Vault 5431
+System Security Practicum Project
+
+#SETUP
+First, make sure you have the Java SE Dev Kit 8 (http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) installed, along with the Java Cryptography Extension (http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html).
+Run `make install` to install a local version of sbt if it's not already installed, or go to http://www.scala-sbt.org/0.13/docs/Setup.html to install it globally. Then, in the root directory, run `make verify` to download the Bouncy Castle dependency and verify it.
+Run `make` or `make compile`, and let sbt pull in all of its dependencies and the project's dependencies. This is a long process, but only needs to be done once.
+Run `make test` if you want to ensure that Bouncy Castle was installed properly and that Java's Crypto Extension is indeed working.
+
+#RUNNING
+To start using the Vault, run `make run` and go to https://localhost:5431 to interact with it. WARNING: at this stage, the project is using self signed certificates, so you will need to accept them before you can start using the web UI.
