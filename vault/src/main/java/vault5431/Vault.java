@@ -1,22 +1,19 @@
 package vault5431;
 
-import freemarker.template.Configuration;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import spark.ModelAndView;
-import spark.template.freemarker.FreeMarkerEngine;
-import vault5431.logging.SystemLogEntry;
-import vault5431.logging.UserLogEntry;
+import vault5431.crypto.PasswordUtils;
+import vault5431.io.Base64String;
 import vault5431.users.User;
 import vault5431.users.UserManager;
+import vault5431.routes.Routes;
 
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
-import java.util.*;
-
 
 import static spark.Spark.*;
+import static vault5431.routes.Routes.freeMarkerConfiguration;
 
 
 public class Vault {
@@ -24,8 +21,11 @@ public class Vault {
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     private static final String demoUsername = "demoUser";
     private static final String demoPassword = "password";
+    public static User demoUser;
+    public static SecretKey adminSigningKey;
+    public static SecretKey adminEncryptionKey;
 
-    static {
+    private static void initialize() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         if (!home.exists()) {
             if (!home.mkdir()) {
@@ -50,6 +50,30 @@ public class Vault {
                 java.lang.System.exit(2);
             }
         }
+        File adminSaltFile = new File(home, "admin.salt");
+        if (!adminSaltFile.exists()) {
+            System.out.println("Could not find the admin salt file. This either means the system was compromised, or never initialized.");
+            System.out.print("Press enter to initialize, or kill this process and freak out.");
+            System.console().readLine();
+            try {
+                new Base64String(PasswordUtils.generateSalt()).saveToFile(adminSaltFile);
+            } catch (IOException err) {
+                err.printStackTrace();
+                System.exit(1);
+            }
+        }
+        try {
+            byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
+            System.out.print("Please enter the admin password: ");
+            String adminPassword = new String(System.console().readPassword());
+            adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
+            adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
+        } catch (IOException err) {
+            err.printStackTrace();
+            System.err.println("Could not load admin salt from file, or could not derive keys from admin password!");
+            System.exit(1);
+        }
+        UserManager.initialize();
         if (!UserManager.userExists(demoUsername)) {
             try {
                 UserManager.create(demoUsername, demoPassword);
@@ -59,162 +83,19 @@ public class Vault {
                 System.exit(1);
             }
         }
+        demoUser = UserManager.getUser(demoUsername);
     }
 
-    public static final Configuration freeMarkerConfiguration = new Configuration();
-    public static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
-
-    public static final User demoUser = UserManager.getUser(demoUsername);
-
     public static void main(String[] args) throws Exception {
-        System.out.println(home);
-        File templateDir = new File(Vault.class.getResource("/templates").getFile());
-        staticFileLocation("templates");
+        initialize();
         port(5431);
         secure("./keystore.jks", "vault5431", null, null);
+
+        Routes.initialize();
+
+        awaitInitialization();
         System.out.println("Hosting at: https://localhost:5431");
-        freeMarkerConfiguration.setDirectoryForTemplateLoading(templateDir);
 
-        get("/", (req, res) -> {
-            Sys.debug("Serving /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "login.ftl");
-        }, freeMarkerEngine);
-
-        post("/authenticate", (req, res) -> {
-            Sys.debug("Serving /authenticate.", req.ip());
-            if (req.queryParams("username") != null) {
-                if (UserManager.userExists(req.queryParams("username"))) {
-                    System.out.println("exists");
-                    res.redirect("/vault");
-                    demoUser.info("Action: Log In", demoUser, req.ip());
-                }
-            }
-            res.redirect("/");
-            return "";
-        });
-
-        get("/vault", (req, res) -> {
-            Sys.debug("Serving /vault.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-
-            Password[] plist = demoUser.loadPasswords();
-
-            List<Map<String, String>> listofmaps = new ArrayList<>();
-
-            for (Password p : plist) {
-                listofmaps.add(p.toMap());
-            }
-
-            attributes.put("storedpasswords", listofmaps);
-
-            return new ModelAndView(attributes, "vault.ftl");
-        }, freeMarkerEngine);
-
-        post("/vault", (req, res) -> {
-            Sys.debug("Serving /vault.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "vault.ftl");
-        }, freeMarkerEngine);
-
-        post("/changepassword", (req, res) -> {
-            Sys.debug("Serving /savepassword.", req.ip());
-            String w = req.queryParams("name");
-            if (w != null && w.length() > 0) {
-                demoUser.info("Changed Password for " + w, req.ip());
-            }
-            res.redirect("/vault");
-            return "";
-        });
-
-        post("/savepassword", (req, res) -> {
-            Sys.debug("Serving /savepassword.", req.ip());
-            String web = req.queryParams("web");
-            String url = req.queryParams("url");
-            String username = req.queryParams("username");
-            String password = req.queryParams("password");
-            if (web != null && url != null && username != null && password != null) {
-                try {
-                    Password p = new Password(web, url, username, password);
-                    demoUser.addPassword(p);
-                } catch (IllegalArgumentException err) {
-                    String errorMessage = err.getLocalizedMessage();
-                }
-            }
-            res.redirect("/vault");
-            return "";
-        });
-
-        post("/changePassword", (req, res)->{
-            Sys.debug("Serving /changePassword.", req.ip());
-            demoUser.info("Changing Password", req.ip()); //type check this. incorrect types
-            res.redirect("/vault");
-            return "";
-        });
-
-        get("/generator", (req, res) -> {
-            Sys.debug("Serving /password generator.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            String p = req.cookie("randompass");
-            if (p == null) {
-                p = "";
-            }
-            System.out.println("cookie " + p);
-            attributes.put("randompassword", p);
-            java.lang.System.out.println("generator");
-            res.removeCookie("randompass");
-            return new ModelAndView(attributes, "generator.ftl");
-        }, freeMarkerEngine);
-
-        post("/generate", (req, res) -> {
-            Sys.debug("Serving /savepassword.", req.ip());
-            String len = req.queryParams("length");
-            if (len != null) {
-                try {
-                    int chars = Integer.parseInt(len);
-                    if (chars > 4 && chars < 100) {
-                        String pass = PasswordGenerator.generatePassword(chars);
-                        res.cookie("randompass", pass);
-                    } else {
-                        res.cookie("randompass", "");
-                    }
-                    res.redirect("/generator");
-                } catch (NumberFormatException err) {
-                    res.cookie("randompass", "");
-                    res.redirect("/generator");
-                }
-            }
-            return "";
-        });
-
-        get("/userlog", (req, res) -> {
-            Sys.debug("Serving /log.", req.ip());
-            java.lang.System.out.println("user log");
-            Map<String, Object> attributes = new HashMap<>();
-
-            List<Map<String, String>> loglst = new ArrayList<>();
-
-            for (UserLogEntry u : demoUser.loadLog()) {
-                loglst.add(u.toMap());
-            }
-
-            attributes.put("userloglist", loglst);
-            return new ModelAndView(attributes, "userlog.ftl");
-        }, freeMarkerEngine);
-
-        get("/syslog", (req, res) -> {
-            Sys.debug("Serving /syslog.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-
-            List<Map<String, String>> sysloglist = new ArrayList<>();
-
-            for (SystemLogEntry e : Sys.loadLog()) {
-                sysloglist.add(e.toMap());
-            }
-
-            attributes.put("sysloglist", sysloglist);
-            return new ModelAndView(attributes, "syslog.ftl");
-        }, freeMarkerEngine);
     }
 
 }

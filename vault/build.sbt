@@ -10,7 +10,6 @@ libraryDependencies ++= Seq(
   "com.sparkjava" % "spark-core" % "2.3",
   "commons-validator" % "commons-validator" % "1.5.0",
   "org.apache.commons" % "commons-csv" % "1.2",
-  //  "com.sparkjava" % "spark-template-freemarker" % "2.3",
   "org.freemarker" % "freemarker" % "2.3.23",
   "commons-io" % "commons-io" % "2.4",
   "junit" % "junit" % "4.12" % Test,

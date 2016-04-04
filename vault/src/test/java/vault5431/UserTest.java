@@ -1,6 +1,10 @@
 package vault5431;
 
 import org.junit.Test;
+import vault5431.crypto.exceptions.CouldNotLoadKeyException;
+import vault5431.crypto.exceptions.InvalidPublicKeySignature;
+import vault5431.io.Base64String;
+import vault5431.io.FileUtils;
 import vault5431.logging.LogEntry;
 import vault5431.users.User;
 
@@ -19,7 +23,7 @@ public class UserTest extends VaultTest {
 
     static {
         try {
-            user = getTempUser(username);
+            user = getTempUser(password);
         } catch (Exception err) {
             err.printStackTrace();
             System.out.println("Could not create temp user!");
@@ -46,6 +50,18 @@ public class UserTest extends VaultTest {
         Password[] passwords = user.loadPasswords();
         assertTrue(passwords.length > 0);
         assertTrue(password.equals(passwords[0]));
+    }
+
+    @Test
+    public void testPubkeySigning() throws Exception {
+        User user = getTempUser("password");
+        FileUtils.write(user.pubCryptoKeyFile, new Base64String("nothing!"));
+        try {
+            user.loadPublicCryptoKey();
+            fail("Public key was loaded even though signature could not be verified.");
+        } catch (InvalidPublicKeySignature | CouldNotLoadKeyException err) {
+            assert (true);
+        }
     }
 
 }

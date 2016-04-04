@@ -1,12 +1,14 @@
 package vault5431.crypto;
 
+import vault5431.crypto.exceptions.BadCiphertextException;
+import vault5431.crypto.exceptions.CouldNotLoadKeyException;
+import vault5431.crypto.exceptions.CouldNotSaveKeyException;
+import vault5431.crypto.exceptions.InvalidMasterPasswordException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -61,16 +63,26 @@ public class AsymmetricUtils {
         return keyPair;
     }
 
-    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = getCipher();
-        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-        return new Base64String(cipher.doFinal(content));
+    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws InvalidKeyException, BadCiphertextException {
+        try {
+            Cipher cipher = getCipher();
+            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+            return new Base64String(cipher.doFinal(content));
+        } catch (IllegalBlockSizeException | BadPaddingException err) {
+            err.printStackTrace();
+            throw new BadCiphertextException();
+        }
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-        Cipher cipher = getCipher();
-        cipher.init(Cipher.DECRYPT_MODE, privateKey);
-        return cipher.doFinal(encryptedContent.decodeBytes());
+    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws InvalidKeyException, BadCiphertextException {
+        try {
+            Cipher cipher = getCipher();
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return cipher.doFinal(encryptedContent.decodeBytes());
+        } catch (IllegalBlockSizeException | BadPaddingException err) {
+            err.printStackTrace();
+            throw new BadCiphertextException();
+        }
     }
 
     public static void savePublicKey(File keyfile, PublicKey key) throws IOException {
@@ -78,7 +90,7 @@ public class AsymmetricUtils {
         key64.saveToFile(keyfile);
     }
 
-    public static PublicKey loadPublicKey(File keyfile) throws IOError, IOException, InvalidKeySpecException {
+    public static PublicKey loadPublicKey(File keyfile) throws IOException, CouldNotLoadKeyException {
         PublicKey publicKey = null;
         try {
             byte[] key64 = Base64String.loadFromFile(keyfile)[0].decodeBytes();
@@ -86,6 +98,9 @@ public class AsymmetricUtils {
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
+        } catch (InvalidKeySpecException err) {
+            err.printStackTrace();
+            throw new CouldNotLoadKeyException();
         }
         return publicKey;
     }
@@ -95,29 +110,33 @@ public class AsymmetricUtils {
         return new SecretKeySpec(hashedPassword, "AES");
     }
 
-    public static void savePrivateKey(File keyfile, File ivFile, PrivateKey privateKey, String password)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException {
-        SecretKey key = keyFromPassword(password);
-        IvParameterSpec iv = SymmetricUtils.getNewIV();
-        Base64String encryptedKey = SymmetricUtils.encrypt(privateKey.getEncoded(), key, iv);
-        new Base64String(iv.getIV()).saveToFile(ivFile);
-        encryptedKey.saveToFile(keyfile);
+    public static void savePrivateKey(File keyfile, PrivateKey privateKey, String password) throws IOException, CouldNotSaveKeyException {
+        try {
+            SecretKey key = keyFromPassword(password);
+            Base64String encryptedKey = SymmetricUtils.encrypt(privateKey.getEncoded(), key);
+            encryptedKey.saveToFile(keyfile);
+        } catch (BadCiphertextException | InvalidKeyException err) {
+            err.printStackTrace();
+            throw new CouldNotSaveKeyException();
+        }
     }
 
-    public static PrivateKey loadPrivateKey(File keyfile, File ivFile, String password, File passwordFile)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
+    public static PrivateKey loadPrivateKey(File keyfile, String password, File passwordFile) throws IOException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         PrivateKey privateKey = null;
         try {
             if (PasswordUtils.verifyPasswordInFile(passwordFile, password)) {
                 Base64String encryptedKey = Base64String.loadFromFile(keyfile)[0];
-                byte[] iv = Base64String.loadFromFile(ivFile)[0].decodeBytes();
                 SecretKey key = keyFromPassword(password);
-                byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedKey, key, new IvParameterSpec(iv));
+                byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedKey, key);
                 privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
+            } else {
+                throw new InvalidMasterPasswordException();
             }
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
+        } catch (BadCiphertextException | InvalidKeySpecException | InvalidKeyException err) {
+            throw new CouldNotLoadKeyException();
         }
         return privateKey;
     }

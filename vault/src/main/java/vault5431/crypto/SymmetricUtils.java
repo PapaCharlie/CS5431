@@ -1,5 +1,7 @@
 package vault5431.crypto;
 
+import org.bouncycastle.util.Arrays;
+import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
@@ -35,46 +37,60 @@ public class SymmetricUtils {
         return key;
     }
 
-    public static IvParameterSpec getNewIV() {
+    public static IvParameterSpec generateIV() {
         byte[] iv = new byte[IV_SIZE];
         random.nextBytes(iv);
         return new IvParameterSpec(iv);
     }
 
-    public static Base64String encrypt(byte[] content, SecretKey key, IvParameterSpec iv)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static Base64String encrypt(byte[] content, SecretKey key)
+            throws InvalidKeyException, BadCiphertextException {
         Base64String ciphertext = null;
+        IvParameterSpec iv = generateIV();
         try {
             Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
-            ciphertext = new Base64String(aesCipher.doFinal(content));
-        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            ciphertext = new Base64String(Arrays.concatenate(iv.getIV(), aesCipher.doFinal(content)));
+        } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
+        } catch (IllegalBlockSizeException err) {
+            err.printStackTrace();
+            throw new BadCiphertextException();
+        } catch (BadPaddingException err) {
+            // Only thrown in decryption mode, we're okay.
+            err.printStackTrace();
         }
         return ciphertext;
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, SecretKey key, IvParameterSpec iv)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws InvalidKeyException, BadCiphertextException {
         byte[] decryptedText = null;
         try {
             Cipher aesCipher = getCipher();
+            byte[] content = encryptedContent.decodeBytes();
+            IvParameterSpec iv = new IvParameterSpec(Arrays.copyOfRange(content, 0, IV_SIZE));
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
-            decryptedText = aesCipher.doFinal(encryptedContent.decodeBytes());
-        } catch (NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
+            decryptedText = aesCipher.doFinal(Arrays.copyOfRange(content, IV_SIZE, content.length));
+        } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
+        } catch (BadPaddingException err) {
+            err.printStackTrace();
+            throw new BadCiphertextException();
+        } catch (IllegalBlockSizeException err) {
+            // Only thown in encryption mode, we're okay
+            err.printStackTrace();
         }
         return decryptedText;
     }
 
-    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws InvalidKeyException, BadCiphertextException, IOException {
         Base64String encryptedKey = AsymmetricUtils.encrypt(key.getEncoded(), publicKey);
         encryptedKey.saveToFile(keyFile);
     }
 
-    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, InvalidKeyException, BadCiphertextException {
         Base64String encryptedKey = Base64String.loadFromFile(file)[0];
         byte[] key = AsymmetricUtils.decrypt(encryptedKey, privateKey);
         return new SecretKeySpec(key, "AES");

@@ -33,9 +33,8 @@ public class CryptoTest extends VaultTest {
     @Test
     public void testSymmetricEncDec() throws Exception {
         SecretKey key = SymmetricUtils.getNewKey();
-        IvParameterSpec iv = SymmetricUtils.getNewIV();
-        Base64String encrypted = SymmetricUtils.encrypt(testString.getBytes(), key, iv);
-        String decrypted = new String(SymmetricUtils.decrypt(encrypted, key, iv));
+        Base64String encrypted = SymmetricUtils.encrypt(testString.getBytes(), key);
+        String decrypted = new String(SymmetricUtils.decrypt(encrypted, key));
         assertEquals(decrypted, testString);
     }
 
@@ -75,12 +74,11 @@ public class CryptoTest extends VaultTest {
     @Test
     public void testPrivateKeySaveToFile() throws Exception {
         File privKeyFile = getTempFile("id_rsa");
-        File privKeyIVFile = getTempFile("ivFile");
         String password = PasswordGenerator.generatePassword(20);
         File passwordFile = getTempFile("password");
         PasswordUtils.savePassword(passwordFile, password);
-        AsymmetricUtils.savePrivateKey(privKeyFile, privKeyIVFile, keys.getPrivate(), password);
-        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, privKeyIVFile, password, passwordFile);
+        AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), password);
+        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, password, passwordFile);
         assertNotNull(privateKey);
         assertArrayEquals(keys.getPrivate().getEncoded(), privateKey.getEncoded());
     }

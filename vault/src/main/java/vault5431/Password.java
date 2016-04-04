@@ -26,7 +26,7 @@ public class Password {
     private String password;
     private UUID uuid;
 
-    Password(String name, String website, String username, String password, UUID uuid) throws IllegalArgumentException {
+    public Password(String name, String website, String username, String password, UUID uuid) throws IllegalArgumentException {
         if (name.length() < MAX_NAME_LENGTH) {
             this.name = name;
         } else {
@@ -50,7 +50,7 @@ public class Password {
         this.uuid = uuid;
     }
 
-    Password(String name, String website, String username, String password) {
+    public Password(String name, String website, String username, String password) {
         this(name, website, username, password, UUID.randomUUID());
     }
 
@@ -71,7 +71,7 @@ public class Password {
         }
     }
 
-    public static Password fromCSV(CSVRecord entry) throws IOException {
+    public static Password fromCSVRecord(CSVRecord entry) {
         return new Password(
                 entry.get(0),
                 entry.get(1),
@@ -85,7 +85,7 @@ public class Password {
         List<CSVRecord> records = entries.getRecords();
         Password[] passwords = new Password[records.size()];
         for (int i = 0; i < passwords.length; i++) {
-            passwords[i] = fromCSV(records.get(i));
+            passwords[i] = fromCSVRecord(records.get(i));
         }
         return passwords;
     }

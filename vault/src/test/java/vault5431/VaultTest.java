@@ -2,6 +2,7 @@ package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.AfterClass;
+import vault5431.crypto.PasswordUtils;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
@@ -21,6 +22,10 @@ public class VaultTest {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
+        String masterTestPass = "password";
+        byte[] masterSalt = new byte[PasswordUtils.SALT_SIZE];
+        Vault.adminSigningKey = PasswordUtils.deriveKey(masterTestPass + "signing", masterSalt);
+        Vault.adminEncryptionKey = PasswordUtils.deriveKey(masterTestPass + "encryption", masterSalt);
     }
 
     public static File getTempFile(String prefix, String suffix) throws IOException {

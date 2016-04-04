@@ -5,6 +5,10 @@ import vault5431.Password;
 import vault5431.Sys;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.PasswordUtils;
+import vault5431.crypto.SigningUtils;
+import vault5431.crypto.exceptions.CouldNotLoadKeyException;
+import vault5431.crypto.exceptions.InvalidMasterPasswordException;
+import vault5431.crypto.exceptions.InvalidPublicKeySignature;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
@@ -14,7 +18,6 @@ import vault5431.logging.UserLogEntry;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -34,18 +37,18 @@ public final class User {
 
     public static final String NO_USER = "NOUSER";
 
+    public final Base64String hash;
     public final File logFile;
     public final File privCryptoKeyfile;
-    public final File privCryptoIVFile;
-    public final File pubCryptoKeyFile;
     public final File privSigningKeyFile;
-    public final File privSigningIVFile;
-    public final File pubSigningKeyFile;
     public final File vaultFile;
     public final File passwordHashFile;
+    public final File pubCryptoKeyFile;
+    public final File pubCryptoSigFile;
+    public final File pubSigningKeyFile;
+    public final File pubSigningSigFile;
     public final File signingKeyFile;
     public final File cryptoKeyFile;
-    public final Base64String hash;
 
     protected User(String username) {
         this(hashUsername(username));
@@ -55,13 +58,14 @@ public final class User {
         this.hash = hash;
         logFile = new File(getHome(), "log");
         privCryptoKeyfile = new File(getHome(), "id_rsa.crypto");
-        privCryptoIVFile = new File(getHome(), "iv.crypto");
-        pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         privSigningKeyFile = new File(getHome(), "id_rsa.signing");
-        privSigningIVFile = new File(getHome(), "iv.signing");
-        pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
         vaultFile = new File(getHome(), "vault");
         passwordHashFile = new File(getHome(), "password.hash");
+
+        pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
+        pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
+        pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
+        pubSigningSigFile = new File(pubSigningKeyFile + ".sig");
         signingKeyFile = new File(getHome(), "signing.key");
         cryptoKeyFile = new File(getHome(), "crypto.key");
     }
@@ -74,25 +78,35 @@ public final class User {
         return new File(home, hash.getB64String());
     }
 
-    public PublicKey loadPublicSigningKey() throws IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPublicKey(pubSigningKeyFile);
-    }
-
-    public PrivateKey loadPrivateSigningKey(String password)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
-        synchronized (privSigningKeyFile) {
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, privSigningIVFile, password, passwordHashFile);
+    public PublicKey loadPublicSigningKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException, InvalidKeyException {
+        PublicKey key = AsymmetricUtils.loadPublicKey(pubSigningKeyFile);
+        if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubSigningSigFile)[0])) {
+            throw new InvalidPublicKeySignature();
+        } else {
+            return key;
         }
     }
 
-    public PublicKey loadPublicCryptoKey() throws IOException, InvalidKeySpecException {
-        return AsymmetricUtils.loadPublicKey(pubCryptoKeyFile);
+    public PrivateKey loadPrivateSigningKey(String password)
+            throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
+        synchronized (privSigningKeyFile) {
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, password, passwordHashFile);
+        }
+    }
+
+    public PublicKey loadPublicCryptoKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {
+        PublicKey key = AsymmetricUtils.loadPublicKey(pubCryptoKeyFile);
+        if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubCryptoSigFile)[0])) {
+            throw new InvalidPublicKeySignature();
+        } else {
+            return key;
+        }
     }
 
     public PrivateKey loadPrivateCryptoKey(String password)
-            throws InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, IOError, IOException, InvalidKeySpecException {
+            throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         synchronized (privCryptoKeyfile) {
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, privCryptoIVFile, password, passwordHashFile);
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, password, passwordHashFile);
         }
     }
 
@@ -107,7 +121,7 @@ public final class User {
         synchronized (passwordHashFile) {
             try {
                 return PasswordUtils.verifyPasswordInFile(passwordHashFile, password);
-            } catch (InvalidKeySpecException err) {
+            } catch (InvalidKeyException err) {
                 warning("Failed password verification attempt.");
                 return false;
             }
@@ -125,7 +139,7 @@ public final class User {
                 Base64String[] encodedPasswords = FileUtils.read(vaultFile);
                 Password[] passwords = new Password[encodedPasswords.length];
                 for (int i = 0; i < encodedPasswords.length; i++) {
-                    passwords[i] = Password.fromCSV(CSVUtils.parseRecord(encodedPasswords[i].decodeString()).getRecords().get(0));
+                    passwords[i] = Password.fromCSVRecord(CSVUtils.parseRecord(encodedPasswords[i].decodeString()).getRecords().get(0));
                 }
                 return passwords;
             } catch (IOException err) {
@@ -240,5 +254,4 @@ public final class User {
 //        }
         return loadLog();
     }
-
 }
