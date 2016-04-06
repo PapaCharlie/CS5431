@@ -3,10 +3,10 @@ package vault5431.auth;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
-import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 import vault5431.logging.CSVUtils;
+import vault5431.users.User;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -19,9 +19,7 @@ import static vault5431.auth.RollingKeys.getEncryptionKey;
 import static vault5431.auth.RollingKeys.getSigningKey;
 import static vault5431.crypto.SigningUtils.getSignature;
 import static vault5431.crypto.SigningUtils.verifySignature;
-import static vault5431.crypto.SymmetricUtils.decrypt;
-import static vault5431.crypto.SymmetricUtils.encrypt;
-import static vault5431.crypto.SymmetricUtils.keyFromBytes;
+import static vault5431.crypto.SymmetricUtils.*;
 import static vault5431.logging.CSVUtils.makeRecord;
 
 /**
@@ -29,15 +27,17 @@ import static vault5431.logging.CSVUtils.makeRecord;
  */
 public class Token {
 
+    private final Base64String username;
     private final LocalDateTime creationDate;
     private final LocalDateTime expiresAt;
     private final UUID id;
     private final SecretKey key;
     private final Base64String signature;
 
-    public Token(LocalDateTime expiresAt, SecretKey key) {
+    public Token(User user, SecretKey key) {
+        this.username = user.hash;
         this.creationDate = LocalDateTime.now();
-        this.expiresAt = expiresAt;
+        this.expiresAt = RollingKeys.getEndOfCurrentWindow();
         this.id = UUID.randomUUID();
         this.key = key;
         Base64String signature = null;
@@ -51,7 +51,8 @@ public class Token {
         this.signature = signature;
     }
 
-    private Token(LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, SecretKey key, Base64String signature) throws InvalidTokenException {
+    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, SecretKey key, Base64String signature) throws InvalidTokenException {
+        this.username = username;
         if (creationDate.isBefore(LocalDateTime.now())) {
             this.creationDate = creationDate;
         } else {
@@ -85,12 +86,13 @@ public class Token {
     public static Token parseToken(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
         try {
             CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
-            LocalDateTime creationDate = LocalDateTime.parse(record.get(0));
-            LocalDateTime expiresAt = LocalDateTime.parse(record.get(1));
-            UUID id = UUID.fromString(record.get(2));
-            SecretKey key = keyFromBytes(decrypt(Base64String.fromBase64(record.get(3)), getEncryptionKey()));
-            Base64String signature = Base64String.fromBase64(record.get(4));
-            return new Token(creationDate, expiresAt, id, key, signature);
+            Base64String username = Base64String.fromBase64(record.get(0));
+            LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
+            LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
+            UUID id = UUID.fromString(record.get(3));
+            SecretKey key = keyFromBytes(decrypt(Base64String.fromBase64(record.get(4)), getEncryptionKey()));
+            Base64String signature = Base64String.fromBase64(record.get(5));
+            return new Token(username, creationDate, expiresAt, id, key, signature);
         } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException | BadCiphertextException | InvalidKeyException err) {
             throw new CouldNotParseTokenException();
         }
@@ -99,7 +101,7 @@ public class Token {
     public String toCookie() throws IOException {
         String cookie = null;
         try {
-            cookie = makeRecord(creationDate, expiresAt, id, encrypt(key.getEncoded(), getEncryptionKey()), signature);
+            cookie = makeRecord(username, creationDate, expiresAt, id, encrypt(key.getEncoded(), getEncryptionKey()), signature);
         } catch (InvalidKeyException err) {
             err.printStackTrace();
             System.err.println("Current rolling key is invalid. Halting.");

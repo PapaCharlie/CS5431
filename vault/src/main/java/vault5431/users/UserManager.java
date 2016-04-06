@@ -115,14 +115,6 @@ public class UserManager {
             Sys.info("Signing public encryption key", user);
             SigningUtils.signPublicKey(cryptoKeys.getPublic()).saveToFile(user.pubCryptoSigFile);;
 
-//            Sys.info("Generating secret keys.", user);
-//            SecretKey signingKey = SymmetricUtils.getNewKey();
-//            Sys.info("Saving secret signing key encrypted under password.", user);
-//            SymmetricUtils.saveSecretKey(user.signingKeyFile, signingKey, cryptoKeys.getPublic());
-//            SecretKey cryptoKey = SymmetricUtils.getNewKey();
-//            Sys.info("Saving secret encryption key encrypted under password.", user);
-//            SymmetricUtils.saveSecretKey(user.cryptoKeyFile, cryptoKey, cryptoKeys.getPublic());
-
             Sys.info("Successfully created user.", user);
             addUser(user);
             return user;

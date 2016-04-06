@@ -1,6 +1,7 @@
 package vault5431.auth;
 
 import javax.crypto.SecretKey;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -22,12 +23,12 @@ public class RollingKeys {
 
     static {
 
-        final Runnable beeper = () -> {
+        final Runnable refresher = () -> {
             encryptionKey = getNewKey();
             signingKey = getNewKey();
         };
 
-        scheduler.scheduleAtFixedRate(beeper, 0, WINDOW_LENGTH, HOURS);
+        scheduler.scheduleAtFixedRate(refresher, 0, WINDOW_LENGTH, HOURS);
 
     }
 
@@ -37,6 +38,10 @@ public class RollingKeys {
 
     public static SecretKey getSigningKey() {
         return signingKey;
+    }
+
+    public static LocalDateTime getEndOfCurrentWindow() {
+        return null;
     }
 
 }
