@@ -79,7 +79,7 @@ public class CryptoTest extends VaultTest {
         File passwordFile = getTempFile("password");
         PasswordUtils.savePassword(passwordFile, password);
         AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), key);
-        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, key, passwordFile);
+        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, key);
         assertNotNull(privateKey);
         assertArrayEquals(keys.getPrivate().getEncoded(), privateKey.getEncoded());
     }

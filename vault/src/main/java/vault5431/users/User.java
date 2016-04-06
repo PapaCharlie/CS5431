@@ -3,6 +3,8 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
 import vault5431.Sys;
+import vault5431.auth.ExecutionContext;
+import vault5431.auth.Token;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SigningUtils;
@@ -80,7 +82,8 @@ public final class User {
         return new File(home, hash.getB64String());
     }
 
-    public PublicKey loadPublicSigningKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException, InvalidKeyException {
+    public PublicKey loadPublicSigningKey(Token token) throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException, InvalidKeyException {
+        debug("Loading public signing key.", token.getIp());
         PublicKey key = AsymmetricUtils.loadPublicKey(pubSigningKeyFile);
         if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubSigningSigFile)[0])) {
             throw new InvalidPublicKeySignature();
@@ -89,14 +92,15 @@ public final class User {
         }
     }
 
-    public PrivateKey loadPrivateSigningKey(String password)
-            throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
+    public PrivateKey loadPrivateSigningKey(Token token) throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         synchronized (privSigningKeyFile) {
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, getSecretKey(password), passwordHashFile);
+            debug("Loading private signing key", token.getIp());
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, token.getKey());
         }
     }
 
-    public PublicKey loadPublicCryptoKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {
+    public PublicKey loadPublicCryptoKey(Token token) throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {
+        debug("Loading public crypto key", token.getIp());
         PublicKey key = AsymmetricUtils.loadPublicKey(pubCryptoKeyFile);
         if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubCryptoSigFile)[0])) {
             throw new InvalidPublicKeySignature();
@@ -105,16 +109,17 @@ public final class User {
         }
     }
 
-    public PrivateKey loadPrivateCryptoKey(String password)
+    public PrivateKey loadPrivateCryptoKey(Token token)
             throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         synchronized (privCryptoKeyfile) {
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, getSecretKey(password), passwordHashFile);
+            debug("Loading private signing key", token.getIp());
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, token.getKey());
         }
     }
 
-    public void addPassword(Password password) throws IOException {
+    public void addPasswordToVault(Password password, Token token) throws IOException {
         synchronized (vaultFile) {
-            info(String.format("Adding password: %s.", password.getName()));
+            info(String.format("Adding password: %s.", password.getName()), token.getIp());
             FileUtils.append(vaultFile, new Base64String(password.toRecord()));
         }
     }
@@ -122,7 +127,12 @@ public final class User {
     public boolean verifyPassword(String password) throws IOException {
         synchronized (passwordHashFile) {
             try {
-                return PasswordUtils.verifyPasswordInFile(passwordHashFile, password);
+                if (PasswordUtils.verifyPasswordInFile(passwordHashFile, password)) {
+                    return true;
+                } else {
+                    warning("Failed password verification attempt.");
+                    return false;
+                }
             } catch (InvalidKeyException err) {
                 warning("Failed password verification attempt.");
                 return false;
@@ -130,11 +140,11 @@ public final class User {
         }
     }
 
-    public Password[] loadPasswords() throws IOException {
+    public Password[] loadPasswords(Token token) throws IOException {
         synchronized (vaultFile) {
-            debug("Loading passwords.");
-            if (!vaultFile.exists() && !vaultFile.createNewFile()) {
-                Sys.error("Could not create password vault file.", this);
+            debug("Loading passwords.", token.getIp());
+            if (!vaultFile.exists()) {
+                Sys.error("User's vault file could not be found.", this);
                 return new Password[0];
             }
             try {
@@ -173,7 +183,7 @@ public final class User {
         }
     }
 
-    public SecretKey getSecretKey(String password) throws IOException {
+    public SecretKey deriveSecretKey(String password) throws IOException {
         return PasswordUtils.deriveKey(password, loadSalt());
     }
 
@@ -241,9 +251,9 @@ public final class User {
         appendToLog(new UserLogEntry(LogType.DEBUG, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
     }
 
-    public UserLogEntry[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public UserLogEntry[] loadLog(Token token) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
         synchronized (logFile) {
-            debug("Loading log.");
+            debug("Loading log.", token.getIp());
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
             for (int i = 0; i < encryptedEntries.length; i++) {
@@ -252,18 +262,5 @@ public final class User {
             }
             return decryptedEntries;
         }
-    }
-
-    public UserLogEntry[] loadLog(String password) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-//        PrivateKey privateKey = loadPrivateCryptoKey(password);
-//        synchronized (logFile) {
-//            Base64String[] encryptedEntries = FileUtils.read(logFile);
-//            String[] decryptedEntries = new String[encryptedEntries.length];
-//            for (int i = 0; i < encryptedEntries.length; i ++) {
-//                decryptedEntries[i] = new String(AsymmetricUtils.decrypt(encryptedEntries[i], privateKey));
-//            }
-//            return decryptedEntries;
-//        }
-        return loadLog();
     }
 }

@@ -95,7 +95,7 @@ public class UserManager {
             PasswordUtils.savePassword(user.passwordHashFile, password);
             byte[] salt = PasswordUtils.generateSalt();
             new Base64String(salt).saveToFile(user.passwordSaltFile);
-            SecretKey derivedKey = user.getSecretKey(password);
+            SecretKey derivedKey = user.deriveSecretKey(password);
 
             Sys.info("Generating signing keypair.", user);
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();

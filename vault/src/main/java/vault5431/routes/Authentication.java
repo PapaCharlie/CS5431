@@ -1,12 +1,13 @@
 package vault5431.routes;
 
 import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
 import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
-import vault5431.io.Base64String;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
@@ -23,20 +24,19 @@ import static vault5431.Vault.demoUser;
  */
 class Authentication extends Routes {
 
-    private static boolean validateToken(String cookie, String ip) {
-        if (cookie != null && cookie.length() > 0) {
+    public static Token validateToken(Request req) {
+        if (req.cookie("token") != null && req.cookie("token").length() > 0) {
             try {
-                Token.parseToken(cookie.trim());
-                return true;
+                return Token.parseToken(req.cookie("token").trim(), req.ip());
             } catch (CouldNotParseTokenException err) {
-                Sys.debug("Received invalid token.", ip);
-                return false;
+                Sys.debug("Received invalid token.", req.ip());
+                return null;
             } catch (InvalidTokenException err) {
-                Sys.warning("Received tampered token. There is reason to believe this IP is acting maliciously.", ip);
-                return false;
+                Sys.warning("Received tampered token. There is reason to believe this IP is acting maliciously.", req.ip());
+                return null;
             }
         } else {
-            return false;
+            return null;
         }
     }
 
@@ -50,51 +50,45 @@ class Authentication extends Routes {
 
         get("/", (req, res) -> {
             Sys.debug("Received GET to /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "login.ftl");
+            if (validateToken(req) != null) {
+                res.redirect("/vault/home");
+                return null;
+            } else {
+                Map<String, Object> attributes = new HashMap<>();
+                return new ModelAndView(attributes, "login.ftl");
+            }
         }, freeMarkerEngine);
 
-        post("/authenticate", (req, res) -> {
-            Sys.debug("Received POST to /authenticate.", req.ip());
-            if (req.queryParams("username") != null &&
-                    UserManager.userExists(req.queryParams("username")) &&
-                    req.queryParams("password") != null &&
-                    req.queryParams("password").length() > 0) {
+        post("/", (req, res) -> {
+            Sys.debug("Received POST to /.", req.ip());
+            if (req.queryParams("username") != null
+                    && req.queryParams("username").length() > 0
+                    && UserManager.userExists(req.queryParams("username"))
+                    && req.queryParams("password") != null
+                    && req.queryParams("password").length() > 0) {
                 User user = UserManager.getUser(req.queryParams("username"));
                 if (user.verifyPassword(req.queryParams("password"))) {
-                    Token token = new Token(user, user.getSecretKey(req.queryParams("password")));
+                    Token token = new Token(user, user.deriveSecretKey(req.queryParams("password")));
                     res.cookie("token", token.toCookie());
                     res.redirect("/vault/home");
                     user.info("Succesful login.", req.ip());
                 } else {
-                    user.warning("Failed login attempt.", req.ip());
-                    res.redirect("/loginerror");
+                    user.warning("Failed login attempt.", req.ip()); // Thoughts?
+                    Sys.debug("Failed login attempt.", req.ip());    // ????
+                    Map<String, Object> attributes = new HashMap<>();
+                    String errorMessage = "This username/password combination does not exist!";
+                    attributes.put("error", errorMessage);
+                    return new ModelAndView(attributes, "login.ftl");
                 }
             } else {
                 Sys.debug("Failed login attempt.", req.ip());
-                res.redirect("/loginerror");
+                Map<String, Object> attributes = new HashMap<>();
+                String errorMessage = "This username/password combination does not exist!";
+                attributes.put("error", errorMessage);
+                return new ModelAndView(attributes, "login.ftl");
             }
             return null;
-        });
-
-        get("/loginerror", (req, res) -> {
-            Sys.debug("Received GET to /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "loginerror.ftl");
         }, freeMarkerEngine);
-
-        before("/", (req, res) -> {
-            if (validateToken(req.cookie("token"), req.ip())) {
-                res.redirect("/vault/home");
-            }
-        });
-
-        before("/vault/*", (req, res) -> {
-            if (!validateToken(req.cookie("token"), req.ip())) {
-                res.redirect("/unauthorized");
-                halt(401);
-            }
-        });
 
         get("/logout", (req, res) -> {
             res.removeCookie("token");
@@ -113,20 +107,27 @@ class Authentication extends Routes {
         }, freeMarkerEngine);
 
         get("/vault/home", (req, res) -> {
-            Sys.debug("Received GET to /vault/home.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Token token = validateToken(req);
+            if (token != null) {
+                Sys.debug("Received GET to /vault/home.", req.ip());
+                Map<String, Object> attributes = new HashMap<>();
 
-            Password[] plist = demoUser.loadPasswords();
+                Password[] plist = demoUser.loadPasswords(token);
 
-            List<Map<String, String>> listofmaps = new ArrayList<>();
+                List<Map<String, String>> listofmaps = new ArrayList<>();
 
-            for (Password p : plist) {
-                listofmaps.add(p.toMap());
+                for (Password p : plist) {
+                    listofmaps.add(p.toMap());
+                }
+
+                attributes.put("storedpasswords", listofmaps);
+
+                return new ModelAndView(attributes, "home.ftl");
+            } else {
+                Sys.debug("Received unauthorized GET to /vault/home.");
+                res.redirect("/");
+                return null;
             }
-
-            attributes.put("storedpasswords", listofmaps);
-
-            return new ModelAndView(attributes, "home.ftl");
         }, freeMarkerEngine);
 
     }

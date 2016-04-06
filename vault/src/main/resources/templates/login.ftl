@@ -10,7 +10,7 @@
 
 <script>
     $.getJSON("https://api.ipify.org?format=jsonp&callback=?",
-            function(json) {
+            function (json) {
                 $('input[name="ip"]').val(json.ip);
             }
     );
@@ -19,29 +19,31 @@
 
 
 <div class="login">
-  <div class="login-triangle"></div>
+    <div class="login-triangle"></div>
 
-  <h2 class="login-header">Log in</h2>
+    <h2 class="login-header">Log in</h2>
 
 
-    <form action= "/authenticate" method="post" id="form" class="login-container">
+    <form action="/" method="post" id="form" class="login-container">
         <p><input type="text" name="username" placeholder="Username" autofocus></p>
         <p><input type="password" name="password" placeholder="Password"></p>
         <input type="hidden" name="ip">
         <p><input type="submit" value="Log in"></p>
+    <#if error??>
+        <p>${error}</p>
+    </#if>
     </form>
 
 
- <!-- <form action="vault" id="form" class="login-container" method="post" onsubmit="sendLoginInfo()">
-    <p><input type="text" name="username" placeholder="Username"></p>
-    <p><input type="password" name="password" placeholder="Password"></p>
-    <p><input type="submit" value="Log in"></p>
-  </form>
-  -->
+    <!-- <form action="vault" id="form" class="login-container" method="post" onsubmit="sendLoginInfo()">
+       <p><input type="text" name="username" placeholder="Username"></p>
+       <p><input type="password" name="password" placeholder="Password"></p>
+       <p><input type="submit" value="Log in"></p>
+     </form>
+     -->
 
 
 </div>
-
 
 
 </html>

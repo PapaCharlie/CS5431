@@ -1,6 +1,7 @@
 package vault5431.auth;
 
 import org.junit.Test;
+import vault5431.Sys;
 import vault5431.VaultTest;
 import vault5431.users.User;
 
@@ -24,7 +25,7 @@ public class TokenTest extends VaultTest {
 
     @Test
     public void testTokenSerialization() throws Exception {
-        Token token = new Token(user, user.getSecretKey("password"));
+        Token token = new Token(user, user.deriveSecretKey("password"));
         System.out.println(token.toCookie());
         Token parsedToken = Token.parseToken(token.toCookie());
         assertTrue(token.equals(parsedToken));

@@ -112,7 +112,7 @@ public class AsymmetricUtils {
         }
     }
 
-    public static PrivateKey loadPrivateKey(File keyfile, SecretKey key, File passwordFile) throws IOException, CouldNotLoadKeyException {
+    public static PrivateKey loadPrivateKey(File keyfile, SecretKey key) throws IOException, CouldNotLoadKeyException {
         PrivateKey privateKey = null;
         try {
             Base64String encryptedKey = Base64String.loadFromFile(keyfile)[0];

@@ -2,7 +2,7 @@
 
 <#macro page_body>
 <div class="col-sm-9 col-md-10 newpass">
-    <form method="post" action="/savepassword" class="form-signin">
+    <form method="post" action="/vault/savepassword" class="form-signin">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="web" class="form-control" placeholder="Website Name" required="" autofocus="">
         <input type="text" name="url" id="url" class="form-control" placeholder="URL" required="" autofocus="">
@@ -46,7 +46,7 @@
                                 <input type="password" value="${password.password}">
                                 <button class="reveal" id="${password.name}reveal">Reveal</button>
                             </div>
-                            <form method="post" action="/changepassword">
+                            <form method="post" action="/vault/changepassword">
                                 <input type="hidden" name="name" value="${password.name}">
                                 <button class="btn btn-warning" type="submit">Change password</button>
                             </form>

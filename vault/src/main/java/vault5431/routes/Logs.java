@@ -27,31 +27,42 @@ class Logs extends Routes {
     protected void routes() {
 
         get("/vault/userlog", (req, res) -> {
-            Sys.debug("Received GET to /vault/userlog.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-
-            List<Map<String, String>> loglst = new ArrayList<>();
-
-            for (UserLogEntry u : Vault.demoUser.loadLog()) {
-                loglst.add(u.toMap());
+            Token token = Authentication.validateToken(req);
+            if (token != null) {
+                Sys.debug("Received authenticated GET to /vault/userlog.", req.ip());
+                Map<String, Object> attributes = new HashMap<>();
+                List<Map<String, String>> loglst = new ArrayList<>();
+                for (UserLogEntry u : Vault.demoUser.loadLog(token)) {
+                    loglst.add(u.toMap());
+                }
+                attributes.put("userloglist", loglst);
+                return new ModelAndView(attributes, "userlog.ftl");
+            } else {
+                Sys.debug("Received unauthorized GET to /vault/userlog.");
+                res.redirect("/");
+                return null;
             }
-
-            attributes.put("userloglist", loglst);
-            return new ModelAndView(attributes, "userlog.ftl");
         }, freeMarkerEngine);
 
         get("/vault/syslog", (req, res) -> {
-            Sys.debug("Received GET to /vault/syslog.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Token token = Authentication.validateToken(req);
+            if (token != null) {
+                Sys.debug("Received GET to /vault/syslog.", req.ip());
+                Map<String, Object> attributes = new HashMap<>();
 
-            List<Map<String, String>> sysloglist = new ArrayList<>();
+                List<Map<String, String>> sysloglist = new ArrayList<>();
 
-            for (SystemLogEntry e : Sys.loadLog()) {
-                sysloglist.add(e.toMap());
+                for (SystemLogEntry e : Sys.loadLog()) {
+                    sysloglist.add(e.toMap());
+                }
+
+                attributes.put("sysloglist", sysloglist);
+                return new ModelAndView(attributes, "syslog.ftl");
+            } else {
+                Sys.debug("Received unauthorized GET to /vault/syslog.");
+                res.redirect("/");
+                return null;
             }
-
-            attributes.put("sysloglist", sysloglist);
-            return new ModelAndView(attributes, "syslog.ftl");
         }, freeMarkerEngine);
 
     }
