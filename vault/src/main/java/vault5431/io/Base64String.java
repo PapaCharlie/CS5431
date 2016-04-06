@@ -34,6 +34,10 @@ public class Base64String {
         return FileUtils.read(file);
     }
 
+    public String toString() {
+        return getB64String();
+    }
+
     public static Base64String empty() {
         return fromBase64(new byte[0]);
     }

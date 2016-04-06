@@ -17,6 +17,7 @@ import vault5431.logging.UserLogEntry;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -28,7 +29,6 @@ import java.time.LocalDateTime;
 
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.home;
-import static vault5431.users.UserManager.hashUsername;
 
 /**
  * User class.
@@ -43,6 +43,7 @@ public final class User {
     public final File privSigningKeyFile;
     public final File vaultFile;
     public final File passwordHashFile;
+    public final File passwordSaltFile;
     public final File pubCryptoKeyFile;
     public final File pubCryptoSigFile;
     public final File pubSigningKeyFile;
@@ -51,7 +52,7 @@ public final class User {
     public final File cryptoKeyFile;
 
     protected User(String username) {
-        this(hashUsername(username));
+        this(UserManager.hashUsername(username));
     }
 
     protected User(Base64String hash) {
@@ -61,6 +62,7 @@ public final class User {
         privSigningKeyFile = new File(getHome(), "id_rsa.signing");
         vaultFile = new File(getHome(), "vault");
         passwordHashFile = new File(getHome(), "password.hash");
+        passwordSaltFile = new File(getHome(), "salt");
 
         pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
@@ -90,7 +92,7 @@ public final class User {
     public PrivateKey loadPrivateSigningKey(String password)
             throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         synchronized (privSigningKeyFile) {
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, password, passwordHashFile);
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, getSecretKey(password), passwordHashFile);
         }
     }
 
@@ -106,7 +108,7 @@ public final class User {
     public PrivateKey loadPrivateCryptoKey(String password)
             throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
         synchronized (privCryptoKeyfile) {
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, password, passwordHashFile);
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, getSecretKey(password), passwordHashFile);
         }
     }
 
@@ -163,6 +165,16 @@ public final class User {
 //                Sys.error("Could not append to user log.", this);
             }
         }
+    }
+
+    private byte[] loadSalt() throws IOException {
+        synchronized (passwordSaltFile) {
+            return Base64String.loadFromFile(passwordSaltFile)[0].decodeBytes();
+        }
+    }
+
+    public SecretKey getSecretKey(String password) throws IOException {
+        return PasswordUtils.deriveKey(password, loadSalt());
     }
 
     public void error(String message, User affectedUser, String ip) {

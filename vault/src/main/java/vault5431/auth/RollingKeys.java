@@ -1,12 +1,14 @@
 package vault5431.auth;
 
+import vault5431.crypto.SymmetricUtils;
+
 import javax.crypto.SecretKey;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static java.util.concurrent.TimeUnit.HOURS;
-import static vault5431.crypto.SymmetricUtils.getNewKey;
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 
 /**
@@ -14,21 +16,24 @@ import static vault5431.crypto.SymmetricUtils.getNewKey;
  */
 public class RollingKeys {
 
-    public static final int WINDOW_LENGTH = 24;
-
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    private static SecretKey encryptionKey;
-    private static SecretKey signingKey;
+    private static SecretKey encryptionKey = SymmetricUtils.getNewKey();
+    private static SecretKey signingKey = SymmetricUtils.getNewKey();
 
     static {
 
-        final Runnable refresher = () -> {
-            encryptionKey = getNewKey();
-            signingKey = getNewKey();
+        final Runnable keyRoller = () -> {
+            encryptionKey = SymmetricUtils.getNewKey();
+            signingKey = SymmetricUtils.getNewKey();
         };
 
-        scheduler.scheduleAtFixedRate(refresher, 0, WINDOW_LENGTH, HOURS);
+        scheduler.scheduleAtFixedRate(
+                keyRoller,
+                LocalDateTime.now().until(getEndOfCurrentWindow(), MILLIS),
+                24 * 60 * 60 * 1000,
+                MILLISECONDS
+        );
 
     }
 
@@ -41,7 +46,7 @@ public class RollingKeys {
     }
 
     public static LocalDateTime getEndOfCurrentWindow() {
-        return null;
+        return LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
 }

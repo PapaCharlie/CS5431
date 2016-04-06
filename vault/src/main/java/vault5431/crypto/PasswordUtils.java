@@ -36,7 +36,7 @@ public class PasswordUtils {
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
-            key = secretKeyFactory.generateSecret(spec);
+            key = SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
             err.printStackTrace();
             System.exit(1);

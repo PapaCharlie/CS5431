@@ -1,10 +1,7 @@
 package vault5431.users;
 
 import vault5431.Sys;
-import vault5431.crypto.AsymmetricUtils;
-import vault5431.crypto.PasswordUtils;
-import vault5431.crypto.SigningUtils;
-import vault5431.crypto.SymmetricUtils;
+import vault5431.crypto.*;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
@@ -18,7 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static vault5431.Vault.home;
-import static vault5431.crypto.HashUtils.hash256;
 
 /**
  * User manager. The goal of this class is to ensure that all user creation is done properly, and to manage file access
@@ -53,7 +49,7 @@ public class UserManager {
     }
 
     public static Base64String hashUsername(String username) {
-        return hash256(username.getBytes());
+        return HashUtils.hash256(username.getBytes());
     }
 
     public static boolean userExists(String username) {
@@ -96,12 +92,14 @@ public class UserManager {
             } else {
                 Sys.info("Created vault file.", user);
             }
-
             PasswordUtils.savePassword(user.passwordHashFile, password);
+            byte[] salt = PasswordUtils.generateSalt();
+            new Base64String(salt).saveToFile(user.passwordSaltFile);
+            SecretKey derivedKey = user.getSecretKey(password);
 
             Sys.info("Generating signing keypair.", user);
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
-            AsymmetricUtils.savePrivateKey(user.privSigningKeyFile, signingKeys.getPrivate(), password);
+            AsymmetricUtils.savePrivateKey(user.privSigningKeyFile, signingKeys.getPrivate(), derivedKey);
             Sys.info("Saving public signing key.", user);
             AsymmetricUtils.savePublicKey(user.pubSigningKeyFile, signingKeys.getPublic());
             Sys.info("Signing public signing key", user);
@@ -109,7 +107,7 @@ public class UserManager {
             Sys.info("Generating encryption keypair.", user);
             KeyPair cryptoKeys = AsymmetricUtils.getNewKeyPair();
             Sys.info("Saving private encryption key encrypted under password.", user);
-            AsymmetricUtils.savePrivateKey(user.privCryptoKeyfile, cryptoKeys.getPrivate(), password);
+            AsymmetricUtils.savePrivateKey(user.privCryptoKeyfile, cryptoKeys.getPrivate(), derivedKey);
             Sys.info("Saving public encryption key.", user);
             AsymmetricUtils.savePublicKey(user.pubCryptoKeyFile, cryptoKeys.getPublic());
             Sys.info("Signing public encryption key", user);

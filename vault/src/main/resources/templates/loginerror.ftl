@@ -19,9 +19,9 @@
 
 
 <div class="login">
-  <div class="login-triangle"></div>
+    <div class="login-triangle"></div>
 
-  <h2 class="login-header">Log in</h2>
+    <h2 class="login-header">Log in</h2>
 
 
     <form action= "/authenticate" method="post" id="form" class="login-container">
@@ -29,15 +29,16 @@
         <p><input type="password" name="password" placeholder="Password"></p>
         <input type="hidden" name="ip">
         <p><input type="submit" value="Log in"></p>
+        <p>This username/password combination does not exist!</p>
     </form>
 
 
- <!-- <form action="vault" id="form" class="login-container" method="post" onsubmit="sendLoginInfo()">
-    <p><input type="text" name="username" placeholder="Username"></p>
-    <p><input type="password" name="password" placeholder="Password"></p>
-    <p><input type="submit" value="Log in"></p>
-  </form>
-  -->
+    <!-- <form action="vault" id="form" class="login-container" method="post" onsubmit="sendLoginInfo()">
+       <p><input type="text" name="username" placeholder="Username"></p>
+       <p><input type="password" name="password" placeholder="Password"></p>
+       <p><input type="submit" value="Log in"></p>
+     </form>
+     -->
 
 
 </div>

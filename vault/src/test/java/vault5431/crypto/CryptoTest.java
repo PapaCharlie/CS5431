@@ -75,10 +75,11 @@ public class CryptoTest extends VaultTest {
     public void testPrivateKeySaveToFile() throws Exception {
         File privKeyFile = getTempFile("id_rsa");
         String password = PasswordGenerator.generatePassword(20);
+        SecretKey key = SymmetricUtils.getNewKey();
         File passwordFile = getTempFile("password");
         PasswordUtils.savePassword(passwordFile, password);
-        AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), password);
-        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, password, passwordFile);
+        AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), key);
+        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, key, passwordFile);
         assertNotNull(privateKey);
         assertArrayEquals(keys.getPrivate().getEncoded(), privateKey.getEncoded());
     }

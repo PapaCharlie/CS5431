@@ -28,7 +28,6 @@ class Logs extends Routes {
 
         get("/vault/userlog", (req, res) -> {
             Sys.debug("Received GET to /vault/userlog.", req.ip());
-            java.lang.System.out.println("user log");
             Map<String, Object> attributes = new HashMap<>();
 
             List<Map<String, String>> loglst = new ArrayList<>();

@@ -23,6 +23,24 @@ import static vault5431.Vault.demoUser;
  */
 class Authentication extends Routes {
 
+    private static boolean validateToken(String cookie, String ip) {
+        if (cookie != null && cookie.length() > 0) {
+            try {
+                Token.parseToken(cookie.trim());
+                return true;
+            } catch (CouldNotParseTokenException err) {
+                Sys.debug("Received invalid token.", ip);
+                return false;
+            } catch (InvalidTokenException err) {
+                Sys.warning("Received tampered token. There is reason to believe this IP is acting maliciously.", ip);
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
     protected void routes() {
 
         get("/vault", (req, res) -> {
@@ -43,30 +61,38 @@ class Authentication extends Routes {
                     req.queryParams("password") != null &&
                     req.queryParams("password").length() > 0) {
                 User user = UserManager.getUser(req.queryParams("username"));
-                Token token = new Token(user, user.)
-                res.redirect("/vault/home");
-                demoUser.info("Action: Log In", req.ip());
+                if (user.verifyPassword(req.queryParams("password"))) {
+                    Token token = new Token(user, user.getSecretKey(req.queryParams("password")));
+                    res.cookie("token", token.toCookie());
+                    res.redirect("/vault/home");
+                    user.info("Succesful login.", req.ip());
+                } else {
+                    user.warning("Failed login attempt.", req.ip());
+                    res.redirect("/loginerror");
+                }
             } else {
-                res.redirect("/");
+                Sys.debug("Failed login attempt.", req.ip());
+                res.redirect("/loginerror");
             }
             return null;
         });
 
+        get("/loginerror", (req, res) -> {
+            Sys.debug("Received GET to /.", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+            return new ModelAndView(attributes, "loginerror.ftl");
+        }, freeMarkerEngine);
+
+        before("/", (req, res) -> {
+            if (validateToken(req.cookie("token"), req.ip())) {
+                res.redirect("/vault/home");
+            }
+        });
+
         before("/vault/*", (req, res) -> {
-            if (req.cookie("token") != null) {
-                try {
-                    Token.parseToken(req.cookie("token"));
-                } catch (CouldNotParseTokenException err) {
-                    res.removeCookie("token");
-                    res.redirect("/unauthorized");
-                } catch (InvalidTokenException err) {
-                    Sys.warning("Received invalid token. There is reason to believe this IP is acting malicious.", req.ip());
-                    res.removeCookie("token");
-                    res.redirect("/unauthorized");
-                }
-            } else {
-                res.removeCookie("token");
+            if (!validateToken(req.cookie("token"), req.ip())) {
                 res.redirect("/unauthorized");
+                halt(401);
             }
         });
 
@@ -77,7 +103,11 @@ class Authentication extends Routes {
         });
 
         get("/unauthorized", (req, res) -> {
+            Sys.debug("Displaying unauthorized page.", req.ip());
             res.status(401);
+            if (req.cookie("token") != null && req.cookie("token").length() > 0) {
+                res.removeCookie("token");
+            }
             Map<String, Object> attributes = new HashMap<>();
             return new ModelAndView(attributes, "unauthorized.ftl");
         }, freeMarkerEngine);
