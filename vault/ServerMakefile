@@ -1,0 +1,20 @@
+SHELL := /bin/bash
+
+CERTS := /etc/letsencrypt/live/vault5431.com
+
+.PHONY: run
+
+run:
+	java -d64 -Xms1024m -Xmx15360m -jar vault5431-assembly-0.2.jar
+
+certs:
+	./letsencrypt/letsencrypt-auto certonly --standalone --email paul.chesnais@gmail.com -d vault5431.com -d vault5431.com
+
+	-cd $(CERTS) && rm privkey-enc.pem keystore.p12 keystore.jks
+	cd $(CERTS) && openssl rsa -des -in privkey.pem -out privkey-enc.pem
+	cd $(CERTS) && openssl pkcs12 -export -out keystore.p12 -inkey privkey-enc.pem -in fullchain.pem
+	cd $(CERTS) && keytool -importkeystore -destkeystore keystore.jks -srcstoretype PKCS12 -srckeystore keystore.p12
+	cd $(CERTS) && rm privkey-enc.pem keystore.p12
+
+	-rm keystore.jks
+	ln /etc/letsencrypt/live/vault5431.com/keystore.jks .
