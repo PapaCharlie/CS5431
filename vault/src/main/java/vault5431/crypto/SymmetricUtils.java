@@ -24,6 +24,10 @@ public class SymmetricUtils {
         return Cipher.getInstance("AES/CBC/PKCS5PADDING", "BC");
     }
 
+    public static SecretKey keyFromBytes(byte[] bytes) {
+        return new SecretKeySpec(bytes, "AES");
+    }
+
     public static SecretKey getNewKey() {
         SecretKey key = null;
         try {
@@ -93,7 +97,7 @@ public class SymmetricUtils {
     public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, InvalidKeyException, BadCiphertextException {
         Base64String encryptedKey = Base64String.loadFromFile(file)[0];
         byte[] key = AsymmetricUtils.decrypt(encryptedKey, privateKey);
-        return new SecretKeySpec(key, "AES");
+        return keyFromBytes(key);
     }
 
 }

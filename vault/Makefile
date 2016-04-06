@@ -12,6 +12,8 @@ BOUNCY_CASTLE_SHA1_SUM = 1acdedeb89f1d950d67b73d481eb7736df65eedb
 INSTALLED := \e[0;31msbt is already installed!$<\e[0m
 INSTALLING := Fetching and installing sbt.
 
+MAIN := src/main/java/vault5431/Vault.java
+
 SBT_TASKS := compile test run clean
 
 .PHONY: all
@@ -45,3 +47,17 @@ log:
 
 submission:
 	zip -r src.zip LICENSE Makefile README build.sbt keystore.jks lib/spark-template-freemarker-2.3.jar src/ project/build.properties project/plugins.sbt
+
+assembly:
+	cp $(MAIN) $(MAIN).bak
+	sed -i "s#port(5431);#port(443);#g" $(MAIN)
+	sed -i 's#secure("./keystore.jks", "vault5431", null, null);#secure("./keystore.jks", new String(System.console().readPassword()), null, null);#g' $(MAIN)
+	sed -i 's#String adminPassword = "debug";#String adminPassword = new String(System.console().readPassword());#g' $(MAIN)
+	"$(SBT)" "assembly"
+	mv $(MAIN).bak $(MAIN)
+
+deploy: assembly up
+	rsync -vrc --progress target/scala-2.10/vault5431-assembly-0.2.jar root@vault5431.com:.
+
+up:
+	rsync -vrc --progress ServerMakefile root@vault5431.com:Makefile

@@ -1,10 +1,10 @@
-import de.johoop.findbugs4sbt.FindBugs._
-
 name := "vault5431"
 
-lazy val vault5431 = project.in(file("."))
+version := "0.2"
 
-findbugsSettings
+isSnapshot := true
+
+lazy val vault5431 = project.in(file("."))
 
 libraryDependencies ++= Seq(
   "com.sparkjava" % "spark-core" % "2.3",

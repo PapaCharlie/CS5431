@@ -3,6 +3,10 @@ package vault5431.routes;
 import spark.ModelAndView;
 import vault5431.Password;
 import vault5431.Sys;
+import vault5431.auth.Token;
+import vault5431.auth.exceptions.CouldNotParseTokenException;
+import vault5431.auth.exceptions.InvalidTokenException;
+import vault5431.routes.exceptions.UnauthorizedRequestException;
 import vault5431.users.UserManager;
 
 import java.util.ArrayList;
@@ -10,8 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static spark.Spark.get;
-import static spark.Spark.post;
+import static spark.Spark.*;
+import static spark.Spark.halt;
 import static vault5431.Vault.demoUser;
 
 /**
@@ -21,6 +25,11 @@ class Authentication extends Routes {
 
     protected void routes() {
 
+        get("/vault", (req, res) -> {
+            res.redirect("/vault/home");
+            return null;
+        });
+
         get("/", (req, res) -> {
             Sys.debug("Received GET to /.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
@@ -29,19 +38,48 @@ class Authentication extends Routes {
 
         post("/authenticate", (req, res) -> {
             Sys.debug("Received POST to /authenticate.", req.ip());
-            if (req.queryParams("username") != null) {
-                if (UserManager.userExists(req.queryParams("username"))) {
-                    System.out.println("exists");
-                    res.redirect("/vault");
-                    demoUser.info("Action: Log In", demoUser, req.ip());
-                }
+            if (req.queryParams("username") != null && UserManager.userExists(req.queryParams("username"))) {
+                System.out.println("exists");
+                res.redirect("/vault/home");
+                demoUser.info("Action: Log In", req.ip());
+            } else {
+                res.redirect("/");
             }
-            res.redirect("/");
-            return "";
+            return null;
         });
 
-        get("/vault", (req, res) -> {
-            Sys.debug("Received GET to /vault.", req.ip());
+//        before("/vault/*", (req, res) -> {
+//            if (req.cookie("token") != null) {
+//                try {
+//                    Token token = Token.parseToken(req.cookie("token"));
+//                } catch (CouldNotParseTokenException err) {
+//                    res.removeCookie("token");
+//                    res.redirect("/unauthorized");
+//                } catch (InvalidTokenException err) {
+//                    Sys.warning("Received invalid token. There is reason to believe this IP is acting malicious.", req.ip());
+//                    res.removeCookie("token");
+//                    res.redirect("/unauthorized");
+//                }
+//            } else {
+//                res.removeCookie("token");
+//                res.redirect("/unauthorized");
+//            }
+//        });
+
+        get("/logout", (req, res) -> {
+            res.removeCookie("token");
+            res.redirect("/");
+            return null;
+        });
+
+        get("/unauthorized", (req, res) -> {
+            res.status(401);
+            Map<String, Object> attributes = new HashMap<>();
+            return new ModelAndView(attributes, "unauthorized.ftl");
+        }, freeMarkerEngine);
+
+        get("/vault/home", (req, res) -> {
+            Sys.debug("Received GET to /vault/home.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
 
             Password[] plist = demoUser.loadPasswords();
@@ -54,7 +92,7 @@ class Authentication extends Routes {
 
             attributes.put("storedpasswords", listofmaps);
 
-            return new ModelAndView(attributes, "vault.ftl");
+            return new ModelAndView(attributes, "home.ftl");
         }, freeMarkerEngine);
 
     }

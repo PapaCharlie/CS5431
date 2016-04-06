@@ -13,18 +13,18 @@ class Passwords extends Routes {
 
     protected void routes() {
 
-        post("/changepassword", (req, res) -> {
-            Sys.debug("Received POST to /changepassword.", req.ip());
+        post("/vault/changepassword", (req, res) -> {
+            Sys.debug("Received POST to /vault/changepassword.", req.ip());
             String w = req.queryParams("name");
             if (w != null && w.length() > 0) {
                 demoUser.info("Changed Password for " + w, req.ip());
             }
-            res.redirect("/vault");
-            return "";
+            res.redirect("/vault/home");
+            return null;
         });
 
-        post("/savepassword", (req, res) -> {
-            Sys.debug("Received POST to /savepassword.", req.ip());
+        post("/vault/savepassword", (req, res) -> {
+            Sys.debug("Received POST to /vault/savepassword.", req.ip());
             String web = req.queryParams("web");
             String url = req.queryParams("url");
             String username = req.queryParams("username");
@@ -37,8 +37,8 @@ class Passwords extends Routes {
                     String errorMessage = err.getLocalizedMessage();
                 }
             }
-            res.redirect("/vault");
-            return "";
+            res.redirect("/vault/home");
+            return null;
         });
 
     }

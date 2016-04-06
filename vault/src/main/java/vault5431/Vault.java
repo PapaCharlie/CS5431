@@ -3,9 +3,9 @@ package vault5431;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
+import vault5431.routes.Routes;
 import vault5431.users.User;
 import vault5431.users.UserManager;
-import vault5431.routes.Routes;
 
 import javax.crypto.SecretKey;
 import java.io.File;
@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.security.Security;
 
 import static spark.Spark.*;
-import static vault5431.routes.Routes.freeMarkerConfiguration;
 
 
 public class Vault {
@@ -53,7 +52,7 @@ public class Vault {
         File adminSaltFile = new File(home, "admin.salt");
         if (!adminSaltFile.exists()) {
             System.out.println("Could not find the admin salt file. This either means the system was compromised, or never initialized.");
-            System.out.print("Press enter to initialize, or kill this process and freak out.");
+            System.out.print("Press enter to initialize.");
             System.console().readLine();
             try {
                 new Base64String(PasswordUtils.generateSalt()).saveToFile(adminSaltFile);
@@ -65,7 +64,7 @@ public class Vault {
         try {
             byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
             System.out.print("Please enter the admin password: ");
-            String adminPassword = new String(System.console().readPassword());
+            String adminPassword = "debug";
             adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
             adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
         } catch (IOException err) {
@@ -89,13 +88,14 @@ public class Vault {
     public static void main(String[] args) throws Exception {
         initialize();
         port(5431);
+
+        System.out.print("Please enter the SSL certificate password:");
         secure("./keystore.jks", "vault5431", null, null);
 
         Routes.initialize();
-
         awaitInitialization();
-        System.out.println("Hosting at: https://localhost:5431");
 
+        System.out.println("Hosting at: https://localhost:5431");
     }
 
 }
