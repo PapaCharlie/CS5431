@@ -3,7 +3,10 @@ package vault5431.auth;
 import org.junit.Test;
 import vault5431.Sys;
 import vault5431.VaultTest;
+import vault5431.crypto.SymmetricUtils;
 import vault5431.users.User;
+
+import javax.crypto.SecretKey;
 
 import static org.junit.Assert.*;
 

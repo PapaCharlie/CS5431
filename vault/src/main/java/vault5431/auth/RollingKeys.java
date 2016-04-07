@@ -36,9 +36,10 @@ public class RollingKeys {
                     encryptionKey = SymmetricUtils.getNewKey();
                     signingKey = SymmetricUtils.getNewKey();
                 } catch (DestroyFailedException err) {
+                    // As it turns out, .destroy() is not implemented and always throws this error.
+                    // See https://bugs.openjdk.java.net/browse/JDK-8008795
                     err.printStackTrace();
-                    System.err.println("Could not destroy rolling keys!!! Halting.");
-                    System.exit(1);
+                    System.err.println("Cannot destroy rolling keys.");
                 }
             }
         };

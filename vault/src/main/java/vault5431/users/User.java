@@ -3,11 +3,12 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
 import vault5431.Sys;
-import vault5431.auth.ExecutionContext;
 import vault5431.auth.Token;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SigningUtils;
+import vault5431.crypto.SymmetricUtils;
+import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.InvalidMasterPasswordException;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
@@ -16,6 +17,8 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
+import vault5431.users.exceptions.CorruptedVaultException;
+import vault5431.users.exceptions.VaultNotFoundException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -28,6 +31,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.home;
@@ -140,20 +145,31 @@ public final class User {
         }
     }
 
-    public Password[] loadPasswords(Token token) throws IOException {
+    public Password[] loadPasswords(Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
         synchronized (vaultFile) {
             debug("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {
                 Sys.error("User's vault file could not be found.", this);
-                return new Password[0];
+                throw new VaultNotFoundException();
             }
             try {
-                Base64String[] encodedPasswords = FileUtils.read(vaultFile);
-                Password[] passwords = new Password[encodedPasswords.length];
-                for (int i = 0; i < encodedPasswords.length; i++) {
-                    passwords[i] = Password.fromCSVRecord(CSVUtils.parseRecord(encodedPasswords[i].decodeString()).getRecords().get(0));
+                boolean corrupted = false;
+                Base64String[] encryptedPasswords = FileUtils.read(vaultFile);
+                ArrayList<Password> passwords = new ArrayList<>();
+                for (int i = 0; i < encryptedPasswords.length; i++) {
+                    try {
+                        byte[] decryptedPassword = SymmetricUtils.decrypt(encryptedPasswords[i], token.getKey());
+                        passwords.add(Password.fromCSVRecord(CSVUtils.parseRecord(new String(decryptedPassword)).getRecords().get(0)));
+                    } catch (InvalidKeyException | BadCiphertextException | IllegalArgumentException err) {
+                        err.printStackTrace();
+                        corrupted = true;
+                    }
                 }
-                return passwords;
+                if (corrupted) {
+                    throw new CorruptedVaultException(passwords.toArray(new Password[passwords.size()]));
+                } else {
+                    return passwords.toArray();
+                }
             } catch (IOException err) {
                 error("Could not load or parse passwords!");
                 throw err;

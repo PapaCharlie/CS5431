@@ -1,5 +1,6 @@
 package vault5431.crypto;
 
+import org.bouncycastle.jcajce.provider.symmetric.AES;
 import org.bouncycastle.util.Arrays;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
@@ -31,10 +32,10 @@ public class SymmetricUtils {
     public static SecretKey getNewKey() {
         SecretKey key = null;
         try {
-            KeyGenerator gen = KeyGenerator.getInstance("AES");
+            KeyGenerator gen = KeyGenerator.getInstance("AES", "BC");
             gen.init(KEY_SIZE);
             key = gen.generateKey();
-        } catch (NoSuchAlgorithmException err) {
+        } catch (NoSuchAlgorithmException | NoSuchProviderException err) {
             err.printStackTrace();
             System.exit(1);
         }

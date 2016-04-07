@@ -50,7 +50,7 @@ public class Password {
         this.uuid = uuid;
     }
 
-    public Password(String name, String website, String username, String password) {
+    public Password(String name, String website, String username, String password) throws IllegalArgumentException {
         this(name, website, username, password, UUID.randomUUID());
     }
 
@@ -71,7 +71,7 @@ public class Password {
         }
     }
 
-    public static Password fromCSVRecord(CSVRecord entry) {
+    public static Password fromCSVRecord(CSVRecord entry) throws IllegalArgumentException {
         return new Password(
                 entry.get(0),
                 entry.get(1),
