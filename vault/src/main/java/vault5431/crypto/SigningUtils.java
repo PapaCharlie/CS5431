@@ -1,5 +1,6 @@
 package vault5431.crypto;
 
+import vault5431.Sys;
 import vault5431.Vault;
 import vault5431.io.Base64String;
 
@@ -16,7 +17,7 @@ public class SigningUtils {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
 
-    public static Base64String getSignature(byte[] content, SecretKey key) throws InvalidKeyException {
+    public static Base64String getSignature(byte[] content, SecretKey key) {
         Base64String sig = null;
         try {
             Mac cipher = Mac.getInstance(HMAC_SHA256);
@@ -26,25 +27,20 @@ public class SigningUtils {
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
         return sig;
     }
 
-    public static boolean verifySignature(byte[] content, Base64String signature, SecretKey key) throws InvalidKeyException {
+    public static boolean verifySignature(byte[] content, Base64String signature, SecretKey key) {
         Base64String newSig = getSignature(content, key);
         return newSig.equals(signature);
     }
 
     public static Base64String signPublicKey(PublicKey publicKey) {
-        Base64String sig = null;
-        try {
-            sig = getSignature(publicKey.getEncoded(), Vault.adminSigningKey);
-        } catch (InvalidKeyException err) {
-            err.printStackTrace();
-            System.err.println("adminSigningKey is invalid!! Panicking.");
-            System.exit(1);
-        }
-        return sig;
+        return getSignature(publicKey.getEncoded(), Vault.adminSigningKey);
     }
 
     public static boolean verifyPublicKeySignature(PublicKey publicKey, Base64String signature) {

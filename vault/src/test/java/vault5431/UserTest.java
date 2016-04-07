@@ -40,11 +40,11 @@ public class UserTest extends VaultTest {
     @Test
     public void testUserCreation() throws Exception {
         user.loadPrivateCryptoKey(token);
-        user.loadPublicCryptoKey(token);
+        user.loadPublicCryptoKey();
         user.loadPrivateSigningKey(token);
-        user.loadPublicSigningKey(token);
-        user.debug("I'm a log entry!");
-        user.debug("I'm another log entry!");
+        user.loadPublicSigningKey();
+        user.info("I'm a log entry!");
+        user.info("I'm another log entry!");
         LogEntry[] loadedLog = user.loadLog(token);
         System.out.println(Arrays.toString(loadedLog));
     }
@@ -63,10 +63,10 @@ public class UserTest extends VaultTest {
         User user = getTempUser("password");
         FileUtils.write(user.pubCryptoKeyFile, new Base64String("nothing!"));
         try {
-            user.loadPublicCryptoKey(token);
+            user.loadPublicCryptoKey();
             fail("Public key was loaded even though signature could not be verified.");
         } catch (InvalidPublicKeySignature | CouldNotLoadKeyException err) {
-            assert (true);
+            return;
         }
     }
 

@@ -2,6 +2,7 @@ package vault5431.crypto;
 
 import org.bouncycastle.jcajce.provider.symmetric.AES;
 import org.bouncycastle.util.Arrays;
+import vault5431.Sys;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 
@@ -49,7 +50,7 @@ public class SymmetricUtils {
     }
 
     public static Base64String encrypt(byte[] content, SecretKey key)
-            throws InvalidKeyException, BadCiphertextException {
+            throws BadCiphertextException {
         Base64String ciphertext = null;
         IvParameterSpec iv = generateIV();
         try {
@@ -65,37 +66,41 @@ public class SymmetricUtils {
         } catch (BadPaddingException err) {
             // Only thrown in decryption mode, we're okay.
             err.printStackTrace();
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
         return ciphertext;
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws InvalidKeyException, BadCiphertextException {
+    public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws BadCiphertextException {
         byte[] decryptedText = null;
         try {
             Cipher aesCipher = getCipher();
             byte[] content = encryptedContent.decodeBytes();
             IvParameterSpec iv = new IvParameterSpec(Arrays.copyOfRange(content, 0, IV_SIZE));
+            byte[] cipherText = Arrays.copyOfRange(content, IV_SIZE, content.length);
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
-            decryptedText = aesCipher.doFinal(Arrays.copyOfRange(content, IV_SIZE, content.length));
+            decryptedText = aesCipher.doFinal(cipherText);
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
-        } catch (BadPaddingException err) {
+        } catch (BadPaddingException | IllegalBlockSizeException  err) {
             err.printStackTrace();
             throw new BadCiphertextException();
-        } catch (IllegalBlockSizeException err) {
-            // Only thown in encryption mode, we're okay
-            err.printStackTrace();
+        }  catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
         return decryptedText;
     }
 
-    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws InvalidKeyException, BadCiphertextException, IOException {
+    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws BadCiphertextException, IOException {
         Base64String encryptedKey = AsymmetricUtils.encrypt(key.getEncoded(), publicKey);
         encryptedKey.saveToFile(keyFile);
     }
 
-    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, InvalidKeyException, BadCiphertextException {
+    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, BadCiphertextException {
         Base64String encryptedKey = Base64String.loadFromFile(file)[0];
         byte[] key = AsymmetricUtils.decrypt(encryptedKey, privateKey);
         return keyFromBytes(key);
