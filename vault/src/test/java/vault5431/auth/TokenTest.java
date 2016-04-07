@@ -30,6 +30,7 @@ public class TokenTest extends VaultTest {
     public void testTokenSerialization() throws Exception {
         Token token = new Token(user, user.deriveSecretKey("password"));
         System.out.println(token.toCookie());
+        Thread.sleep(100);
         Token parsedToken = Token.parseToken(token.toCookie());
         assertTrue(token.equals(parsedToken));
     }
