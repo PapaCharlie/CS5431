@@ -14,7 +14,7 @@ public class FileUtils {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                lines.add(Base64String.fromBase64(line.trim()));
+                lines.add(Base64String.fromBase64(line.trim().replace("\n", "").replace("\r","")));
             }
             while (lines.peekFirst() != null && lines.getFirst().decodeString().length() == 0) {
                 lines.removeFirst();

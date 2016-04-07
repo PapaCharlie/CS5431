@@ -7,7 +7,6 @@ import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;
 import javax.security.auth.DestroyFailedException;
-import java.security.InvalidKeyException;
 import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,29 +54,13 @@ public class RollingKeys {
 
     public static boolean verifySignature(byte[] content, Base64String signature) {
         synchronized (lock) {
-            boolean verified = false;
-            try {
-                verified = SigningUtils.verifySignature(content, signature, signingKey);
-            } catch (InvalidKeyException err) {
-                err.printStackTrace();
-                System.err.println("Current rolling key is invalid. Halting.");
-                System.exit(1);
-            }
-            return verified;
+            return SigningUtils.verifySignature(content, signature, signingKey);
         }
     }
 
     public static Base64String sign(byte[] content) {
         synchronized (lock) {
-            Base64String signature = null;
-            try {
-                signature = SigningUtils.getSignature(content, signingKey);
-            } catch (InvalidKeyException err) {
-                err.printStackTrace();
-                System.err.println("Current rolling key is invalid. Halting.");
-                System.exit(1);
-            }
-            return signature;
+            return SigningUtils.getSignature(content, signingKey);
         }
     }
 
@@ -86,7 +69,7 @@ public class RollingKeys {
             Base64String encryptedContent = null;
             try {
                 encryptedContent = SymmetricUtils.encrypt(content, encryptionKey);
-            } catch (InvalidKeyException | BadCiphertextException err) {
+            } catch (BadCiphertextException err) {
                 err.printStackTrace();
                 System.err.println("Current rolling key is invalid. Halting.");
                 System.exit(1);
@@ -100,7 +83,7 @@ public class RollingKeys {
             byte[] content = null;
             try {
                 content = SymmetricUtils.decrypt(ciphertext, encryptionKey);
-            } catch (InvalidKeyException | BadCiphertextException err) {
+            } catch (BadCiphertextException err) {
                 err.printStackTrace();
                 System.err.println("Current rolling key is invalid. Halting.");
                 System.exit(1);

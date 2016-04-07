@@ -1,6 +1,7 @@
 package vault5431.crypto;
 
 import org.bouncycastle.util.Arrays;
+import vault5431.Sys;
 import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;
@@ -8,7 +9,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -49,7 +49,7 @@ public class PasswordUtils {
         return new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded()));
     }
 
-    public static boolean verifyHashedPassword(Base64String hashedPassword, String password) throws InvalidKeyException {
+    public static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
         boolean result = false;
         try {
             byte[] decoded = hashedPassword.decodeBytes();
@@ -63,9 +63,8 @@ public class PasswordUtils {
             err.printStackTrace();
             System.exit(1);
         } catch (InvalidKeySpecException err) {
-            // Standardize errors
-            err.printStackTrace();
-            throw new InvalidKeyException(err.getLocalizedMessage());
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
         return result;
     }
@@ -74,7 +73,7 @@ public class PasswordUtils {
         hashPassword(password).saveToFile(passwordFile);
     }
 
-    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException, InvalidKeyException {
+    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException {
         return verifyHashedPassword(Base64String.loadFromFile(passwordFile)[0], password);
     }
 

@@ -1,7 +1,10 @@
 package vault5431.users;
 
 import vault5431.Sys;
-import vault5431.crypto.*;
+import vault5431.crypto.AsymmetricUtils;
+import vault5431.crypto.HashUtils;
+import vault5431.crypto.PasswordUtils;
+import vault5431.crypto.SigningUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
@@ -9,7 +12,6 @@ import vault5431.io.Base64String;
 import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +75,7 @@ public class UserManager {
     }
 
     public synchronized static User create(String username, String password)
-            throws IOException, InvalidKeyException, CouldNotSaveKeyException, BadCiphertextException {
+            throws IOException, CouldNotSaveKeyException, BadCiphertextException {
         User user;
         synchronized (mapLock) {
             if (userExists(username)) {
@@ -103,7 +105,7 @@ public class UserManager {
             Sys.info("Saving public signing key.", user);
             AsymmetricUtils.savePublicKey(user.pubSigningKeyFile, signingKeys.getPublic());
             Sys.info("Signing public signing key", user);
-            SigningUtils.signPublicKey(signingKeys.getPublic()).saveToFile(user.pubSigningSigFile);;
+            SigningUtils.signPublicKey(signingKeys.getPublic()).saveToFile(user.pubSigningSigFile);
             Sys.info("Generating encryption keypair.", user);
             KeyPair cryptoKeys = AsymmetricUtils.getNewKeyPair();
             Sys.info("Saving private encryption key encrypted under password.", user);
@@ -111,7 +113,8 @@ public class UserManager {
             Sys.info("Saving public encryption key.", user);
             AsymmetricUtils.savePublicKey(user.pubCryptoKeyFile, cryptoKeys.getPublic());
             Sys.info("Signing public encryption key", user);
-            SigningUtils.signPublicKey(cryptoKeys.getPublic()).saveToFile(user.pubCryptoSigFile);;
+            SigningUtils.signPublicKey(cryptoKeys.getPublic()).saveToFile(user.pubCryptoSigFile);
+            ;
 
             Sys.info("Successfully created user.", user);
             addUser(user);

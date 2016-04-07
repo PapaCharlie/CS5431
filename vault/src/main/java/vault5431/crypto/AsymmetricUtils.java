@@ -1,5 +1,6 @@
 package vault5431.crypto;
 
+import vault5431.Sys;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
@@ -60,7 +61,7 @@ public class AsymmetricUtils {
         return keyPair;
     }
 
-    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws InvalidKeyException, BadCiphertextException {
+    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -68,10 +69,13 @@ public class AsymmetricUtils {
         } catch (IllegalBlockSizeException | BadPaddingException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws InvalidKeyException, BadCiphertextException {
+    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -79,6 +83,9 @@ public class AsymmetricUtils {
         } catch (IllegalBlockSizeException | BadPaddingException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
     }
 
@@ -106,7 +113,7 @@ public class AsymmetricUtils {
         try {
             Base64String encryptedKey = SymmetricUtils.encrypt(privateKey.getEncoded(), key);
             encryptedKey.saveToFile(keyfile);
-        } catch (BadCiphertextException | InvalidKeyException err) {
+        } catch (BadCiphertextException err) {
             err.printStackTrace();
             throw new CouldNotSaveKeyException();
         }
@@ -121,7 +128,7 @@ public class AsymmetricUtils {
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
-        } catch (BadCiphertextException | InvalidKeySpecException | InvalidKeyException err) {
+        } catch (BadCiphertextException | InvalidKeySpecException err) {
             throw new CouldNotLoadKeyException();
         }
         return privateKey;
