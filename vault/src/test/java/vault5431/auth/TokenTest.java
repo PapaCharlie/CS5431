@@ -3,6 +3,7 @@ package vault5431.auth;
 import org.junit.Test;
 import vault5431.Sys;
 import vault5431.VaultTest;
+import static vault5431.Vault.adminEncryptionKey;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.users.User;
 
@@ -28,7 +29,7 @@ public class TokenTest extends VaultTest {
 
     @Test
     public void testTokenSerialization() throws Exception {
-        Token token = new Token(user, user.deriveSecretKey("password"));
+        Token token = new Token(user, adminEncryptionKey);
         System.out.println(token.toCookie());
         Thread.sleep(100);
         Token parsedToken = Token.parseToken(token.toCookie());

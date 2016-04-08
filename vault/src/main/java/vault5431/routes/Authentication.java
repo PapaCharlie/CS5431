@@ -2,12 +2,13 @@ package vault5431.routes;
 
 import spark.ModelAndView;
 import spark.Request;
-import spark.Response;
 import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
+import vault5431.crypto.PasswordUtils;
+import vault5431.io.Base64String;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
@@ -16,7 +17,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static spark.Spark.*;
+import static spark.Spark.get;
+import static spark.Spark.post;
+import static vault5431.Vault.adminEncryptionKey;
 import static vault5431.Vault.demoUser;
 
 /**
@@ -55,8 +58,22 @@ class Authentication extends Routes {
                 return null;
             } else {
                 Map<String, Object> attributes = new HashMap<>();
-                return new ModelAndView(attributes, "login.ftl");
+                return new ModelAndView(attributes, "username.ftl");
             }
+        }, freeMarkerEngine);
+
+        post("/password", (req, res) -> {
+            Sys.debug("Received POST to /getsalt.", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+            if (req.queryParams("username") != null
+                    && req.queryParams("username").length() > 0
+                    && UserManager.userExists(req.queryParams("username"))) {
+                Base64String salt = UserManager.getUser(req.queryParams("username")).loadPasswordSalt();
+                attributes.put("salt", salt.getB64String());
+            } else {
+                attributes.put("salt", new Base64String(PasswordUtils.generateSalt()).getB64String());
+            }
+            return new ModelAndView(attributes, "password.ftl");
         }, freeMarkerEngine);
 
         post("/", (req, res) -> {
@@ -68,7 +85,7 @@ class Authentication extends Routes {
                     && req.queryParams("password").length() > 0) {
                 User user = UserManager.getUser(req.queryParams("username"));
                 if (user.verifyPassword(req.queryParams("password"))) {
-                    Token token = new Token(user, user.deriveSecretKey(req.queryParams("password")));
+                    Token token = new Token(user, adminEncryptionKey);
                     res.cookie("token", token.toCookie());
                     res.redirect("/vault/home");
                     user.info("Succesful login.", req.ip());
