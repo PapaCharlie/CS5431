@@ -32,7 +32,7 @@ public class MessageSender {
         } catch (TwilioRestException t) {
             System.out.println("Error creating message: " + t.getErrorMessage());
             System.out.println("Additional Info: " + t.getMoreInfo());
-            return null;
+            return 0;
         }
 
         return sms.getErrorCode();
