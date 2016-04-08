@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   "org.freemarker" % "freemarker" % "2.3.23",
   "commons-io" % "commons-io" % "2.4",
   "junit" % "junit" % "4.12" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test
+  "com.novocode" % "junit-interface" % "0.11" % Test,
+  "com.twilio.sdk" % "twilio-java-sdk" % "3.4.5"
 )
 
 initialize := {
