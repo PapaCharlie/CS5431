@@ -43,6 +43,7 @@ public final class User {
     public final File privCryptoKeyfile;
     public final File privSigningKeyFile;
     public final File vaultFile;
+    public final File vaultSaltFile;
     public final File passwordHashFile;
     public final File passwordSaltFile;
     public final File pubCryptoKeyFile;
@@ -62,8 +63,9 @@ public final class User {
         privCryptoKeyfile = new File(getHome(), "id_rsa.crypto");
         privSigningKeyFile = new File(getHome(), "id_rsa.signing");
         vaultFile = new File(getHome(), "vault");
+        vaultSaltFile = new File(getHome(), "vault.salt");
         passwordHashFile = new File(getHome(), "password.hash");
-        passwordSaltFile = new File(getHome(), "salt");
+        passwordSaltFile = new File(getHome(), "password.salt");
 
         pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
@@ -72,6 +74,7 @@ public final class User {
         signingKeyFile = new File(getHome(), "signing.key");
         cryptoKeyFile = new File(getHome(), "crypto.key");
     }
+
 
     public String getShortHash() {
         return hash.getB64String().substring(0, Integer.min(hash.length(), 10));
@@ -190,14 +193,16 @@ public final class User {
         }
     }
 
-    private byte[] loadSalt() throws IOException {
+    public Base64String loadPasswordSalt() throws IOException {
         synchronized (passwordSaltFile) {
-            return Base64String.loadFromFile(passwordSaltFile)[0].decodeBytes();
+            return Base64String.loadFromFile(passwordSaltFile)[0];
         }
     }
 
-    public SecretKey deriveSecretKey(String password) throws IOException {
-        return PasswordUtils.deriveKey(password, loadSalt());
+    public Base64String loadVaultSalt() throws IOException {
+        synchronized (vaultSaltFile) {
+            return Base64String.loadFromFile(vaultSaltFile)[0];
+        }
     }
 
     public void error(String message, User affectedUser, String ip) {

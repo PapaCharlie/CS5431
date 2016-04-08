@@ -75,7 +75,7 @@ public class Vault {
         UserManager.initialize();
         if (!UserManager.userExists(demoUsername)) {
             try {
-                UserManager.create(demoUsername, demoPassword);
+                UserManager.create(demoUsername);
             } catch (Exception err) {
                 err.printStackTrace();
                 System.err.println("Could not create demo user!");
