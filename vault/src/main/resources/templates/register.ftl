@@ -24,7 +24,7 @@
             <p><input type="email" name="email" placeholder="Email" pattern = "^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required></p>
             <p><input type="submit" value="Sign Up"></p>
             <p>
-                Already a Member? <a href="login.ftl" class="to_register">Log In!</a>
+                Already a Member? <a href="/" class="to_register">Log In!</a>
             </p>
         </form>
 
