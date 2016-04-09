@@ -70,6 +70,12 @@ class Authentication extends Routes {
             }
         }, freeMarkerEngine);
 
+        get("/register", (req, res) -> {
+            Sys.debug("Received GET to /register", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+            return new ModelAndView(attributes, "register.ftl");
+        }, freeMarkerEngine);
+
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
             if (req.queryParams("username") != null && req.queryParams("password") != null && !UserManager.userExists(req.queryParams("username"))) {

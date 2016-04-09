@@ -17,7 +17,7 @@
         <p><input type="password" name="password" id="password" placeholder="Password"></p>
         <p><input type="submit" value="Log in"></p>
         <p>
-            Not a member yet ? <a href="register.ftl" class="to_register">Join us</a>
+            Not a member yet ? <a href="/register" class="to_register">Join us</a>
         </p>
     <#if error??>
         <p>${error}</p>

@@ -45,8 +45,8 @@ public abstract class Routes {
     protected abstract void routes();
 
     public static void initialize() throws IOException {
-        staticFileLocation("templates");
-        freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/templates");
+        staticFileLocation("templates/static");
+        freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/templates/freemarker");
         new Authentication().routes();
         new Generator().routes();
         new Logs().routes();
