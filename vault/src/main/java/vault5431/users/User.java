@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static vault5431.Sys.NO_IP;
-import static vault5431.Vault.adminEncryptionKey;
+import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
@@ -96,7 +96,7 @@ public final class User {
     public PrivateKey loadPrivateSigningKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privSigningKeyFile) {
             Sys.debug("Loading private signing key", this);
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, adminEncryptionKey);
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, getAdminEncryptionKey());
         }
     }
 
@@ -113,7 +113,7 @@ public final class User {
     public PrivateKey loadPrivateCryptoKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privCryptoKeyfile) {
             Sys.debug("Loading private signing key", this, token.getIp());
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, adminEncryptionKey);
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, getAdminEncryptionKey());
         }
     }
 

@@ -13,7 +13,7 @@ public class CorruptedVaultException extends Exception {
 
     public CorruptedVaultException(Password[] recoveredPasswords) {
         super();
-        this.recoveredPasswords = recoveredPasswords;
+        this.recoveredPasswords = recoveredPasswords.clone();
     }
 
 }

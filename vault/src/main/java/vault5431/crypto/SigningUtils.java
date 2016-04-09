@@ -40,7 +40,7 @@ public class SigningUtils {
     }
 
     public static Base64String signPublicKey(PublicKey publicKey) {
-        return getSignature(publicKey.getEncoded(), Vault.adminSigningKey);
+        return getSignature(publicKey.getEncoded(), Vault.getAdminSigningKey());
     }
 
     public static boolean verifyPublicKeySignature(PublicKey publicKey, Base64String signature) {

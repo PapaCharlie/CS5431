@@ -20,6 +20,7 @@ import static spark.Spark.staticFileLocation;
 public abstract class Routes {
 
     public static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
+    public static final String home = "https://localhost:5431/";
 
     public static Token validateToken(Request req) {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {

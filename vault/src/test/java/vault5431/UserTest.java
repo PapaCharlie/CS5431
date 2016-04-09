@@ -8,7 +8,7 @@ import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.LogEntry;
 import vault5431.users.User;
-import static vault5431.Vault.adminEncryptionKey;
+import static vault5431.Vault.getAdminEncryptionKey;
 
 import javax.crypto.SecretKey;
 import java.util.Arrays;

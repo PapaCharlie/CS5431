@@ -13,25 +13,12 @@ import java.util.Map;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static vault5431.Vault.demoUser;
+import static vault5431.Vault.getDemoUser;
 
 /**
  * Created by papacharlie on 3/25/16.
  */
 class Passwords extends Routes {
-
-    private class Vault {
-        private String salt;
-        private String[] passwords;
-
-        Vault(Base64String salt, Base64String[] passwords) {
-            this.salt = salt.toString();
-            this.passwords = new String[passwords.length];
-            for (int i = 0; i < passwords.length; i++) {
-                this.passwords[i] = passwords[i].toString();
-            }
-        }
-    }
 
     protected void routes() {
 
@@ -75,7 +62,7 @@ class Passwords extends Routes {
                 Sys.debug("Received POST to /vault/changepassword.", req.ip());
                 String w = req.queryParams("name");
                 if (w != null && w.length() > 0) {
-                    demoUser.info("Changed Password for " + w, req.ip());
+                    getDemoUser().info("Changed Password for " + w, req.ip());
                 }
                 res.redirect("/home");
                 return emptyPage;
@@ -95,7 +82,7 @@ class Passwords extends Routes {
                     Base64String newPassword = Base64String.fromBase64(req.queryParams("newPassword"));
                     try {
 //                        Password p = new Password(web, url, username, password);
-                        demoUser.addPasswordToVault(newPassword, token);
+                        getDemoUser().addPasswordToVault(newPassword, token);
                         return "{\"success\":true, \"error\": \"\"}";
                     } catch (IllegalArgumentException err) {
                         return "{\"success\":false, \"error\": \"" + err.getLocalizedMessage() + "\"}";

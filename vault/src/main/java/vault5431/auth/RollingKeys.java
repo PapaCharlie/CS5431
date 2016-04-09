@@ -14,7 +14,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-
 /**
  * Created by papacharlie on 4/5/16.
  */

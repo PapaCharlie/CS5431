@@ -14,7 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static vault5431.Vault.adminEncryptionKey;
+import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
@@ -130,7 +130,7 @@ public class Sys {
             try {
                 System.out.println(entry.toString());
                 try {
-                    Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), adminEncryptionKey);
+                    Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey());
                     FileUtils.append(logFile, encryptedEntry);
                 } catch (BadCiphertextException err) {
                     err.printStackTrace();
@@ -157,7 +157,7 @@ public class Sys {
                 SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
                 for (int i = 0; i < encryptedEntries.length; i++) {
                     try {
-                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], adminEncryptionKey));
+                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));
                         CSVRecord record = CSVUtils.parseRecord(entry).getRecords().get(0);
                         decryptedEntries[i] = SystemLogEntry.fromCSV(record);
                     } catch (BadCiphertextException err) {
