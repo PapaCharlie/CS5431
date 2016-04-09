@@ -11,24 +11,38 @@ import java.security.NoSuchProviderException;
  */
 public class HashUtils {
 
-    private static Base64String hash(byte[] data, String alg) {
-        Base64String hash = null;
+    private static Base64String hash(byte[] data, String alg, int n) {
+        Base64String hashString = null;
         try {
-            MessageDigest hasher = MessageDigest.getInstance(alg, "BC");
-            hasher.update(data);
-            hash = new Base64String(hasher.digest());
+            MessageDigest cipher = MessageDigest.getInstance(alg, "BC");
+            cipher.update(data);
+            byte[] hash = cipher.digest();
+            while (n - 1 > 0) {
+                cipher.update(hash);
+                hash = cipher.digest();
+                n--;
+            }
+            hashString = new Base64String(hash);
         } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
         }
-        return hash;
+        return hashString;
     }
 
     public static Base64String hash512(byte[] data) {
-        return hash(data, "SHA-512");
+        return hash(data, "SHA-512", 1);
+    }
+
+    public static Base64String hash512(byte[] data, int n) {
+        return hash(data, "SHA-512", n);
     }
 
     public static Base64String hash256(byte[] data) {
-        return hash(data, "SHA-256");
+        return hash(data, "SHA-256", 1);
+    }
+
+    public static Base64String hash256(byte[] data, int n) {
+        return hash(data, "SHA-256", n);
     }
 }

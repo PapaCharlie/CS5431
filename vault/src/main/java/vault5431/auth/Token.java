@@ -11,6 +11,7 @@ import vault5431.users.User;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
@@ -21,29 +22,31 @@ import java.util.UUID;
  */
 public class Token {
 
+    private static final SecureRandom random = new SecureRandom();
+
     private final Base64String username;
     private final LocalDateTime creationDate;
     private final LocalDateTime expiresAt;
     private final UUID id;
-    private final SecretKey key;
-    private final Base64String encryptedKey;
+    private final Base64String randomString;
     private final Base64String signature;
     private final String ip;
 
-    public Token(User user, SecretKey key) {
+    public Token(User user) {
         this.username = user.hash;
         this.creationDate = LocalDateTime.now();
         this.expiresAt = RollingKeys.getEndOfCurrentWindow();
         this.id = UUID.randomUUID();
-        this.key = key;
-        this.encryptedKey = RollingKeys.encrypt(key.getEncoded());
-        this.signature = RollingKeys.sign((creationDate.toString() + expiresAt.toString() + id.toString() + encryptedKey.toString()).getBytes());
+        byte[] randomBytes = new byte[16];
+        random.nextBytes(randomBytes);
+        this.randomString = new Base64String(randomBytes);
+        this.signature = RollingKeys.sign((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes());
         this.ip = Sys.NO_IP;
     }
 
-    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String encryptedKey, Base64String signature, String ip) throws InvalidTokenException {
+    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String randomString, Base64String signature, String ip) throws InvalidTokenException {
         this.username = username;
-        this.encryptedKey = encryptedKey;
+        this.randomString = randomString;
         this.ip = ip;
         if (creationDate.isBefore(LocalDateTime.now())) {
             this.creationDate = creationDate;
@@ -57,21 +60,20 @@ public class Token {
             throw new InvalidTokenException("Token has expired.");
         }
 
-        if (RollingKeys.verifySignature((creationDate.toString() + expiresAt.toString() + id.toString() + encryptedKey.toString()).getBytes(), signature)) {
+        if (RollingKeys.verifySignature((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes(), signature)) {
             this.id = id;
-            this.key = SymmetricUtils.keyFromBytes(RollingKeys.decrypt(encryptedKey));
             this.signature = signature;
         } else {
             throw new InvalidTokenException("Could not verify token's signature.");
         }
     }
 
-    public SecretKey getKey() {
-        return this.key;
-    }
-
     public String getIp() {
         return this.ip;
+    }
+
+    public Base64String getUsername() {
+        return username;
     }
 
     /**
@@ -97,7 +99,7 @@ public class Token {
     }
 
     public String toCookie() throws IOException {
-        return CSVUtils.makeRecord(username, creationDate, expiresAt, id, encryptedKey, signature);
+        return CSVUtils.makeRecord(username, creationDate, expiresAt, id, randomString, signature);
     }
 
     public boolean equals(Object object) {
@@ -106,7 +108,7 @@ public class Token {
             return this.creationDate.equals(other.creationDate)
                     && this.expiresAt.equals(other.expiresAt)
                     && this.id.equals(other.id)
-                    && this.key.equals(other.key)
+                    && this.randomString.equals(other.randomString)
                     && this.signature.equals(other.signature)
                     && this.username.equals(other.username)
                     && this.ip.equals(other.ip);

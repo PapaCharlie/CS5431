@@ -45,32 +45,20 @@ public class PasswordUtils {
     }
 
     public static Base64String hashPassword(String password) {
-        byte[] salt = generateSalt();
-        return new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded()));
+        return HashUtils.hash256(password.getBytes(), 2);
     }
 
     public static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
-        boolean result = false;
-        try {
-            byte[] decoded = hashedPassword.decodeBytes();
-            byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
-            byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
-            SecretKey key = secretKeyFactory.generateSecret(spec);
-            result = Arrays.areEqual(hash, key.getEncoded());
-        } catch (NoSuchAlgorithmException err) {
-            err.printStackTrace();
-            System.exit(1);
-        } catch (InvalidKeySpecException err) {
-            Sys.error("Generated a wrong key! Requires immediate action.");
-            throw new RuntimeException("Generated a wrong key!");
-        }
-        return result;
+        byte[] decoded = hashedPassword.decodeBytes();
+        byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
+        byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
+        SecretKey key = deriveKey(password, salt);
+        return Arrays.areEqual(hash, key.getEncoded());
     }
 
     public static void savePassword(File passwordFile, String password) throws IOException {
-        hashPassword(password).saveToFile(passwordFile);
+        byte[] salt = generateSalt();
+        new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded())).saveToFile(passwordFile);
     }
 
     public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException {

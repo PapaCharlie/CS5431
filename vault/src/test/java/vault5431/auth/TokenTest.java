@@ -29,7 +29,7 @@ public class TokenTest extends VaultTest {
 
     @Test
     public void testTokenSerialization() throws Exception {
-        Token token = new Token(user, adminEncryptionKey);
+        Token token = new Token(user);
         System.out.println(token.toCookie());
         Thread.sleep(100);
         Token parsedToken = Token.parseToken(token.toCookie());

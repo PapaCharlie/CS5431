@@ -85,13 +85,10 @@ public class CryptoTest extends VaultTest {
     }
 
     @Test
-    public void testPasswordHashing() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            String password = PasswordGenerator.generatePassword(20);
-            assertEquals(20, password.length());
-            Base64String hashedPassword = PasswordUtils.hashPassword(password);
-            assertTrue(PasswordUtils.verifyHashedPassword(hashedPassword, password));
-        }
+    public void testSavePassword() throws Exception {
+        File passwordFile = getTempFile("password");
+        PasswordUtils.savePassword(passwordFile, "password");
+        assertTrue(PasswordUtils.verifyPasswordInFile(passwordFile, "password"));
     }
 
     @Ignore
