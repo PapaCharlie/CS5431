@@ -5,6 +5,8 @@ import vault5431.Sys;
 
 import static spark.Spark.post;
 import static vault5431.Vault.demoUser;
+import vault5431.users.User;
+import vault5431.users.UserManager;
 
 /**
  * Created by papacharlie on 3/25/16.
@@ -31,8 +33,12 @@ class Passwords extends Routes {
             String password = req.queryParams("password");
             if (web != null && url != null && username != null && password != null) {
                 try {
+                    System.out.println(password);
+                    System.out.println(username);
                     Password p = new Password(web, url, username, password);
-                    demoUser.addPassword(p);
+                    User user = UserManager.getUser(username);
+                    user.addPassword(p);
+                    //demoUser.addPassword(p);
                 } catch (IllegalArgumentException err) {
                     String errorMessage = err.getLocalizedMessage();
                 }
