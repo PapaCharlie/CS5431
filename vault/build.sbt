@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.4",
   "com.google.code.gson" % "gson" % "2.6.2",
   "junit" % "junit" % "4.12" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test
+  "com.novocode" % "junit-interface" % "0.11" % Test,
+  "com.twilio.sdk" % "twilio-java-sdk" % "3.4.5"
 )
 
 initialize := {
