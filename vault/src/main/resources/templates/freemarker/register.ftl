@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="login.css">
-    <script src="jquery-1.11.3.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/login.css">
+    <script src="/jquery-1.11.3.min.js"></script>
 
 
 

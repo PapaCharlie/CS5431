@@ -20,7 +20,7 @@
         <p><input type="password" name="password" placeholder="Password"></p>
         <input type="hidden" name="ip">
         <p>
-            Not a member yet ? <a href="register.ftl" class="to_register">Join us</a>
+            Not a member yet ? <a href="/register" class="to_register">Join us</a>
         </p>
         <p><input type="submit" value="Log in"></p>
     <#if error??>
