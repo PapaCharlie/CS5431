@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static vault5431.Sys.NO_IP;
+import static vault5431.Vault.adminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
@@ -45,7 +46,6 @@ public final class User {
     public final File vaultFile;
     public final File vaultSaltFile;
     public final File passwordHashFile;
-    public final File passwordSaltFile;
     public final File pubCryptoKeyFile;
     public final File pubCryptoSigFile;
     public final File pubSigningKeyFile;
@@ -65,7 +65,6 @@ public final class User {
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
         passwordHashFile = new File(getHome(), "password.hash");
-        passwordSaltFile = new File(getHome(), "password.salt");
 
         pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
@@ -97,7 +96,7 @@ public final class User {
     public PrivateKey loadPrivateSigningKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privSigningKeyFile) {
             Sys.debug("Loading private signing key", this);
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, token.getKey());
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, adminEncryptionKey);
         }
     }
 
@@ -114,20 +113,46 @@ public final class User {
     public PrivateKey loadPrivateCryptoKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privCryptoKeyfile) {
             Sys.debug("Loading private signing key", this, token.getIp());
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, token.getKey());
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, adminEncryptionKey);
         }
     }
 
-    public void addPasswordToVault(Password password, Token token) throws IOException, BadCiphertextException {
+    public void addPasswordToVault(Base64String password, Token token) throws IOException, BadCiphertextException {
         synchronized (vaultFile) {
-            info(String.format("Adding password: %s.", password.getName()), token.getIp());
-            FileUtils.append(vaultFile, SymmetricUtils.encrypt(password.toRecord().getBytes(), token.getKey()));
+            info("Added password.", token.getIp());
+            FileUtils.append(vaultFile, password);
         }
     }
 
-    public boolean verifyPassword(String password) throws IOException {
+    public Base64String[] loadPasswords(Token token) throws VaultNotFoundException, CorruptedVaultException {
+        synchronized (vaultFile) {
+            info("Loading passwords.", token.getIp());
+            if (!vaultFile.exists()) {
+                Sys.error("User's vault file could not be found.", this);
+                throw new VaultNotFoundException();
+            }
+            Base64String[] passwords = null;
+            try {
+                passwords = Base64String.loadFromFile(vaultFile);
+            } catch (IOException err) {
+                err.printStackTrace();
+                error("Could not find vault!");
+                throw new VaultNotFoundException();
+            }
+            return passwords;
+        }
+    }
+
+//    public void addPasswordToVault(Password password, Token token) throws IOException, BadCiphertextException {
+//        synchronized (vaultFile) {
+//            info(String.format("Adding password: %s.", password.getName()), token.getIp());
+//            FileUtils.append(vaultFile, SymmetricUtils.encrypt(password.toRecord().getBytes(), adminEncryptionKey));
+//        }
+//    }
+//
+    public boolean verifyPassword(Base64String hashedPassword) throws IOException {
         synchronized (passwordHashFile) {
-            if (PasswordUtils.verifyPasswordInFile(passwordHashFile, password)) {
+            if (PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString())) {
                 return true;
             } else {
                 warning("Failed password verification attempt.");
@@ -136,46 +161,19 @@ public final class User {
         }
     }
 
-    public Password[] loadPasswords(Token token) throws VaultNotFoundException, CorruptedVaultException {
-        synchronized (vaultFile) {
-            info("Loading passwords.", token.getIp());
-            if (!vaultFile.exists()) {
-                Sys.error("User's vault file could not be found.", this);
-                throw new VaultNotFoundException();
-            }
-            boolean corrupted = false;
-            try {
-                Base64String[] encryptedPasswords = FileUtils.read(vaultFile);
-                ArrayList<Password> passwords = new ArrayList<>();
-                for (Base64String encryptedPassword : encryptedPasswords) {
-                    try {
-                        byte[] decryptedPassword = SymmetricUtils.decrypt(encryptedPassword, token.getKey());
-                        passwords.add(Password.fromCSVRecord(CSVUtils.parseRecord(new String(decryptedPassword)).getRecords().get(0)));
-                    } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
-                        err.printStackTrace();
-                        corrupted = true;
-                    }
-                }
-                if (corrupted) {
-                    throw new CorruptedVaultException(passwords.toArray(new Password[passwords.size()]));
-                } else {
-                    return passwords.toArray(new Password[passwords.size()]);
-                }
-            } catch (IOException err) {
-                err.printStackTrace();
-                error("Could not find vault!");
-                throw new VaultNotFoundException();
-            }
+    public Base64String loadVaultSalt() throws IOException {
+        synchronized (vaultSaltFile) {
+            return Base64String.loadFromFile(vaultSaltFile)[0];
         }
     }
 
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-                System.out.println(entry.toString());
-                // Commented so that user entries don't show up on stdout
                 PublicKey pubKey = loadPublicCryptoKey();
                 FileUtils.append(logFile, AsymmetricUtils.encrypt(entry.toCSV().getBytes(), pubKey));
+                System.out.println(entry.toString());
+                // Commented so that user entries don't show up on stdout
             } catch (IOException err) {
                 err.printStackTrace();
                 warning("Failed to log for user! Continuing (not recommended).", this);
@@ -190,18 +188,6 @@ public final class User {
                 Sys.error("Key could not be loaded from disk. Requires immediate attention.", this);
                 throw new RuntimeException("Cannot load key from disk.");
             }
-        }
-    }
-
-    public Base64String loadPasswordSalt() throws IOException {
-        synchronized (passwordSaltFile) {
-            return Base64String.loadFromFile(passwordSaltFile)[0];
-        }
-    }
-
-    public Base64String loadVaultSalt() throws IOException {
-        synchronized (vaultSaltFile) {
-            return Base64String.loadFromFile(vaultSaltFile)[0];
         }
     }
 

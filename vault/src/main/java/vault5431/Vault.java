@@ -1,6 +1,7 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
@@ -53,7 +54,7 @@ public class Vault {
         if (!adminSaltFile.exists()) {
             System.out.println("Could not find the admin salt file. This either means the system was compromised, or never initialized.");
             System.out.print("Press enter to initialize.");
-            System.console().readLine();
+//            System.console().readLine();
             try {
                 new Base64String(PasswordUtils.generateSalt()).saveToFile(adminSaltFile);
             } catch (IOException err) {
@@ -75,7 +76,7 @@ public class Vault {
         UserManager.initialize();
         if (!UserManager.userExists(demoUsername)) {
             try {
-                UserManager.create(demoUsername);
+                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword));
             } catch (Exception err) {
                 err.printStackTrace();
                 System.err.println("Could not create demo user!");

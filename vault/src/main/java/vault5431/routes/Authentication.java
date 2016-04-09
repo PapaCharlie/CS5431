@@ -27,90 +27,46 @@ import static vault5431.Vault.demoUser;
  */
 class Authentication extends Routes {
 
-    public static Token validateToken(Request req) {
-        if (req.cookie("token") != null && req.cookie("token").length() > 0) {
-            try {
-                return Token.parseToken(req.cookie("token").trim(), req.ip());
-            } catch (CouldNotParseTokenException err) {
-                Sys.debug("Received invalid token.", req.ip());
-                return null;
-            } catch (InvalidTokenException err) {
-                Sys.warning("Received tampered token. There is reason to believe this IP is acting maliciously.", req.ip());
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-
     protected void routes() {
-
-        get("/vault", (req, res) -> {
-            res.redirect("/vault/home");
-            return null;
-        });
 
         get("/", (req, res) -> {
             Sys.debug("Received GET to /.", req.ip());
-            if (validateToken(req) != null) {
-                res.redirect("/vault/home");
-                return null;
-            } else {
-                Map<String, Object> attributes = new HashMap<>();
-                return new ModelAndView(attributes, "username.ftl");
-            }
-        }, freeMarkerEngine);
-
-        post("/password", (req, res) -> {
-            Sys.debug("Received POST to /getsalt.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
-            if (req.queryParams("username") != null
-                    && req.queryParams("username").length() > 0
-                    && UserManager.userExists(req.queryParams("username"))) {
-                Base64String salt = UserManager.getUser(req.queryParams("username")).loadPasswordSalt();
-                attributes.put("salt", salt.getB64String());
-            } else {
-                attributes.put("salt", new Base64String(PasswordUtils.generateSalt()).getB64String());
-            }
-            return new ModelAndView(attributes, "password.ftl");
+            return new ModelAndView(attributes, "login.ftl");
         }, freeMarkerEngine);
 
         post("/", (req, res) -> {
             Sys.debug("Received POST to /.", req.ip());
-            if (req.queryParams("username") != null
-                    && req.queryParams("username").length() > 0
-                    && UserManager.userExists(req.queryParams("username"))
-                    && req.queryParams("password") != null
-                    && req.queryParams("password").length() > 0) {
-                User user = UserManager.getUser(req.queryParams("username"));
-                if (user.verifyPassword(req.queryParams("password"))) {
-                    Token token = new Token(user, adminEncryptionKey);
+            Map<String, Object> attributes = new HashMap<>();
+            String username = req.queryParams("username");
+            String password = req.queryParams("password");
+            if (username != null
+                    && username.length() > 0
+                    && password != null
+                    && password.length() > 0) {
+                if (UserManager.userExists(username) && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
+                    Token token = new Token(UserManager.getUser(username));
                     res.cookie("token", token.toCookie());
-                    res.redirect("/vault/home");
-                    user.info("Succesful login.", req.ip());
+                    res.redirect("/home");
+                    return emptyPage;
                 } else {
-                    user.warning("Failed login attempt.", req.ip()); // Thoughts?
-                    Sys.debug("Failed login attempt.", req.ip());    // ????
-                    Map<String, Object> attributes = new HashMap<>();
+                    Sys.debug("Failed login attempt.", req.ip());
                     String errorMessage = "This username/password combination does not exist!";
                     attributes.put("error", errorMessage);
                     return new ModelAndView(attributes, "login.ftl");
                 }
             } else {
                 Sys.debug("Failed login attempt.", req.ip());
-                Map<String, Object> attributes = new HashMap<>();
                 String errorMessage = "This username/password combination does not exist!";
                 attributes.put("error", errorMessage);
                 return new ModelAndView(attributes, "login.ftl");
             }
-            return null;
         }, freeMarkerEngine);
 
         get("/logout", (req, res) -> {
             res.removeCookie("token");
             res.redirect("/");
-            return null;
+            return emptyPage;
         });
 
         get("/unauthorized", (req, res) -> {
@@ -121,30 +77,6 @@ class Authentication extends Routes {
             }
             Map<String, Object> attributes = new HashMap<>();
             return new ModelAndView(attributes, "unauthorized.ftl");
-        }, freeMarkerEngine);
-
-        get("/vault/home", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null) {
-                Sys.debug("Received GET to /vault/home.", req.ip());
-                Map<String, Object> attributes = new HashMap<>();
-
-                Password[] plist = demoUser.loadPasswords(token);
-
-                List<Map<String, String>> listofmaps = new ArrayList<>();
-
-                for (Password p : plist) {
-                    listofmaps.add(p.toMap());
-                }
-
-                attributes.put("storedpasswords", listofmaps);
-
-                return new ModelAndView(attributes, "home.ftl");
-            } else {
-                Sys.debug("Received unauthorized GET to /vault/home.");
-                res.redirect("/");
-                return null;
-            }
         }, freeMarkerEngine);
 
     }

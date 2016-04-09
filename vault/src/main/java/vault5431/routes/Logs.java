@@ -40,7 +40,7 @@ class Logs extends Routes {
             } else {
                 Sys.debug("Received unauthorized GET to /vault/userlog.");
                 res.redirect("/");
-                return null;
+                return emptyPage;
             }
         }, freeMarkerEngine);
 
@@ -61,7 +61,7 @@ class Logs extends Routes {
             } else {
                 Sys.debug("Received unauthorized GET to /vault/syslog.");
                 res.redirect("/");
-                return null;
+                return emptyPage;
             }
         }, freeMarkerEngine);
 

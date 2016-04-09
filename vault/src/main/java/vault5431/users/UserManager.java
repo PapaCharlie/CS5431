@@ -75,7 +75,7 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(String username)
+    public synchronized static User create(String username, Base64String hashedPassword)
             throws IOException, CouldNotSaveKeyException, BadCiphertextException {
         User user;
         synchronized (mapLock) {
@@ -95,11 +95,10 @@ public class UserManager {
             } else {
                 Sys.info("Created vault file.", user);
             }
-//            PasswordUtils.savePassword(user.passwordHashFile, password);
-            byte[] vaultSalt = PasswordUtils.generateSalt();
-            byte[] passwordSalt = PasswordUtils.generateSalt();
-            new Base64String(vaultSalt).saveToFile(user.vaultSaltFile);
-            new Base64String(passwordSalt).saveToFile(user.passwordSaltFile);
+            PasswordUtils.savePassword(user.passwordHashFile, hashedPassword.decodeString());
+
+            byte[] salt = PasswordUtils.generateSalt();
+            new Base64String(salt).saveToFile(user.vaultSaltFile);
 
             Sys.info("Generating signing keypair.", user);
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
