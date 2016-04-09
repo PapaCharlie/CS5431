@@ -24,7 +24,6 @@ class Passwords extends Routes {
 
         get("/home", (req, res) -> {
             Token token = validateToken(req);
-//            Token token = new Token(Vault.demoUser);
             if (token != null) {
                 Sys.debug("Received GET to /home.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();

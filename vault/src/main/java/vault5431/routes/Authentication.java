@@ -87,36 +87,15 @@ class Authentication extends Routes {
                     System.err.println("Could not create user!");
                     System.exit(1);
                 }
-                res.redirect("/vault/home");
+                res.redirect("/");
                 User user = UserManager.getUser(req.queryParams("username"));
                 user.info("Action: Log In", req.ip());
-
-
             } else {
                 res.redirect("/");
             }
             return null;
         });
-
-
-//        before("/vault/*", (req, res) -> {
-//            if (req.cookie("token") != null) {
-//                try {
-//                    Token token = Token.parseToken(req.cookie("token"));
-//                } catch (CouldNotParseTokenException err) {
-//                    res.removeCookie("token");
-//                    res.redirect("/unauthorized");
-//                } catch (InvalidTokenException err) {
-//                    Sys.warning("Received invalid token. There is reason to believe this IP is acting malicious.", req.ip());
-//                    res.removeCookie("token");
-//                    res.redirect("/unauthorized");
-//                }
-//            } else {
-//                res.removeCookie("token");
-//                res.redirect("/unauthorized");
-//            }
-//        });
-
+        
         get("/logout", (req, res) -> {
             res.removeCookie("token");
             res.redirect("/");

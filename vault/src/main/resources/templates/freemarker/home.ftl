@@ -84,9 +84,7 @@
 
         angular.module('vault', [])
                 .controller('PasswordCtrl', function ($scope) {
-                    $scope.passwords = data.passwords.map(function (encryptedPassword) {
-                        console.log(encryptedPassword);
-                        console.log(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
+                    $scope.passwords = data.1passwords.map(function (encryptedPassword) {
                         return JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
                     });
                 });
@@ -101,8 +99,6 @@
                 }
             });
             values["id"] = '_' + Math.random().toString(36).substr(2, 9);
-            console.log(sjcl.encrypt(key, JSON.stringify(values)));
-            console.log(sjcl.decrypt(key, sjcl.encrypt(key, JSON.stringify(values))));
             $.post('/savepassword', {newPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
                 var response = JSON.parse(data);
                 if(response.success) {
