@@ -13,11 +13,11 @@
 
         <h2 class="login-header">Sign up </h2>
 
-        <form action= "/register" method="post" id="form" class="login-container">
+        <form action= "/register" method="post" id="signupForm" class="login-container">
             <label for="usernamesignup" class="uname" data-icon="u">Your Username</label>
             <p><input type="text" name="username" placeholder="Username" required></p>
             <label for="passwordsignup">Your Password </label>
-            <p><input type="password" name="password" placeholder="Password" required></p>
+            <p><input type="password" name="password" id="password" placeholder="Password" required></p>
             <label for="phonesignup">Your Phone Number (of form: 123-456-7890) </label>
             <p><input type="text" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
             <label for="emailsignup">Your Email </label>
@@ -29,5 +29,19 @@
         </form>
 
     </div>
+    <script>
+        $(document).ready(function () {
+
+            sessionStorage.removeItem("password");
+
+            $("#signupForm").submit(function (event) {
+                $passwordField = $('#password');
+                var hashedPassword = sjcl.hash.sha256.hash(sjcl.codec.utf8String.toBits($passwordField.val()));
+//                sessionStorage.setItem("password", sjcl.codec.base64url.fromBits(hashedPassword));
+                var hash = sjcl.hash.sha256.hash(hashedPassword);
+                $passwordField.val(sjcl.codec.base64url.fromBits(hash));
+            });
+        });
+    </script>
 
 </html>
