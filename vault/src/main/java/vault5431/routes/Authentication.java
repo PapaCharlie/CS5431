@@ -68,8 +68,7 @@ class Authentication extends Routes {
                 attributes.put("error", errorMessage);
                 return new ModelAndView(attributes, "login.ftl");
             }
-            return null;
-        });
+        }, freeMarkerEngine);
 
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
