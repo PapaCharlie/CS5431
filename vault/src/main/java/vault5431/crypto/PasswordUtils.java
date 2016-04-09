@@ -1,6 +1,7 @@
 package vault5431.crypto;
 
 import org.bouncycastle.util.Arrays;
+import vault5431.Sys;
 import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;
@@ -8,7 +9,6 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -36,7 +36,7 @@ public class PasswordUtils {
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
             PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
-            key = secretKeyFactory.generateSecret(spec);
+            key = SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
             err.printStackTrace();
             System.exit(1);
@@ -45,36 +45,23 @@ public class PasswordUtils {
     }
 
     public static Base64String hashPassword(String password) {
-        byte[] salt = generateSalt();
-        return new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded()));
+        return HashUtils.hash256(password.getBytes(), 2);
     }
 
-    public static boolean verifyHashedPassword(Base64String hashedPassword, String password) throws InvalidKeyException {
-        boolean result = false;
-        try {
-            byte[] decoded = hashedPassword.decodeBytes();
-            byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
-            byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
-            SecretKey key = secretKeyFactory.generateSecret(spec);
-            result = Arrays.areEqual(hash, key.getEncoded());
-        } catch (NoSuchAlgorithmException err) {
-            err.printStackTrace();
-            System.exit(1);
-        } catch (InvalidKeySpecException err) {
-            // Standardize errors
-            err.printStackTrace();
-            throw new InvalidKeyException(err.getLocalizedMessage());
-        }
-        return result;
+    public static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
+        byte[] decoded = hashedPassword.decodeBytes();
+        byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
+        byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
+        SecretKey key = deriveKey(password, salt);
+        return Arrays.areEqual(hash, key.getEncoded());
     }
 
     public static void savePassword(File passwordFile, String password) throws IOException {
-        hashPassword(password).saveToFile(passwordFile);
+        byte[] salt = generateSalt();
+        new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded())).saveToFile(passwordFile);
     }
 
-    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException, InvalidKeyException {
+    public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException {
         return verifyHashedPassword(Base64String.loadFromFile(passwordFile)[0], password);
     }
 

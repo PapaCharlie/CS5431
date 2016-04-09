@@ -22,10 +22,6 @@ public class VaultTest {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
-        String masterTestPass = "password";
-        byte[] masterSalt = new byte[PasswordUtils.SALT_SIZE];
-        Vault.adminSigningKey = PasswordUtils.deriveKey(masterTestPass + "signing", masterSalt);
-        Vault.adminEncryptionKey = PasswordUtils.deriveKey(masterTestPass + "encryption", masterSalt);
     }
 
     public static File getTempFile(String prefix, String suffix) throws IOException {
@@ -45,7 +41,7 @@ public class VaultTest {
         while (UserManager.userExists(username)) {
             username = PasswordGenerator.generatePassword(10);
         }
-        User user = UserManager.create(username, password);
+        User user = UserManager.create(username, PasswordUtils.hashPassword(password));
         createdUsers.push(username);
         return user;
     }

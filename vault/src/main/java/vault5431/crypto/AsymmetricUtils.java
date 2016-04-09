@@ -1,9 +1,9 @@
 package vault5431.crypto;
 
+import vault5431.Sys;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
-import vault5431.crypto.exceptions.InvalidMasterPasswordException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
@@ -14,8 +14,6 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import static vault5431.crypto.HashUtils.hash256;
 
 /**
  * Asymmetric encryption utils.
@@ -63,7 +61,7 @@ public class AsymmetricUtils {
         return keyPair;
     }
 
-    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws InvalidKeyException, BadCiphertextException {
+    public static Base64String encrypt(byte[] content, PublicKey publicKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
@@ -71,10 +69,13 @@ public class AsymmetricUtils {
         } catch (IllegalBlockSizeException | BadPaddingException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws InvalidKeyException, BadCiphertextException {
+    public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
             cipher.init(Cipher.DECRYPT_MODE, privateKey);
@@ -82,6 +83,9 @@ public class AsymmetricUtils {
         } catch (IllegalBlockSizeException | BadPaddingException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
+        } catch (InvalidKeyException err) {
+            Sys.error("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException("Generated a wrong key!");
         }
     }
 
@@ -105,37 +109,26 @@ public class AsymmetricUtils {
         return publicKey;
     }
 
-    private static SecretKey keyFromPassword(String password) {
-        byte[] hashedPassword = hash256(password.getBytes()).decodeBytes();
-        return new SecretKeySpec(hashedPassword, "AES");
-    }
-
-    public static void savePrivateKey(File keyfile, PrivateKey privateKey, String password) throws IOException, CouldNotSaveKeyException {
+    public static void savePrivateKey(File keyfile, PrivateKey privateKey, SecretKey key) throws IOException, CouldNotSaveKeyException {
         try {
-            SecretKey key = keyFromPassword(password);
             Base64String encryptedKey = SymmetricUtils.encrypt(privateKey.getEncoded(), key);
             encryptedKey.saveToFile(keyfile);
-        } catch (BadCiphertextException | InvalidKeyException err) {
+        } catch (BadCiphertextException err) {
             err.printStackTrace();
             throw new CouldNotSaveKeyException();
         }
     }
 
-    public static PrivateKey loadPrivateKey(File keyfile, String password, File passwordFile) throws IOException, CouldNotLoadKeyException, InvalidMasterPasswordException {
+    public static PrivateKey loadPrivateKey(File keyfile, SecretKey key) throws IOException, CouldNotLoadKeyException {
         PrivateKey privateKey = null;
         try {
-            if (PasswordUtils.verifyPasswordInFile(passwordFile, password)) {
-                Base64String encryptedKey = Base64String.loadFromFile(keyfile)[0];
-                SecretKey key = keyFromPassword(password);
-                byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedKey, key);
-                privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
-            } else {
-                throw new InvalidMasterPasswordException();
-            }
+            Base64String encryptedKey = Base64String.loadFromFile(keyfile)[0];
+            byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedKey, key);
+            privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
-        } catch (BadCiphertextException | InvalidKeySpecException | InvalidKeyException err) {
+        } catch (BadCiphertextException | InvalidKeySpecException err) {
             throw new CouldNotLoadKeyException();
         }
         return privateKey;

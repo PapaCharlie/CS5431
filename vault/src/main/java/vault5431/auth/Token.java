@@ -1,57 +1,53 @@
 package vault5431.auth;
 
 import org.apache.commons.csv.CSVRecord;
+import vault5431.Sys;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
 import vault5431.crypto.SymmetricUtils;
-import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 import vault5431.logging.CSVUtils;
+import vault5431.users.User;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
-import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
 
-import static vault5431.auth.RollingKeys.getEncryptionKey;
-import static vault5431.auth.RollingKeys.getSigningKey;
-import static vault5431.crypto.SigningUtils.getSignature;
-import static vault5431.crypto.SigningUtils.verifySignature;
-import static vault5431.crypto.SymmetricUtils.decrypt;
-import static vault5431.crypto.SymmetricUtils.encrypt;
-import static vault5431.crypto.SymmetricUtils.keyFromBytes;
-import static vault5431.logging.CSVUtils.makeRecord;
 
 /**
  * Token class. A token is required for all authorization with respect to the Vault
  */
 public class Token {
 
+    private static final SecureRandom random = new SecureRandom();
+
+    private final Base64String username;
     private final LocalDateTime creationDate;
     private final LocalDateTime expiresAt;
     private final UUID id;
-    private final SecretKey key;
+    private final Base64String randomString;
     private final Base64String signature;
+    private final String ip;
 
-    public Token(LocalDateTime expiresAt, SecretKey key) {
+    public Token(User user) {
+        this.username = user.hash;
         this.creationDate = LocalDateTime.now();
-        this.expiresAt = expiresAt;
+        this.expiresAt = RollingKeys.getEndOfCurrentWindow();
         this.id = UUID.randomUUID();
-        this.key = key;
-        Base64String signature = null;
-        try {
-            signature = getSignature((creationDate.toString() + expiresAt.toString() + id.toString() + key.toString()).getBytes(), getSigningKey());
-        } catch (InvalidKeyException err) {
-            err.printStackTrace();
-            System.err.println("Current rolling key is invalid. Halting.");
-            System.exit(1);
-        }
-        this.signature = signature;
+        byte[] randomBytes = new byte[16];
+        random.nextBytes(randomBytes);
+        this.randomString = new Base64String(randomBytes);
+        this.signature = RollingKeys.sign((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes());
+        this.ip = Sys.NO_IP;
     }
 
-    private Token(LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, SecretKey key, Base64String signature) throws InvalidTokenException {
+    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String randomString, Base64String signature, String ip) throws InvalidTokenException {
+        this.username = username;
+        this.randomString = randomString;
+        this.ip = ip;
         if (creationDate.isBefore(LocalDateTime.now())) {
             this.creationDate = creationDate;
         } else {
@@ -64,52 +60,61 @@ public class Token {
             throw new InvalidTokenException("Token has expired.");
         }
 
-        boolean verified = false;
-        try {
-            verified = verifySignature((creationDate.toString() + expiresAt.toString() + id.toString() + key.toString()).getBytes(), signature, getSigningKey());
-        } catch (InvalidKeyException err) {
-            err.printStackTrace();
-            System.err.println("Current rolling key is invalid. Halting.");
-            System.exit(1);
-        }
-
-        if (verified) {
+        if (RollingKeys.verifySignature((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes(), signature)) {
             this.id = id;
-            this.key = key;
             this.signature = signature;
         } else {
             throw new InvalidTokenException("Could not verify token's signature.");
         }
     }
 
+    public String getIp() {
+        return this.ip;
+    }
+
+    public Base64String getUsername() {
+        return username;
+    }
+
+    /**
+     * For Testing
+     */
     public static Token parseToken(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
+        return parseToken(cookie, Sys.NO_IP);
+    }
+
+    public static Token parseToken(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
         try {
             CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
-            LocalDateTime creationDate = LocalDateTime.parse(record.get(0));
-            LocalDateTime expiresAt = LocalDateTime.parse(record.get(1));
-            UUID id = UUID.fromString(record.get(2));
-            SecretKey key = keyFromBytes(decrypt(Base64String.fromBase64(record.get(3)), getEncryptionKey()));
-            Base64String signature = Base64String.fromBase64(record.get(4));
-            return new Token(creationDate, expiresAt, id, key, signature);
-        } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException | BadCiphertextException | InvalidKeyException err) {
+            Base64String username = Base64String.fromBase64(record.get(0));
+            LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
+            LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
+            UUID id = UUID.fromString(record.get(3));
+            Base64String encryptedKey = Base64String.fromBase64(record.get(4));
+            Base64String signature = Base64String.fromBase64(record.get(5));
+            return new Token(username, creationDate, expiresAt, id, encryptedKey, signature, ip);
+        } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException err) {
             throw new CouldNotParseTokenException();
         }
     }
 
     public String toCookie() throws IOException {
-        String cookie = null;
-        try {
-            cookie = makeRecord(creationDate, expiresAt, id, encrypt(key.getEncoded(), getEncryptionKey()), signature);
-        } catch (InvalidKeyException err) {
-            err.printStackTrace();
-            System.err.println("Current rolling key is invalid. Halting.");
-            System.exit(1);
-        } catch (BadCiphertextException err) {
-            err.printStackTrace();
-            System.err.println("Could not encrypt SecretKey.getEncoded()... Let's fix that. Halting.");
-            System.exit(1);
+        return CSVUtils.makeRecord(username, creationDate, expiresAt, id, randomString, signature);
+    }
+
+    public boolean equals(Object object) {
+        if (object instanceof Token) {
+            Token other = (Token) object;
+            return this.creationDate.equals(other.creationDate)
+                    && this.expiresAt.equals(other.expiresAt)
+                    && this.id.equals(other.id)
+                    && this.randomString.equals(other.randomString)
+                    && this.signature.equals(other.signature)
+                    && this.username.equals(other.username)
+                    && this.ip.equals(other.ip);
+        } else {
+            return false;
         }
-        return cookie;
     }
 
 }

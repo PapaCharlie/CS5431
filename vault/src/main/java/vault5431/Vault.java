@@ -1,6 +1,7 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
@@ -20,9 +21,9 @@ public class Vault {
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     private static final String demoUsername = "demoUser";
     private static final String demoPassword = "password";
-    public static User demoUser;
-    public static SecretKey adminSigningKey;
-    public static SecretKey adminEncryptionKey;
+    private static User demoUser;
+    private static SecretKey adminSigningKey;
+    private static SecretKey adminEncryptionKey;
 
     private static void initialize() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
@@ -53,7 +54,7 @@ public class Vault {
         if (!adminSaltFile.exists()) {
             System.out.println("Could not find the admin salt file. This either means the system was compromised, or never initialized.");
             System.out.print("Press enter to initialize.");
-            System.console().readLine();
+//            System.console().readLine();
             try {
                 new Base64String(PasswordUtils.generateSalt()).saveToFile(adminSaltFile);
             } catch (IOException err) {
@@ -75,7 +76,7 @@ public class Vault {
         UserManager.initialize();
         if (!UserManager.userExists(demoUsername)) {
             try {
-                UserManager.create(demoUsername, demoPassword);
+                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword));
             } catch (Exception err) {
                 err.printStackTrace();
                 System.err.println("Could not create demo user!");
@@ -83,6 +84,18 @@ public class Vault {
             }
         }
         demoUser = UserManager.getUser(demoUsername);
+    }
+
+    public static User getDemoUser() {
+        return demoUser;
+    }
+
+    public static SecretKey getAdminSigningKey() {
+        return adminSigningKey;
+    }
+
+    public static SecretKey getAdminEncryptionKey() {
+        return adminEncryptionKey;
     }
 
     public static void main(String[] args) throws Exception {

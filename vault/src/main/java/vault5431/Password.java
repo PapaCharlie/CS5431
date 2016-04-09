@@ -27,22 +27,22 @@ public class Password {
     private UUID uuid;
 
     public Password(String name, String website, String username, String password, UUID uuid) throws IllegalArgumentException {
-        if (name.length() < MAX_NAME_LENGTH) {
+        if (0 < name.length() && name.length() < MAX_NAME_LENGTH) {
             this.name = name;
         } else {
             throw new IllegalArgumentException("Website name is too long.");
         }
-        if (website.length() < MAX_WEBSITE_LENGTH) {
+        if (0 < website.length() && website.length() < MAX_WEBSITE_LENGTH) {
             this.website = website;
         } else {
             throw new IllegalArgumentException("Website URL is too long.");
         }
-        if (username.length() < MAX_USERNAME_LENGTH) {
+        if (0 < username.length() && username.length() < MAX_USERNAME_LENGTH) {
             this.username = username;
         } else {
             throw new IllegalArgumentException("Username is too long.");
         }
-        if (password.length() < MAX_PASWORD_LENGTH) {
+        if (0 < password.length() && password.length() < MAX_PASWORD_LENGTH) {
             this.password = password;
         } else {
             throw new IllegalArgumentException("Password is too long.");
@@ -50,7 +50,7 @@ public class Password {
         this.uuid = uuid;
     }
 
-    public Password(String name, String website, String username, String password) {
+    public Password(String name, String website, String username, String password) throws IllegalArgumentException {
         this(name, website, username, password, UUID.randomUUID());
     }
 
@@ -71,7 +71,7 @@ public class Password {
         }
     }
 
-    public static Password fromCSVRecord(CSVRecord entry) {
+    public static Password fromCSVRecord(CSVRecord entry) throws IllegalArgumentException {
         return new Password(
                 entry.get(0),
                 entry.get(1),

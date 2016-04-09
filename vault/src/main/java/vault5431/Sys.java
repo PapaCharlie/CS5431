@@ -1,6 +1,8 @@
 package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
+import vault5431.crypto.SymmetricUtils;
+import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
@@ -12,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
+import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
@@ -25,9 +28,10 @@ public class Sys {
 
     /**
      * Logs an error in the system log
-     * @param message Reason for error
+     *
+     * @param message      Reason for error
      * @param affectedUser Affected user
-     * @param ip IP causing error
+     * @param ip           IP causing error
      */
     public static void error(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
@@ -47,9 +51,10 @@ public class Sys {
 
     /**
      * Logs a warning in the system log
-     * @param message Reason for warning
+     *
+     * @param message      Reason for warning
      * @param affectedUser Affected user
-     * @param ip IP causing warning
+     * @param ip           IP causing warning
      */
     public static void warning(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
@@ -69,9 +74,10 @@ public class Sys {
 
     /**
      * Logs an info message in the system log
-     * @param message Message contents
+     *
+     * @param message      Message contents
      * @param affectedUser Affected user
-     * @param ip Relevant IP
+     * @param ip           Relevant IP
      */
     public static void info(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
@@ -91,9 +97,10 @@ public class Sys {
 
     /**
      * Logs a debug message in the system log
-     * @param message Message contents
+     *
+     * @param message      Message contents
      * @param affectedUser Affected user
-     * @param ip Relevant IP
+     * @param ip           Relevant IP
      */
     public static void debug(String message, User affectedUser, String ip) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
@@ -114,15 +121,22 @@ public class Sys {
 
     /**
      * Append LogEntry to system log.
-     * TODO: Encrypt system log
      * Suppresses most errors
+     *
      * @param entry Entry to log
      */
     public static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
             try {
                 System.out.println(entry.toString());
-                FileUtils.append(logFile, new Base64String(entry.toCSV()));
+                try {
+                    Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey());
+                    FileUtils.append(logFile, encryptedEntry);
+                } catch (BadCiphertextException err) {
+                    err.printStackTrace();
+                    System.err.println("Cannot System log entry! Fatal error. Halting.");
+                    System.exit(1);
+                }
             } catch (IOException err) {
                 err.printStackTrace();
                 System.err.println("[WARNING] Failed to log as System! Continuing.");
@@ -132,6 +146,7 @@ public class Sys {
 
     /**
      * Load system log from disk, only for demonstration purposes. System should be decryptable by anyone but sys admins
+     *
      * @return Set of LogEntries loaded from disk.
      * @throws IOException
      */
@@ -141,8 +156,15 @@ public class Sys {
                 Base64String[] encryptedEntries = FileUtils.read(logFile);
                 SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
                 for (int i = 0; i < encryptedEntries.length; i++) {
-                    CSVRecord record = CSVUtils.parseRecord(encryptedEntries[i].decodeString()).getRecords().get(0);
-                    decryptedEntries[i] = SystemLogEntry.fromCSV(record);
+                    try {
+                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));
+                        CSVRecord record = CSVUtils.parseRecord(entry).getRecords().get(0);
+                        decryptedEntries[i] = SystemLogEntry.fromCSV(record);
+                    } catch (BadCiphertextException err) {
+                        err.printStackTrace();
+                        System.err.println("Cannot load/decrypt system log! Fatal! Halting.");
+                        System.exit(1);
+                    }
                 }
                 return decryptedEntries;
             } catch (IOException err) {

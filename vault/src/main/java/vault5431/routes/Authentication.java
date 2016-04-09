@@ -1,23 +1,20 @@
 package vault5431.routes;
 
 import spark.ModelAndView;
-import vault5431.Password;
 import vault5431.Sys;
+import vault5431.auth.RollingKeys;
 import vault5431.auth.Token;
-import vault5431.auth.exceptions.CouldNotParseTokenException;
-import vault5431.auth.exceptions.InvalidTokenException;
-import vault5431.routes.exceptions.UnauthorizedRequestException;
+import vault5431.io.Base64String;
 import vault5431.users.UserManager;
 import vault5431.users.User;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static spark.Spark.*;
-import static spark.Spark.halt;
-import static vault5431.Vault.demoUser;
+import static spark.Spark.get;
+import static spark.Spark.post;
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 
 /**
@@ -27,29 +24,51 @@ class Authentication extends Routes {
 
     protected void routes() {
 
-        get("/vault", (req, res) -> {
-            res.redirect("/vault/home");
-            return null;
-        });
-
         get("/", (req, res) -> {
-            Sys.debug("Received GET to /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "login.ftl");
+            Token token = validateToken(req);
+            if (token != null) {
+                res.redirect("/home");
+                return emptyPage;
+            } else {
+                Sys.debug("Received GET to /.", req.ip());
+                Map<String, Object> attributes = new HashMap<>();
+                return new ModelAndView(attributes, "login.ftl");
+            }
         }, freeMarkerEngine);
 
-        post("/authenticate", (req, res) -> {
-            Sys.debug("Received POST to /authenticate.", req.ip());
-            if (req.queryParams("username") != null && UserManager.userExists(req.queryParams("username"))) {
-                System.out.println("exists");
-                res.redirect("/vault/home");
-                //demoUser.info("Action: Log In", req.ip());
-                User user = UserManager.getUser(req.queryParams("username"));
-                user.info("Action: Log In", req.ip());
+        post("/", (req, res) -> {
+            Sys.debug("Received POST to /.", req.ip());
+            Map<String, Object> attributes = new HashMap<>();
+            String username = req.queryParams("username");
+            String password = req.queryParams("password");
+            if (username != null
+                    && username.length() > 0
+                    && password != null
+                    && password.length() > 0) {
+                if (UserManager.userExists(username)
+                        && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
+                    Token token = new Token(UserManager.getUser(username));
+                    res.cookie(
+                            home,
+                            "token",
+                            token.toCookie(),
+                            (int)
+                                    LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
+                            true);
+                    res.redirect("/home");
+                    return emptyPage;
+                } else {
+                    Sys.debug("Failed login attempt.", req.ip());
+                    String errorMessage = "This username/password combination does not exist!";
+                    attributes.put("error", errorMessage);
+                    return new ModelAndView(attributes, "login.ftl");
+                }
             } else {
-                res.redirect("/");
+                Sys.debug("Failed login attempt.", req.ip());
+                String errorMessage = "This username/password combination does not exist!";
+                attributes.put("error", errorMessage);
+                return new ModelAndView(attributes, "login.ftl");
             }
-            return null;
         });
 
         post("/register", (req, res) -> {
@@ -97,30 +116,17 @@ class Authentication extends Routes {
         get("/logout", (req, res) -> {
             res.removeCookie("token");
             res.redirect("/");
-            return null;
+            return emptyPage;
         });
 
         get("/unauthorized", (req, res) -> {
+            Sys.debug("Displaying unauthorized page.", req.ip());
             res.status(401);
+            if (req.cookie("token") != null && req.cookie("token").length() > 0) {
+                res.removeCookie("token");
+            }
             Map<String, Object> attributes = new HashMap<>();
             return new ModelAndView(attributes, "unauthorized.ftl");
-        }, freeMarkerEngine);
-
-        get("/vault/home", (req, res) -> {
-            Sys.debug("Received GET to /vault/home.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-
-            Password[] plist = demoUser.loadPasswords();
-
-            List<Map<String, String>> listofmaps = new ArrayList<>();
-
-            for (Password p : plist) {
-                listofmaps.add(p.toMap());
-            }
-
-            attributes.put("storedpasswords", listofmaps);
-
-            return new ModelAndView(attributes, "home.ftl");
         }, freeMarkerEngine);
 
     }

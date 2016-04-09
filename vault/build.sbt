@@ -7,14 +7,15 @@ isSnapshot := true
 lazy val vault5431 = project.in(file("."))
 
 libraryDependencies ++= Seq(
-  "com.sparkjava" % "spark-core" % "2.3",
-  "commons-validator" % "commons-validator" % "1.5.0",
-  "org.apache.commons" % "commons-csv" % "1.2",
-  "org.freemarker" % "freemarker" % "2.3.23",
-  "commons-io" % "commons-io" % "2.4",
-  "junit" % "junit" % "4.12" % Test,
-  "com.novocode" % "junit-interface" % "0.11" % Test,
-  "com.twilio.sdk" % "twilio-java-sdk" % "3.4.5"
+  "commons-io"            % "commons-io"        % "2.4",
+  "commons-validator"     % "commons-validator" % "1.5.0",
+  "com.google.code.gson"  % "gson"              % "2.6.2",
+  "com.sparkjava"         % "spark-core"        % "2.3",
+  "com.twilio.sdk"        % "twilio-java-sdk"   % "3.4.5",
+  "org.apache.commons"    % "commons-csv"       % "1.2",
+  "org.freemarker"        % "freemarker"        % "2.3.23",
+  "junit"                 % "junit"             % "4.12" % Test,
+  "com.novocode"          % "junit-interface"   % "0.11" % Test
 )
 
 initialize := {

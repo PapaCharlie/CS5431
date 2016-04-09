@@ -44,9 +44,9 @@ public class SystemLogEntry extends LogEntry {
     @Override
     public String toString() {
         StringBuilder logString = new StringBuilder();
-        return logString.append("[").append(logType).append("]").append(" ").append(affectedUser)
-                .append(" ").append(timestamp).append(" ")
-                .append(message).append(" ").toString();
+        return logString.append("[").append(logType).append("]").append(" ").append(ip)
+                .append(" ").append(affectedUser).append(" ").append(timestamp)
+                .append(" ").append(message).append(" ").toString();
     }
 
     /**

@@ -1,42 +1,98 @@
 package vault5431.auth;
 
+import vault5431.crypto.SigningUtils;
+import vault5431.crypto.SymmetricUtils;
+import vault5431.crypto.exceptions.BadCiphertextException;
+import vault5431.io.Base64String;
+
 import javax.crypto.SecretKey;
+import javax.security.auth.DestroyFailedException;
+import java.time.LocalDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static java.util.concurrent.TimeUnit.HOURS;
-import static vault5431.crypto.SymmetricUtils.getNewKey;
-
+import static java.time.temporal.ChronoUnit.MILLIS;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Created by papacharlie on 4/5/16.
  */
 public class RollingKeys {
 
-    public static final int WINDOW_LENGTH = 24;
-
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    private static SecretKey encryptionKey;
-    private static SecretKey signingKey;
+    private static final Object lock = new Object();
+    private static SecretKey encryptionKey = SymmetricUtils.getNewKey();
+    private static SecretKey signingKey = SymmetricUtils.getNewKey();
 
     static {
 
-        final Runnable beeper = () -> {
-            encryptionKey = getNewKey();
-            signingKey = getNewKey();
+        final Runnable keyRoller = () -> {
+            synchronized (lock) {
+                try {
+                    encryptionKey.destroy();
+                    signingKey.destroy();
+                    encryptionKey = SymmetricUtils.getNewKey();
+                    signingKey = SymmetricUtils.getNewKey();
+                } catch (DestroyFailedException err) {
+                    // As it turns out, .destroy() is not implemented and always throws this error.
+                    // See https://bugs.openjdk.java.net/browse/JDK-8008795
+                    err.printStackTrace();
+                    System.err.println("Cannot destroy rolling keys.");
+                }
+            }
         };
 
-        scheduler.scheduleAtFixedRate(beeper, 0, WINDOW_LENGTH, HOURS);
+        scheduler.scheduleAtFixedRate(
+                keyRoller,
+                LocalDateTime.now().until(getEndOfCurrentWindow(), MILLIS),
+                24 * 60 * 60 * 1000,
+                MILLISECONDS
+        );
 
     }
 
-    public static SecretKey getEncryptionKey() {
-        return encryptionKey;
+    public static boolean verifySignature(byte[] content, Base64String signature) {
+        synchronized (lock) {
+            return SigningUtils.verifySignature(content, signature, signingKey);
+        }
     }
 
-    public static SecretKey getSigningKey() {
-        return signingKey;
+    public static Base64String sign(byte[] content) {
+        synchronized (lock) {
+            return SigningUtils.getSignature(content, signingKey);
+        }
+    }
+
+    public static Base64String encrypt(byte[] content) {
+        synchronized (lock) {
+            Base64String encryptedContent = null;
+            try {
+                encryptedContent = SymmetricUtils.encrypt(content, encryptionKey);
+            } catch (BadCiphertextException err) {
+                err.printStackTrace();
+                System.err.println("Current rolling key is invalid. Halting.");
+                System.exit(1);
+            }
+            return encryptedContent;
+        }
+    }
+
+    public static byte[] decrypt(Base64String ciphertext) {
+        synchronized (lock) {
+            byte[] content = null;
+            try {
+                content = SymmetricUtils.decrypt(ciphertext, encryptionKey);
+            } catch (BadCiphertextException err) {
+                err.printStackTrace();
+                System.err.println("Current rolling key is invalid. Halting.");
+                System.exit(1);
+            }
+            return content;
+        }
+    }
+
+    public static LocalDateTime getEndOfCurrentWindow() {
+        return LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
     }
 
 }

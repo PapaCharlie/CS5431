@@ -75,22 +75,20 @@ public class CryptoTest extends VaultTest {
     public void testPrivateKeySaveToFile() throws Exception {
         File privKeyFile = getTempFile("id_rsa");
         String password = PasswordGenerator.generatePassword(20);
+        SecretKey key = SymmetricUtils.getNewKey();
         File passwordFile = getTempFile("password");
         PasswordUtils.savePassword(passwordFile, password);
-        AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), password);
-        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, password, passwordFile);
+        AsymmetricUtils.savePrivateKey(privKeyFile, keys.getPrivate(), key);
+        PrivateKey privateKey = AsymmetricUtils.loadPrivateKey(privKeyFile, key);
         assertNotNull(privateKey);
         assertArrayEquals(keys.getPrivate().getEncoded(), privateKey.getEncoded());
     }
 
     @Test
-    public void testPasswordHashing() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            String password = PasswordGenerator.generatePassword(20);
-            assertEquals(20, password.length());
-            Base64String hashedPassword = PasswordUtils.hashPassword(password);
-            assertTrue(PasswordUtils.verifyHashedPassword(hashedPassword, password));
-        }
+    public void testSavePassword() throws Exception {
+        File passwordFile = getTempFile("password");
+        PasswordUtils.savePassword(passwordFile, "password");
+        assertTrue(PasswordUtils.verifyPasswordInFile(passwordFile, "password"));
     }
 
     @Ignore

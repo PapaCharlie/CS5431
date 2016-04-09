@@ -3,32 +3,34 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Password;
 import vault5431.Sys;
+import vault5431.auth.Token;
 import vault5431.crypto.AsymmetricUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SigningUtils;
+import vault5431.crypto.SymmetricUtils;
+import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
-import vault5431.crypto.exceptions.InvalidMasterPasswordException;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
+import vault5431.users.exceptions.CorruptedLogException;
+import vault5431.users.exceptions.CorruptedVaultException;
+import vault5431.users.exceptions.VaultNotFoundException;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import static vault5431.Sys.NO_IP;
+import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
-import static vault5431.users.UserManager.hashUsername;
 
 /**
  * User class.
@@ -42,6 +44,7 @@ public final class User {
     public final File privCryptoKeyfile;
     public final File privSigningKeyFile;
     public final File vaultFile;
+    public final File vaultSaltFile;
     public final File passwordHashFile;
     public final File pubCryptoKeyFile;
     public final File pubCryptoSigFile;
@@ -51,7 +54,7 @@ public final class User {
     public final File cryptoKeyFile;
 
     protected User(String username) {
-        this(hashUsername(username));
+        this(UserManager.hashUsername(username));
     }
 
     protected User(Base64String hash) {
@@ -60,6 +63,7 @@ public final class User {
         privCryptoKeyfile = new File(getHome(), "id_rsa.crypto");
         privSigningKeyFile = new File(getHome(), "id_rsa.signing");
         vaultFile = new File(getHome(), "vault");
+        vaultSaltFile = new File(getHome(), "vault.salt");
         passwordHashFile = new File(getHome(), "password.hash");
 
         pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
@@ -70,6 +74,7 @@ public final class User {
         cryptoKeyFile = new File(getHome(), "crypto.key");
     }
 
+
     public String getShortHash() {
         return hash.getB64String().substring(0, Integer.min(hash.length(), 10));
     }
@@ -78,7 +83,8 @@ public final class User {
         return new File(home, hash.getB64String());
     }
 
-    public PublicKey loadPublicSigningKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException, InvalidKeyException {
+    public PublicKey loadPublicSigningKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {
+        Sys.debug("Loading public signing key.", this);
         PublicKey key = AsymmetricUtils.loadPublicKey(pubSigningKeyFile);
         if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubSigningSigFile)[0])) {
             throw new InvalidPublicKeySignature();
@@ -87,14 +93,15 @@ public final class User {
         }
     }
 
-    public PrivateKey loadPrivateSigningKey(String password)
-            throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
+    public PrivateKey loadPrivateSigningKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privSigningKeyFile) {
-            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, password, passwordHashFile);
+            Sys.debug("Loading private signing key", this);
+            return AsymmetricUtils.loadPrivateKey(privSigningKeyFile, getAdminEncryptionKey());
         }
     }
 
     public PublicKey loadPublicCryptoKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {
+        Sys.debug("Loading public crypto key", this);
         PublicKey key = AsymmetricUtils.loadPublicKey(pubCryptoKeyFile);
         if (!SigningUtils.verifyPublicKeySignature(key, Base64String.loadFromFile(pubCryptoSigFile)[0])) {
             throw new InvalidPublicKeySignature();
@@ -103,64 +110,83 @@ public final class User {
         }
     }
 
-    public PrivateKey loadPrivateCryptoKey(String password)
-            throws IOException, InvalidKeyException, CouldNotLoadKeyException, InvalidMasterPasswordException {
+    public PrivateKey loadPrivateCryptoKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privCryptoKeyfile) {
-            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, password, passwordHashFile);
+            Sys.debug("Loading private signing key", this, token.getIp());
+            return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, getAdminEncryptionKey());
         }
     }
 
-    public void addPassword(Password password) throws IOException {
+    public void addPasswordToVault(Base64String password, Token token) throws IOException, BadCiphertextException {
         synchronized (vaultFile) {
-            info(String.format("Adding password: %s.", password.getName()));
-            FileUtils.append(vaultFile, new Base64String(password.toRecord()));
+            info("Added password.", token.getIp());
+            FileUtils.append(vaultFile, password);
         }
     }
 
-    public boolean verifyPassword(String password) throws IOException {
-        synchronized (passwordHashFile) {
+    public Base64String[] loadPasswords(Token token) throws VaultNotFoundException, CorruptedVaultException {
+        synchronized (vaultFile) {
+            info("Loading passwords.", token.getIp());
+            if (!vaultFile.exists()) {
+                Sys.error("User's vault file could not be found.", this);
+                throw new VaultNotFoundException();
+            }
+            Base64String[] passwords = null;
             try {
-                return PasswordUtils.verifyPasswordInFile(passwordHashFile, password);
-            } catch (InvalidKeyException err) {
+                passwords = Base64String.loadFromFile(vaultFile);
+            } catch (IOException err) {
+                err.printStackTrace();
+                error("Could not find vault!");
+                throw new VaultNotFoundException();
+            }
+            return passwords;
+        }
+    }
+
+//    public void addPasswordToVault(Password password, Token token) throws IOException, BadCiphertextException {
+//        synchronized (vaultFile) {
+//            info(String.format("Adding password: %s.", password.getName()), token.getIp());
+//            FileUtils.append(vaultFile, SymmetricUtils.encrypt(password.toRecord().getBytes(), adminEncryptionKey));
+//        }
+//    }
+//
+    public boolean verifyPassword(Base64String hashedPassword) throws IOException {
+        synchronized (passwordHashFile) {
+            if (PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString())) {
+                return true;
+            } else {
                 warning("Failed password verification attempt.");
                 return false;
             }
         }
     }
 
-    public Password[] loadPasswords() throws IOException {
-        synchronized (vaultFile) {
-            debug("Loading passwords.");
-            if (!vaultFile.exists() && !vaultFile.createNewFile()) {
-                Sys.error("Could not create password vault file.", this);
-                return new Password[0];
-            }
-            try {
-                Base64String[] encodedPasswords = FileUtils.read(vaultFile);
-                Password[] passwords = new Password[encodedPasswords.length];
-                for (int i = 0; i < encodedPasswords.length; i++) {
-                    passwords[i] = Password.fromCSVRecord(CSVUtils.parseRecord(encodedPasswords[i].decodeString()).getRecords().get(0));
-                }
-                return passwords;
-            } catch (IOException err) {
-                error("Could not load or parse passwords!");
-                throw err;
-            }
+    public Base64String loadVaultSalt() throws IOException {
+        synchronized (vaultSaltFile) {
+            return Base64String.loadFromFile(vaultSaltFile)[0];
         }
     }
 
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
+                PublicKey pubKey = loadPublicCryptoKey();
+                FileUtils.append(logFile, AsymmetricUtils.encrypt(entry.toCSV().getBytes(), pubKey));
                 System.out.println(entry.toString());
-                FileUtils.append(logFile, new Base64String(entry.toCSV()));
+                // Commented so that user entries don't show up on stdout
             } catch (IOException err) {
                 err.printStackTrace();
                 warning("Failed to log for user! Continuing (not recommended).", this);
-                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", hash.getB64String().substring(10));
-//            } catch (InvalidKeySpecException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException err) {
-//                err.printStackTrace();
-//                Sys.error("Could not append to user log.", this);
+                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
+            } catch (BadCiphertextException err) {
+                err.printStackTrace();
+                Sys.error("Serialization of log entry was too long, or unencryptable.", this);
+            } catch (InvalidPublicKeySignature err) {
+                Sys.error("User's public key does not match the signature! Halting.", this);
+                throw new RuntimeException("Invalid public key signature.");
+            } catch (CouldNotLoadKeyException err) {
+                Sys.error("Key could not be loaded from disk. Requires immediate attention.", this);
+                throw new RuntimeException("Cannot load key from disk.");
             }
         }
     }
@@ -213,45 +239,22 @@ public final class User {
         appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
     }
 
-    public void debug(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
-    }
-
-    public void debug(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.DEBUG, ip, NO_USER, LocalDateTime.now(), message, ""));
-    }
-
-    public void debug(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.DEBUG, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
-    }
-
-    public void debug(String message) {
-        appendToLog(new UserLogEntry(LogType.DEBUG, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
-    }
-
-    public UserLogEntry[] loadLog() throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
         synchronized (logFile) {
-            debug("Loading log.");
+            Sys.debug("Loading log.", this, token.getIp());
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+            PrivateKey privKey = loadPrivateCryptoKey(token);
             for (int i = 0; i < encryptedEntries.length; i++) {
-                CSVRecord record = CSVUtils.parseRecord(encryptedEntries[i].decodeString()).getRecords().get(0);
-                decryptedEntries[i] = UserLogEntry.fromCSV(record);
+                try {
+                    String decryptedEntry = new String(AsymmetricUtils.decrypt(encryptedEntries[i], privKey));
+                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
+                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
+                } catch (BadCiphertextException err) {
+                    throw new CorruptedLogException();
+                }
             }
             return decryptedEntries;
         }
-    }
-
-    public UserLogEntry[] loadLog(String password) throws IOException, InvalidKeySpecException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
-//        PrivateKey privateKey = loadPrivateCryptoKey(password);
-//        synchronized (logFile) {
-//            Base64String[] encryptedEntries = FileUtils.read(logFile);
-//            String[] decryptedEntries = new String[encryptedEntries.length];
-//            for (int i = 0; i < encryptedEntries.length; i ++) {
-//                decryptedEntries[i] = new String(AsymmetricUtils.decrypt(encryptedEntries[i], privateKey));
-//            }
-//            return decryptedEntries;
-//        }
-        return loadLog();
     }
 }

@@ -14,12 +14,12 @@ public class FileUtils {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
-                lines.add(Base64String.fromBase64(line.trim()));
+                lines.add(Base64String.fromBase64(line.trim().replace("\n", "").replace("\r","")));
             }
-            while (lines.peekFirst() != null && lines.getFirst().decodeString().length() == 0) {
+            while (lines.peekFirst() != null && lines.getFirst().length() == 0) {
                 lines.removeFirst();
             }
-            while (lines.peekFirst() != null && lines.getLast().decodeString().length() == 0) {
+            while (lines.peekFirst() != null && lines.getLast().length() == 0) {
                 lines.removeLast();
             }
             return lines.toArray(new Base64String[lines.size()]);
@@ -31,7 +31,6 @@ public class FileUtils {
             for (byte b : data) {
                 out.write(b);
             }
-//            Sys.debug(String.format("Wrote %d bytes to %s. \n", data.length, file.getCanonicalFile()));
             out.flush();
             out.close();
         }
