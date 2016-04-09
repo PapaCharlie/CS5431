@@ -13,9 +13,6 @@ import java.util.Map;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static vault5431.Vault.demoUser;
-import vault5431.users.User;
-import vault5431.users.UserManager;
 import static vault5431.Vault.getDemoUser;
 
 /**
@@ -48,8 +45,7 @@ class Passwords extends Routes {
                 }
                 array.append(']');
                 attributes.put("payload", String.format("{\"salt\":\"%s\",\"passwords\":%s}", salt.toString(), array.toString()));
-//                Gson gson = new Gson();
-//                attributes.put("payload", gson.toJson(new Vault(salt, passwords)));
+
                 return new ModelAndView(attributes, "home.ftl");
             } else {
                 Sys.debug("Received unauthorized GET to /home.");

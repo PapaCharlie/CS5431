@@ -52,8 +52,7 @@ class Authentication extends Routes {
                             home,
                             "token",
                             token.toCookie(),
-                            (int)
-                                    LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
+                            (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
                             true);
                     res.redirect("/home");
                     return emptyPage;
@@ -73,11 +72,10 @@ class Authentication extends Routes {
 
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
-            if(req.queryParams("username") != null && req.queryParams("password") != null && !UserManager.userExists(req.queryParams("username"))) {
+            if (req.queryParams("username") != null && req.queryParams("password") != null && !UserManager.userExists(req.queryParams("username"))) {
                 System.out.println("New user Created");
-                UserManager.initialize();
                 try {
-                    UserManager.create(req.queryParams("username"), req.queryParams("password"));
+                    UserManager.create(req.queryParams("username"), Base64String.fromBase64(req.queryParams("password")));
                 } catch (Exception err) {
                     err.printStackTrace();
                     System.err.println("Could not create user!");
@@ -88,8 +86,8 @@ class Authentication extends Routes {
                 user.info("Action: Log In", req.ip());
 
 
-            }else {
-               res.redirect("/");
+            } else {
+                res.redirect("/");
             }
             return null;
         });
