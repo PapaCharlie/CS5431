@@ -23,7 +23,7 @@
     <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2" ng-controller="PasswordCtrl">
         <h4 class="storedpasswords-heading">Stored Accounts</h4>
         <div class="panel-group" id="accordion">
-            
+
             <#--<div class="panel panel-default" ng-repeat="password in passwords">-->
                 <#--<div class="panel-heading">-->
                     <#--<h4 class="panel-title">-->
@@ -119,7 +119,6 @@
 
     function getAccordions(passwords){
         passwords.forEach(function(entry) {
-            console.log(entry.name);
             $("#accordion").append(
                     "<div class='panel panel-default'>"+
                         "<div class='panel-heading'>"+

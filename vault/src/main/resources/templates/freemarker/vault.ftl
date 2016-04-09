@@ -24,7 +24,7 @@
         <li><a href="/generator">Password Generator</a></li>
     <#--<li><a href="">Settings</a></li>-->
         <li><a href="/userlog">User Log</a></li>
-        <li><a href="/syslog">System Log</a></li>
+        <#--<li><a href="/syslog">System Log</a></li>-->
         <li><a href="" id="logout" onclick="logout()">Logout</a></li>
     </ul>
 </div>
