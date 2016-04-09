@@ -10,11 +10,18 @@
 <body>
 
 <div class="login">
-    <div class="login-triangle"></div>
-    <h2 class="login-header">Log in</h2>
-    <form action="/" method="post" id="loginForm" name="loginForm" class="login-container">
-        <p><input type="text" name="username" id="username" placeholder="Username" autofocus></p>
-        <p><input type="password" name="password" id="password" placeholder="Password"></p>
+  <div class="login-triangle"></div>
+
+  <h2 class="login-header">Log in</h2>
+
+
+    <form action= "/authenticate" method="post" id="form" class="login-container">
+        <p><input type="text" name="username" placeholder="Username"></p>
+        <p><input type="password" name="password" placeholder="Password"></p>
+        <input type="hidden" name="ip">
+        <p>
+            Not a member yet ? <a href="register.ftl" class="to_register">Join us</a>
+        </p>
         <p><input type="submit" value="Log in"></p>
     <#if error??>
         <p>${error}</p>

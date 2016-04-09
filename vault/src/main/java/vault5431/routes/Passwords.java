@@ -13,7 +13,9 @@ import java.util.Map;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static vault5431.Vault.getDemoUser;
+import static vault5431.Vault.demoUser;
+import vault5431.users.User;
+import vault5431.users.UserManager;
 
 /**
  * Created by papacharlie on 3/25/16.
@@ -73,20 +75,22 @@ class Passwords extends Routes {
             }
         });
 
-        post("/savepassword", (req, res) -> {
-            Token token = Authentication.validateToken(req);
-            if (token != null) {
-                Sys.debug("Received POST to /savepassword.", req.ip());
-                if (req.queryParams("newPassword") != null && req.queryParams("newPassword").length() > 0) {
-                    System.out.println(req.queryParams("newPassword"));
-                    Base64String newPassword = Base64String.fromBase64(req.queryParams("newPassword"));
-                    try {
-//                        Password p = new Password(web, url, username, password);
-                        getDemoUser().addPasswordToVault(newPassword, token);
-                        return "{\"success\":true, \"error\": \"\"}";
-                    } catch (IllegalArgumentException err) {
-                        return "{\"success\":false, \"error\": \"" + err.getLocalizedMessage() + "\"}";
-                    }
+        post("/vault/savepassword", (req, res) -> {
+            Sys.debug("Received POST to /vault/savepassword.", req.ip());
+            String web = req.queryParams("web");
+            String url = req.queryParams("url");
+            String username = req.queryParams("username");
+            String password = req.queryParams("password");
+            if (web != null && url != null && username != null && password != null) {
+                try {
+                    System.out.println(password);
+                    System.out.println(username);
+                    Password p = new Password(web, url, username, password);
+                    User user = UserManager.getUser(username);
+                    user.addPassword(p);
+                    //demoUser.addPassword(p);
+                } catch (IllegalArgumentException err) {
+                    String errorMessage = err.getLocalizedMessage();
                 }
                 res.redirect("/home");
                 return emptyPage;
