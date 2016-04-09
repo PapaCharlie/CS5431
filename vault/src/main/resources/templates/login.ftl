@@ -23,6 +23,9 @@
 </div>
 <script>
     $(document).ready(function () {
+
+        sessionStorage.removeItem("password");
+
         $("#loginForm").submit(function (event) {
             $passwordField = $('#password');
             var hashedPassword = sjcl.hash.sha256.hash(sjcl.codec.utf8String.toBits($passwordField.val()));

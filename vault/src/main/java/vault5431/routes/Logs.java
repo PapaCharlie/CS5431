@@ -26,13 +26,13 @@ class Logs extends Routes {
 
     protected void routes() {
 
-        get("/vault/userlog", (req, res) -> {
+        get("/userlog", (req, res) -> {
             Token token = Authentication.validateToken(req);
             if (token != null) {
                 Sys.debug("Received authenticated GET to /vault/userlog.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
                 List<Map<String, String>> loglst = new ArrayList<>();
-                for (UserLogEntry u : Vault.demoUser.loadLog(token)) {
+                for (UserLogEntry u : Vault.getDemoUser().loadLog(token)) {
                     loglst.add(u.toMap());
                 }
                 attributes.put("userloglist", loglst);
@@ -44,7 +44,7 @@ class Logs extends Routes {
             }
         }, freeMarkerEngine);
 
-        get("/vault/syslog", (req, res) -> {
+        get("/syslog", (req, res) -> {
             Token token = Authentication.validateToken(req);
             if (token != null) {
                 Sys.debug("Received GET to /vault/syslog.", req.ip());

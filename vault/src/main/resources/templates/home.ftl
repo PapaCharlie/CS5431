@@ -58,10 +58,15 @@
 
 <script>
     $(function () {
-        var data = ${payload};
-        var salt = sjcl.codec.base64url.toBits(data.salt);
-        var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
-        var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
+        if (sessionStorage.getItem("password")) {
+            var data = ${payload};
+            var salt = sjcl.codec.base64url.toBits(data.salt);
+            var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
+            var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
+        } else {
+            document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+            window.location = "/";
+        }
 
         $(document).on("click", ".reveal", function () {
             var type = $(this).siblings("input").attr('type');
