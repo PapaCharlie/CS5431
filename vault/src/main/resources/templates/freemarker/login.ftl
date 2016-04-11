@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <title>Vault5431</title>
     <link rel="stylesheet" type="text/css" href="/login.css">
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="/sjcl.js"></script>
-
 </head>
 <body>
-
 <div class="login">
   <div class="login-triangle"></div>
 
@@ -24,15 +23,13 @@
         </p>
         <p><input type="submit" value="Log in"></p>
     <#if error??>
-        <p>${error}</p>
+        <p class="has-error">${error}</p>
     </#if>
     </form>
 </div>
 <script>
     $(document).ready(function () {
-
         sessionStorage.removeItem("password");
-
         $("#loginForm").submit(function (event) {
             $passwordField = $('#password');
             var hashedPassword = sjcl.hash.sha256.hash(sjcl.codec.utf8String.toBits($passwordField.val()));
@@ -42,8 +39,5 @@
         });
     });
 </script>
-
 </body>
-
-
 </html>

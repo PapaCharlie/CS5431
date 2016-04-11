@@ -6,16 +6,14 @@ import vault5431.auth.RollingKeys;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.UserManager;
-import vault5431.users.User;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 
 /**
  * Created by papacharlie on 3/25/16.
@@ -49,11 +47,11 @@ class Authentication extends Routes {
                         && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
                     Token token = new Token(UserManager.getUser(username));
                     res.cookie(
-                            home,
                             "token",
                             token.toCookie(),
                             (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
-                            true);
+                            true
+                    );
                     res.redirect("/home");
                     return emptyPage;
                 } else {
@@ -78,24 +76,36 @@ class Authentication extends Routes {
 
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
-            if (req.queryParams("username") != null && req.queryParams("password") != null && !UserManager.userExists(req.queryParams("username"))) {
-                System.out.println("New user Created");
-                try {
-                    UserManager.create(req.queryParams("username"), Base64String.fromBase64(req.queryParams("password")));
-                } catch (Exception err) {
-                    err.printStackTrace();
-                    System.err.println("Could not create user!");
-                    System.exit(1);
+            Map<String, Object> attributes = new HashMap<>();
+            String username = req.queryParams("username");
+            String password = req.queryParams("password");
+            String phoneNumnber = req.queryParams("phoneNumber");
+            if (username != null
+                    && username.length() > 0
+                    && password != null
+                    && password.length() > 0
+                    && phoneNumnber != null
+                    && phoneNumnber.length() > 0) {
+                if (!UserManager.userExists(username)) {
+                    try {
+                        UserManager.create(username, Base64String.fromBase64(password), phoneNumnber);
+                    } catch (Exception err) {
+                        err.printStackTrace();
+                        System.err.println("Could not create user!");
+                        System.exit(1);
+                    }
+                    res.redirect("/");
+                    return emptyPage;
+                } else {
+                    attributes.put("error", "This username is already taken!");
+                    return new ModelAndView(attributes, "register.ftl");
                 }
-                res.redirect("/");
-                User user = UserManager.getUser(req.queryParams("username"));
-                user.info("Action: Log In", req.ip());
             } else {
-                res.redirect("/");
+                attributes.put("error", "All fields are required!");
+                return new ModelAndView(attributes, "register.ftl");
             }
-            return null;
-        });
-        
+        }, freeMarkerEngine);
+
         get("/logout", (req, res) -> {
             res.removeCookie("token");
             res.redirect("/");
