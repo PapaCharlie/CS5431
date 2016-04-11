@@ -73,7 +73,6 @@ class Passwords extends Routes {
             if (token != null) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 if (req.queryParams("newPassword") != null && req.queryParams("newPassword").length() > 0) {
-                    System.out.println(req.queryParams("newPassword"));
                     Base64String newPassword = Base64String.fromBase64(req.queryParams("newPassword"));
                     token.getUser().addPasswordToVault(newPassword, token);
                     return "{\"success\":true, \"error\": \"\"}";

@@ -38,7 +38,6 @@
             var passwords = data.passwords.map(function (encryptedPassword) {
                 return JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
             });
-            console.log(passwords);
             getAccordions(passwords);
 
         } else {
@@ -49,12 +48,10 @@
         $(document).on("click", ".reveal", function () {
             var type = $(this).siblings("input").attr('type');
             if (type == 'password') {
-                console.log("reveal");
                 $(this).siblings("input").attr('type', 'text');
                 $(this).html("Hide");
             }
             else {
-                console.log("hide");
                 $(this).siblings("input").attr('type', 'password');
                 $(this).html("Reveal");
             }
@@ -73,8 +70,7 @@
             $.post('/savepassword', {newPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
                 var response = JSON.parse(data);
                 if(response.success) {
-                    console.log(values);
-//                    window.location = "/home";
+                    window.location = "/home";
                 } else {
                     alert(response.error);
                 }
@@ -84,7 +80,6 @@
 
     function getAccordions(passwords){
         passwords.forEach(function(entry) {
-            console.log(entry.password);
             $("#accordion").append(
                     "<div class='panel panel-default'>"+
                         "<div class='panel-heading'>"+
