@@ -50,8 +50,6 @@ public final class User {
     public final File pubCryptoSigFile;
     public final File pubSigningKeyFile;
     public final File pubSigningSigFile;
-    public final File signingKeyFile;
-    public final File cryptoKeyFile;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -70,8 +68,6 @@ public final class User {
         pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
         pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
         pubSigningSigFile = new File(pubSigningKeyFile + ".sig");
-        signingKeyFile = new File(getHome(), "signing.key");
-        cryptoKeyFile = new File(getHome(), "crypto.key");
     }
 
 
@@ -143,13 +139,6 @@ public final class User {
         }
     }
 
-//    public void addPasswordToVault(Password password, Token token) throws IOException, BadCiphertextException {
-//        synchronized (vaultFile) {
-//            info(String.format("Adding password: %s.", password.getName()), token.getIp());
-//            FileUtils.append(vaultFile, SymmetricUtils.encrypt(password.toRecord().getBytes(), adminEncryptionKey));
-//        }
-//    }
-//
     public boolean verifyPassword(Base64String hashedPassword) throws IOException {
         synchronized (passwordHashFile) {
             if (PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString())) {
@@ -161,9 +150,9 @@ public final class User {
         }
     }
 
-    public Base64String loadVaultSalt() throws IOException {
+    public Base64String loadVaultSalt() throws IOException, BadCiphertextException {
         synchronized (vaultSaltFile) {
-            return Base64String.loadFromFile(vaultSaltFile)[0];
+            return new Base64String(SymmetricUtils.decrypt(Base64String.loadFromFile(vaultSaltFile)[0], getAdminEncryptionKey()));
         }
     }
 
@@ -173,7 +162,6 @@ public final class User {
                 PublicKey pubKey = loadPublicCryptoKey();
                 FileUtils.append(logFile, AsymmetricUtils.encrypt(entry.toCSV().getBytes(), pubKey));
                 System.out.println(entry.toString());
-                // Commented so that user entries don't show up on stdout
             } catch (IOException err) {
                 err.printStackTrace();
                 warning("Failed to log for user! Continuing (not recommended).", this);

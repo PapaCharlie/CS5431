@@ -8,6 +8,7 @@ import vault5431.crypto.SymmetricUtils;
 import vault5431.io.Base64String;
 import vault5431.logging.CSVUtils;
 import vault5431.users.User;
+import vault5431.users.UserManager;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -66,6 +67,10 @@ public class Token {
         } else {
             throw new InvalidTokenException("Could not verify token's signature.");
         }
+    }
+
+    public User getUser() {
+        return UserManager.getUser(this.username);
     }
 
     public String getIp() {

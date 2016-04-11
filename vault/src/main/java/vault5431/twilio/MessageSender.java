@@ -3,12 +3,17 @@ package vault5431.twilio;
 /**
  * Created by cyj on 4/7/16.
  */
+
+import com.twilio.sdk.resource.instance.lookups.PhoneNumber;
+import com.twilio.sdk.LookupsClient;
 import com.twilio.sdk.TwilioRestClient;
 import com.twilio.sdk.TwilioRestException;
 import com.twilio.sdk.resource.factory.MessageFactory;
 import com.twilio.sdk.resource.instance.Message;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -20,12 +25,12 @@ public class MessageSender {
     public static Integer sendAuthMessage(String toNum, String msg) {
         TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        List<NameValuePair> params = new ArrayList<>();
         params.add(new BasicNameValuePair("To", toNum));
         params.add(new BasicNameValuePair("From", "+14848689228"));
         params.add(new BasicNameValuePair("Body", msg));
 
-        MessageFactory msgFactory =  client.getAccount().getMessageFactory();
+        MessageFactory msgFactory = client.getAccount().getMessageFactory();
         Message sms = null;
         try {
             sms = msgFactory.create(params);
@@ -37,4 +42,5 @@ public class MessageSender {
 
         return sms.getErrorCode();
     }
+
 }

@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "commons-validator"     % "commons-validator" % "1.5.0",
   "com.google.code.gson"  % "gson"              % "2.6.2",
   "com.sparkjava"         % "spark-core"        % "2.3",
-  "com.twilio.sdk"        % "twilio-java-sdk"   % "3.4.5",
+  "com.twilio.sdk"        % "twilio-java-sdk"   % "5.9.0",
   "org.apache.commons"    % "commons-csv"       % "1.2",
   "org.freemarker"        % "freemarker"        % "2.3.23",
   "junit"                 % "junit"             % "4.12" % Test,

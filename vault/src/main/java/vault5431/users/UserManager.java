@@ -1,10 +1,7 @@
 package vault5431.users;
 
 import vault5431.Sys;
-import vault5431.crypto.AsymmetricUtils;
-import vault5431.crypto.HashUtils;
-import vault5431.crypto.PasswordUtils;
-import vault5431.crypto.SigningUtils;
+import vault5431.crypto.*;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
@@ -75,7 +72,7 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(String username, Base64String hashedPassword)
+    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber)
             throws IOException, CouldNotSaveKeyException, BadCiphertextException {
         User user;
         synchronized (mapLock) {
@@ -98,7 +95,7 @@ public class UserManager {
             PasswordUtils.savePassword(user.passwordHashFile, hashedPassword.decodeString());
 
             byte[] salt = PasswordUtils.generateSalt();
-            new Base64String(salt).saveToFile(user.vaultSaltFile);
+            SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);
 
             Sys.info("Generating signing keypair.", user);
             KeyPair signingKeys = AsymmetricUtils.getNewKeyPair();
