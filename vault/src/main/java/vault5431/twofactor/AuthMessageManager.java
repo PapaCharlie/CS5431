@@ -14,20 +14,18 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public class AuthMessageManager {
     protected static ConcurrentHashMap<String, AuthMessage> authCodeManager = new ConcurrentHashMap<String, AuthMessage>();
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final Object lock = new Object();
+    private static final int TIME_TO_EXPIRE = 60000;
 
 
     protected static void addToManager(String username, AuthMessage m) {
         authCodeManager.put(username, m);
         Runnable removeCode = () -> {
-            synchronized (lock) {
                 authCodeManager.remove(username);
-            }
+                System.out.println("test runnable: " + authCodeManager.size());
         };
-
+//        System.out.println("in addToManager function: " + authCodeManager.size());
         scheduler.schedule(
-                removeCode, LocalDateTime.now().until(LocalDateTime.now()
-                        .plusDays(0).withHour(0).withMinute(3).withSecond(0)
-                        .withNano(0), MILLIS), MILLISECONDS);
+                removeCode, TIME_TO_EXPIRE, MILLISECONDS);
+//        System.out.println("After scheduler set: " + authCodeManager.size());
     }
 }

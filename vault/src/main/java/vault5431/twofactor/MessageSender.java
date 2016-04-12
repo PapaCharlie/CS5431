@@ -43,8 +43,6 @@ public class MessageSender {
             System.out.println("Additional Info: " + t.getMoreInfo());
             return 0;
         }
-
-        return sms.getErrorCode();
+        return null;
     }
-
 }
