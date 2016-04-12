@@ -1,4 +1,4 @@
-package vault5431.twilio;
+package vault5431.twofactor;
 
 import java.security.SecureRandom;
 
@@ -7,6 +7,7 @@ import java.security.SecureRandom;
  */
 public class AuthMessage {
     private static final SecureRandom random = new SecureRandom();
+
     protected int authCode;
 
     public AuthMessage() {
