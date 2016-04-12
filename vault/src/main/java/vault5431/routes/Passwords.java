@@ -1,19 +1,16 @@
 package vault5431.routes;
 
-import com.google.gson.Gson;
 import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.User;
-import vault5431.users.UserManager;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static vault5431.Vault.getDemoUser;
 
 /**
  * Created by papacharlie on 3/25/16.
@@ -28,7 +25,7 @@ class Passwords extends Routes {
                 Sys.debug("Received GET to /home.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
 
-                User user = UserManager.getUser(token.getUsername());
+                User user = token.getUser();
                 Base64String salt = user.loadVaultSalt();
                 Base64String[] passwords = user.loadPasswords(token);
                 StringBuilder array = new StringBuilder();
@@ -54,13 +51,13 @@ class Passwords extends Routes {
             }
         }, freeMarkerEngine);
 
-        post("/vault/changepassword", (req, res) -> {
+        post("/changepassword", (req, res) -> {
             Token token = Authentication.validateToken(req);
             if (token != null) {
                 Sys.debug("Received POST to /vault/changepassword.", req.ip());
                 String w = req.queryParams("name");
                 if (w != null && w.length() > 0) {
-                    getDemoUser().info("Changed Password for " + w, req.ip());
+                    token.getUser().info("Changed Password for " + w, req.ip());
                 }
                 res.redirect("/home");
                 return emptyPage;
@@ -76,22 +73,16 @@ class Passwords extends Routes {
             if (token != null) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 if (req.queryParams("newPassword") != null && req.queryParams("newPassword").length() > 0) {
-                    System.out.println(req.queryParams("newPassword"));
                     Base64String newPassword = Base64String.fromBase64(req.queryParams("newPassword"));
-                    try {
-//                        Password p = new Password(web, url, username, password);
-                        getDemoUser().addPasswordToVault(newPassword, token);
-                        return "{\"success\":true, \"error\": \"\"}";
-                    } catch (IllegalArgumentException err) {
-                        return "{\"success\":false, \"error\": \"" + err.getLocalizedMessage() + "\"}";
-                    }
+                    token.getUser().addPasswordToVault(newPassword, token);
+                    return "{\"success\":true, \"error\": \"\"}";
                 }
                 res.redirect("/home");
-                return emptyPage;
+                return "";
             } else {
                 Sys.debug("Received unauthorized POST to /savepassword.");
                 res.redirect("/");
-                return emptyPage;
+                return "";
             }
         });
 

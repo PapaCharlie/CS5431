@@ -21,6 +21,7 @@ public class Vault {
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     private static final String demoUsername = "demoUser";
     private static final String demoPassword = "password";
+    private static final String demoPhonenumber = "+16463391069";
     private static User demoUser;
     private static SecretKey adminSigningKey;
     private static SecretKey adminEncryptionKey;
@@ -76,7 +77,7 @@ public class Vault {
         UserManager.initialize();
         if (!UserManager.userExists(demoUsername)) {
             try {
-                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword));
+                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword), demoPhonenumber);
             } catch (Exception err) {
                 err.printStackTrace();
                 System.err.println("Could not create demo user!");
