@@ -16,7 +16,7 @@ public class AuthMessage {
 
     @Override
     public String toString() {
-        return "Please enter the following code: " + authCode;
+        return "Please enter the following authentication code: " + authCode;
     }
 
 }

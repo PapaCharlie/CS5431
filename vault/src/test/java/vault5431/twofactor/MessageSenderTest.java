@@ -1,7 +1,6 @@
 package vault5431.twofactor;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 /**
@@ -10,7 +9,15 @@ import static org.junit.Assert.*;
 public class MessageSenderTest {
     @Test
     public void sendAuthMessageTest() {
-        Integer recvMsg = MessageSender.sendAuthMessage("+16109455656");
+        String sendPhone = "+16109455656";
+        Integer recvMsg = MessageSender.sendAuthMessage(sendPhone);
         assertEquals(null, recvMsg);
+        try{
+            Thread.sleep(60000);
+        } catch (InterruptedException ie) {
+            assertFalse(true);
+        }
+        AuthMessage test = AuthMessageManager.authCodeManager.get("+16109455656");
+        assertEquals(null, test);
     }
 }
