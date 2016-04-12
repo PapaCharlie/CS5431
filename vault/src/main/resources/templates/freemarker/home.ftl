@@ -100,11 +100,12 @@
                                 "<div class='row'>"+
                                     "<div class='col-sm-4 col-md-4'>Username: "+entry.username+"</div>"+
                                         "<div id="+entry.name+" class='col-sm-4 col-md-4'>Password:"+
-                                            "<input type='password' value="+entry.password+">"+
-                                            "<button class='reveal' id="+entry.id+"reveal>Reveal</button>"+
+                                            "<input id='"+entry.id+"copy' type='password' value='"+entry.password+"'>"+
+                                            "<button class='copy' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#"+entry.id+"copy'>Copy</button>"+
+                                            "<button class='reveal' id='"+entry.id+"reveal'>Reveal</button>"+
                                         "</div>"+
-                                        "<form method='post' action='/changepassword'>"+
-                                            "<input type='hidden' name='name' value="+entry.name+">"+
+                                        "<form method='post' action='/vault/changepassword'>"+
+                                            "<input type='hidden' name='name' value='"+entry.name+"'>"+
                                             "<button class='btn btn-warning' type='submit'>Change password</button>"+
                                         "</form>"+
                                 "</div>"+
@@ -116,6 +117,47 @@
 
         });
     }
+    $(document).ready(function(){
+//        var btns = document.querySelectorAll('.copy');
+//        var clipboard = new Clipboard(btns);
+        $('[data-toggle="tooltip"]').tooltip();
+        $('.copy').each(function(index){
+            var $copy = $(this);
+            var c = new Clipboard(this, {
+                target: function(trigger) {
+                    var v = document.createElement("input");
+                    v.className = "temp"
+                    v.value = trigger.previousElementSibling.value;
+                    $("div.panel").append(v);
+
+//                    console.log(v.value);
+//                    console.log($("input#myid"));
+
+                    return v;
+                }
+            });
+
+            c.on('success', function(e) {
+                $( "input" ).remove(".temp");
+                $copy.on("click", function(e){
+                    e.preventDefault();
+                    $(this).tooltip("show");
+                });
+                $copy.mouseout(function(e){
+                    e.preventDefault();
+                    $copy.tooltip("destroy");
+                });
+                console.info('Action:', e.action);
+                console.info('Text:', e.text);
+                console.info('Trigger:', e.trigger);
+            });
+
+
+        })
+    });
+
+
+
 </script>
 </#macro>
 
