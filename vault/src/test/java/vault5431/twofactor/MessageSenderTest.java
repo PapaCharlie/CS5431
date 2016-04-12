@@ -11,13 +11,28 @@ public class MessageSenderTest {
     public void sendAuthMessageTest() {
         String sendPhone = "+16109455656";
         Integer recvMsg = MessageSender.sendAuthMessage(sendPhone);
-        assertEquals(null, recvMsg);
         try{
-            Thread.sleep(60000);
+            Thread.sleep(10000);
         } catch (InterruptedException ie) {
             assertFalse(true);
         }
-        AuthMessage test = AuthMessageManager.authCodeManager.get("+16109455656");
-        assertEquals(null, test);
+        AuthMessage test1 = AuthMessageManager.authCodeManager.get("+16109455656");
+        assertFalse(null == test1);
+        Integer recvMsg2 = MessageSender.sendAuthMessage(sendPhone);
+        try{
+            Thread.sleep(30000);
+        } catch (InterruptedException ie) {
+            assertFalse(true);
+        }
+        System.out.println(AuthMessageManager.authCodeManager.values());
+        assertEquals(2, AuthMessageManager.authCodeManager.size());
+        AuthMessage test2 = AuthMessageManager.authCodeManager.get("+16109455656");
+        try{
+            Thread.sleep(40000);
+        } catch (InterruptedException ie) {
+            assertFalse(true);
+        }
+        assertEquals(null, test1);
+        assertEquals(null, test2);
     }
 }
