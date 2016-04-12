@@ -80,6 +80,7 @@
 
     function getAccordions(passwords){
         passwords.forEach(function(entry) {
+            console.log(entry.password);
             $("#accordion").append(
                     "<div class='panel panel-default'>"+
                         "<div class='panel-heading'>"+
@@ -95,12 +96,12 @@
                                 "</div>"+
                                 "<div class='row'>"+
                                     "<div class='col-sm-4 col-md-4'>Username: "+entry.username+"</div>"+
-                                        "<div id="+entry.name+" class='col-sm-4 col-md-4'>Password:"+
-                                            "<input type='password' value="+entry.password+">"+
+                                        "<div ng-attr-id="+entry.name+" class='col-sm-4 col-md-4'>Password:"+
+                                            "<input type='password' value='"+entry.password+"'>"+
                                             "<button class='reveal' id="+entry.id+"reveal>Reveal</button>"+
                                         "</div>"+
-                                        "<form method='post' action='/changepassword'>"+
-                                            "<input type='hidden' name='name' value="+entry.name+">"+
+                                        "<form method='post' action='/vault/changepassword'>"+
+                                            "<input type='hidden' name='name' value='"+entry.name+"'>"+
                                             "<button class='btn btn-warning' type='submit'>Change password</button>"+
                                         "</form>"+
                                 "</div>"+
