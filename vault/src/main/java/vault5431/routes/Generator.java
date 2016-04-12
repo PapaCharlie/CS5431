@@ -15,38 +15,31 @@ import static spark.Spark.post;
  */
 class Generator extends Routes {
 
-    private final String randomPassword = "randompassword";
-    private final String length = "length";
-
     protected void routes() {
         get("/generator", (req, res) -> {
             Sys.debug("Received GET to /generator.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
-            attributes.put(randomPassword, PasswordGenerator.generatePassword(12));
-            attributes.put(length, "12");
             return new ModelAndView(attributes, "generator.ftl");
         }, freeMarkerEngine);
 
         post("/generator", (req, res) -> {
             Sys.debug("Received POST to /generator.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            attributes.put(randomPassword, "");
-            String len = req.queryParams("length");
-            if (len != null) {
+            String length = req.queryParams("length");
+            if (length != null) {
                 try {
-                    int chars = Integer.parseInt(len);
+                    int chars = Integer.parseInt(length);
                     if (chars >= 6 && chars <= 100) {
-                        attributes.put(length, len);
                         String pass = PasswordGenerator.generatePassword(chars);
-                        attributes.replace(randomPassword, pass);
+                        return String.format("{\"success\":true, \"password\":\"%s\"}", pass);
                     } else {
-                        res.redirect("/generator");
+                        return "{\"success\":false, \"error\":\"Number must be between 6 and 100.\"}";
                     }
                 } catch (NumberFormatException err) {
-                    res.redirect("/generator");
+                    return "{\"success\":false, \"error\":\"Invalid number!\"}";
                 }
+            } else {
+                return "{\"success\":false, \"error\":\"Length field is required!\"}";
             }
-            return new ModelAndView(attributes, "generator.ftl");
-        }, freeMarkerEngine);
+        });
     }
 }
