@@ -37,7 +37,9 @@
                 var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
                 var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
                 var passwords = data.passwords.map(function (encryptedPassword) {
-                    return JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
+                    var newPassword = JSON.parse(sjcl.decrypt(key, encryptedPassword.cipher));
+                    newPassword.id = encryptedPassword.id;
+                    return newPassword;
                 });
                 getAccordions(passwords);
             }
@@ -70,8 +72,9 @@
             var newPassword = {
                 id: '_' + Math.random().toString(36).substr(2, 9),
                 cipher: sjcl.encrypt(key, JSON.stringify(values))
-            }
-            $.post('/savepassword', newPassword, function (data) {
+            };
+            console.log(newPassword);
+            $.post('/savepassword', {newPassword: JSON.stringify(newPassword)}, function (data) {
                 var response = JSON.parse(data);
                 if(response.success) {
                     window.location = "/home";

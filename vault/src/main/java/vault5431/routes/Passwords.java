@@ -6,6 +6,7 @@ import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.User;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,14 +73,14 @@ class Passwords extends Routes {
             Token token = Authentication.validateToken(req);
             if (token != null) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
-                System.out.println(req.queryString());
-                if (req.queryParams("newPassword") != null && req.queryParams("newPassword").length() > 0) {
-                    Base64String newPassword = Base64String.fromBase64(req.queryParams("newPassword"));
+                String password = req.queryParams("newPassword");
+                if (password != null && password.length() > 0) {
+                    Base64String newPassword = Base64String.fromBase64(password);
                     token.getUser().addPasswordToVault(newPassword, token);
                     return "{\"success\":true, \"error\": \"\"}";
+                } else {
+                    return "{\"success\":false, \"error\": \"All fields are required!\"}";
                 }
-                res.redirect("/home");
-                return "";
             } else {
                 Sys.debug("Received unauthorized POST to /savepassword.");
                 res.redirect("/");
