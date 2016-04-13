@@ -13,14 +13,14 @@
 </div>
 
     <#if empty??>
-    <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2" ng-controller="PasswordCtrl">
+    <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
         <h4 class="storedpasswords-heading">Stored Accounts</h4>
         <div class="panel-group" id="accordion">
             No stored passwords!
         </div>
     </div>
     <#else>
-    <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2" ng-controller="PasswordCtrl">
+    <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
         <h4 class="storedpasswords-heading">Stored Accounts</h4>
         <div class="panel-group" id="accordion">
 
@@ -32,14 +32,15 @@
     $(function () {
         if (sessionStorage.getItem("password")) {
             var data = ${payload};
-            var salt = sjcl.codec.base64url.toBits(data.salt);
-            var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
-            var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
-            var passwords = data.passwords.map(function (encryptedPassword) {
-                return JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
-            });
-            getAccordions(passwords);
-
+            if (data) {
+                var salt = sjcl.codec.base64url.toBits(data.salt);
+                var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
+                var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
+                var passwords = data.passwords.map(function (encryptedPassword) {
+                    return JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
+                });
+                getAccordions(passwords);
+            }
         } else {
             document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             window.location = "/";
@@ -66,8 +67,11 @@
                     values[this.name] = $(this).val();
                 }
             });
-            values["id"] = '_' + Math.random().toString(36).substr(2, 9);
-            $.post('/savepassword', {newPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
+            var newPassword = {
+                id: '_' + Math.random().toString(36).substr(2, 9),
+                cipher: sjcl.encrypt(key, JSON.stringify(values))
+            }
+            $.post('/savepassword', newPassword, function (data) {
                 var response = JSON.parse(data);
                 if(response.success) {
                     window.location = "/home";

@@ -14,6 +14,7 @@
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="/bootstrap.min.js"></script>
     <script type="text/javascript" src="/sjcl.js"></script>
+    <#--<script type="text/javascript" src="/cryptico.min.js"></script>-->
     <script type="text/javascript" src="/clipboard.min.js"></script>
     <link href="/vault.css" rel="stylesheet">
     <@page_head/>
@@ -25,7 +26,6 @@
         <li><a href="/generator">Password Generator</a></li>
     <#--<li><a href="">Settings</a></li>-->
         <li><a href="/userlog">User Log</a></li>
-        <#--<li><a href="/syslog">System Log</a></li>-->
         <li><a href="" id="logout" onclick="logout()">Logout</a></li>
     </ul>
 </div>
