@@ -101,8 +101,8 @@
                                     "<div class='col-sm-4 col-md-4'>Username: "+entry.username+"</div>"+
                                         "<div id="+entry.name+" class='col-sm-4 col-md-4'>Password:"+
                                             "<input id='"+entry.id+"copy' type='password' value='"+entry.password+"'>"+
-                                            "<button class='copy' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#"+entry.id+"copy'>Copy</button>"+
-                                            "<button class='reveal' id='"+entry.id+"reveal'>Reveal</button>"+
+                                            "<button class='copy btn btn-default btn-sm' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#"+entry.id+"copy'>Copy</button>"+
+                                            "<button class='reveal btn btn-default btn-sm' id='"+entry.id+"reveal'>Reveal</button>"+
                                         "</div>"+
                                         "<button type='button' class='btn btn-warning' data-toggle='modal' data-target='#"+entry.id+"modal'>Change password</button>"+
                                         "<div id='"+entry.id+"modal' class='modal fade' role='dialog'>"+
