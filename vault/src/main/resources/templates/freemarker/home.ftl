@@ -100,10 +100,31 @@
                                             "<button class='copy' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#"+entry.id+"copy'>Copy</button>"+
                                             "<button class='reveal' id='"+entry.id+"reveal'>Reveal</button>"+
                                         "</div>"+
-                                        "<form method='post' action='/vault/changepassword'>"+
-                                            "<input type='hidden' name='name' value='"+entry.name+"'>"+
-                                            "<button class='btn btn-warning' type='submit'>Change password</button>"+
-                                        "</form>"+
+                                        "<button type='button' class='btn btn-warning' data-toggle='modal' data-target='#"+entry.id+"modal'>Change password</button>"+
+                                        "<div id='"+entry.id+"modal' class='modal fade' role='dialog'>"+
+                                            "<div class='modal-dialog'>"+
+                                                <!-- Modal content-->
+                                                "<div class='modal-content'>"+
+                                                    "<div class='modal-header'>"+
+                                                        "<button type='button' class='close' data-dismiss='modal'>&times;</button>"+
+                                                        "<h4 class='modal-title'>Set New Password for "+entry.name+"</h4>"+
+                                                    "</div>"+
+                                                    "<div class='modal-body'>"+
+                                                        "<form method='post' action='/vault/changepassword'>"+
+                                                            "<input required type='text' class='form-control' placeholder='New Password'>"+
+                                                            "<button class='btn btn-primary' type='submit'>Save new password</button>"+
+                                                        "</form>"+
+                                                    "</div>"+
+                                                    "<div class='modal-footer'>"+
+                                                        "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>"+
+                                                    "</div>"+
+                                                "</div>"+
+                                            "</div>"+
+                                        "</div>"+
+//                                        "<form method='post' action='/vault/changepassword'>"+
+//                                            "<input type='hidden' name='name' value='"+entry.name+"'>"+
+//                                            "<button class='btn btn-warning' type='submit'>Change password</button>"+
+//                                        "</form>"+
                                 "</div>"+
                             "</div>"+
                         "</div>"+
