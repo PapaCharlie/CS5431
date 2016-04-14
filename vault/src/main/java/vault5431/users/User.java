@@ -28,6 +28,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.getAdminEncryptionKey;
@@ -127,14 +128,52 @@ public final class User {
         }
     }
 
-    public void addPasswordToVault(Base64String password, Token token) throws IOException, BadCiphertextException {
+    public void addPasswordToVault(Base64String password, Token token) throws IOException {
         synchronized (vaultFile) {
             info("Added password.", token.getIp());
             FileUtils.append(vaultFile, password);
         }
     }
 
-    public Base64String[] loadPasswords(Token token) throws VaultNotFoundException, CorruptedVaultException {
+    public void changePassword(String id, Base64String password, Token token) throws IOException, VaultNotFoundException {
+        synchronized (vaultFile) {
+            Base64String[] passwords = loadPasswords(token);
+            for (int i = 0; i < passwords.length; i++) {
+                String decoded = passwords[i].decodeString();
+                if (decoded.replace(" ", "").contains("\"id\":\"" + id + "\"")) {
+                    passwords[i] = password;
+                }
+            }
+            savePasswords(passwords);
+            info("Edited password", token.getIp());
+        }
+    }
+
+    public void deletePassword(String id, Token token) throws IOException, VaultNotFoundException {
+        synchronized (vaultFile) {
+            Base64String[] passwords = loadPasswords(token);
+            ArrayList<Base64String> removed = new ArrayList<>(passwords.length - 1);
+            for (Base64String password : passwords) {
+                String decoded = password.decodeString();
+                if (!decoded.replace(" ", "").contains("\"id\":\"" + id + "\"")) {
+                    removed.add(password);
+                }
+            }
+            savePasswords(removed.toArray(new Base64String[removed.size()]));
+            info("Deleted password", token.getIp());
+        }
+    }
+
+    private void savePasswords(Base64String[] passwords) throws IOException {
+        synchronized (vaultFile) {
+            FileUtils.empty(vaultFile);
+            for (Base64String password : passwords) {
+                FileUtils.append(vaultFile, password);
+            }
+        }
+    }
+
+    public Base64String[] loadPasswords(Token token) throws VaultNotFoundException {
         synchronized (vaultFile) {
             info("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {

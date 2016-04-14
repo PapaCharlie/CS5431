@@ -75,7 +75,7 @@ class Authentication extends Routes {
             Token token = validateToken(req);
             if (token != null) {
                 if (!token.isVerified()) {
-                    AuthMessageManager.sendAuthMessage(token.getUser());
+                    System.out.println(AuthMessageManager.sendAuthMessage(token.getUser()));
                     Sys.debug("Received GET to /twofactor", req.ip());
                     Map<String, Object> attributes = new HashMap<>();
                     return new ModelAndView(attributes, "twofactor.ftl");
