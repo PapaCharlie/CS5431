@@ -86,10 +86,6 @@
                     v.className = "temp"
                     v.value = trigger.previousElementSibling.value;
                     $("div.panel").append(v);
-
-//                    console.log(v.value);
-//                    console.log($("input#myid"));
-
                     return v;
                 }
             });
@@ -113,7 +109,6 @@
 
 
     $(document).on("click", ".delete", function () {
-        var txt;
         var r = confirm("Are you sure you want to delete this Account?");
         if (r == true) {
             $(this).closest("div.panel-default").remove();
@@ -131,9 +126,7 @@
                             "<h4 class='panel-title'>" +
                                 "<a data-toggle='collapse' data-parent='#accordion' href=#" + entry.id + ">" +
                                 entry.name + "</a>" +
-//                                "<a onclick='deletepassword(this)' href='#'>"+
                                 "<button class='delete btn btn-danger btn-xs' data-id='"+entry.id+"' style='float: right' aria-hidden='true'>Delete</button>" +
-//                                "</a>"+
                             "</h4>" +
                         "</div>" +
                         "<div id=" + entry.id + " class='panel-collapse collapse'>" +
