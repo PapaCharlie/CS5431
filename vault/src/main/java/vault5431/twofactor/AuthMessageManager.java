@@ -38,7 +38,6 @@ public class AuthMessageManager {
         if (!isWaiting(user)) {
             TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
             AuthMessage auth = new AuthMessage();
-            addToManager(user, auth);
 
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("To", user.getPhoneNumber()));
@@ -49,6 +48,7 @@ public class AuthMessageManager {
             Message sms = null;
             try {
                 sms = msgFactory.create(params);
+                addToManager(user, auth);
             } catch (TwilioRestException t) {
                 System.out.println("Error creating message: " + t.getErrorMessage());
                 System.out.println("Additional Info: " + t.getMoreInfo());

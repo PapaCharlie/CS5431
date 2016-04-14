@@ -128,8 +128,7 @@ public class Vault {
 
     public static void main(String[] args) throws Exception {
         port(5431);
-
-        System.out.print("Please enter the SSL certificate password:");
+        
         secure("./keystore.jks", "vault5431", null, null);
 
         Routes.initialize();
