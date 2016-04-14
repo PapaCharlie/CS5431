@@ -5,7 +5,7 @@
     <form method="post" action="/savepassword" class="form-signin" id="newPasswordForm">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
-        <input type="url" name="url" class="form-control" placeholder="URL" required>
+        <input type="text" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
@@ -30,7 +30,7 @@
                 var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
                 var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
                 var passwords = data.passwords.map(function (encryptedPassword) {
-                    var newPassword = JSON.parse(sjcl.decrypt(key, encryptedPassword.cipher));
+                    var newPassword = JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
                     newPassword.id = encryptedPassword.id;
                     return newPassword;
                 });
@@ -62,12 +62,7 @@
                     values[this.name] = $(this).val();
                 }
             });
-            var newPassword = {
-                id: '_' + Math.random().toString(36).substr(2, 9),
-                cipher: sjcl.encrypt(key, JSON.stringify(values))
-            };
-            console.log(newPassword);
-            $.post('/savepassword', {newPassword: JSON.stringify(newPassword)}, function (data) {
+            $.post('/savepassword', {newPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
                 var response = JSON.parse(data);
                 if (response.success) {
                     window.location = "/home";
@@ -88,12 +83,7 @@
             });
             var id = values.id;
             delete values.id;
-            var changedPassword = {
-                id: id,
-                cipher: sjcl.encrypt(key, JSON.stringify(values))
-            };
-            console.log(changedPassword);
-            $.post('/changepassword', {id: id, changedPassword: JSON.stringify(changedPassword)}, function (data) {
+            $.post('/changepassword', {id: id, changedPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
                 var response = JSON.parse(data);
                 if (response.success) {
                     window.location = "/home";

@@ -1,6 +1,8 @@
 package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
+import org.json.JSONException;
+import org.json.JSONObject;
 import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
@@ -29,6 +31,7 @@ import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.getAdminEncryptionKey;
@@ -123,7 +126,7 @@ public final class User {
 
     public PrivateKey loadPrivateCryptoKey(Token token) throws IOException, CouldNotLoadKeyException {
         synchronized (privCryptoKeyfile) {
-            Sys.debug("Loading private signing key", this, token.getIp());
+            Sys.debug("Loading private cryptography key", this, token.getIp());
             return AsymmetricUtils.loadPrivateKey(privCryptoKeyfile, getAdminEncryptionKey());
         }
     }
@@ -135,28 +138,42 @@ public final class User {
         }
     }
 
-    public void changePassword(String id, Base64String password, Token token) throws IOException, VaultNotFoundException {
+    public void changePassword(UUID uuid, Base64String password, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
         synchronized (vaultFile) {
             Base64String[] passwords = loadPasswords(token);
             for (int i = 0; i < passwords.length; i++) {
-                String decoded = passwords[i].decodeString();
-                if (decoded.replace(" ", "").contains("\"id\":\"" + id + "\"")) {
-                    passwords[i] = password;
+                try {
+                    JSONObject object = new JSONObject(passwords[i].decodeString());
+                    if (!object.has("id")) {
+                        throw new CorruptedVaultException();
+                    }
+                    if (UUID.fromString(object.getString("id")).equals(uuid)) {
+                        passwords[i] = password;
+                    }
+                } catch (JSONException | IllegalArgumentException err) {
+                    throw new CorruptedVaultException();
                 }
             }
             savePasswords(passwords);
-            info("Edited password", token.getIp());
+            info("Edited password.", token.getIp());
         }
     }
 
-    public void deletePassword(String id, Token token) throws IOException, VaultNotFoundException {
+    public void deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
         synchronized (vaultFile) {
             Base64String[] passwords = loadPasswords(token);
             ArrayList<Base64String> removed = new ArrayList<>(passwords.length - 1);
             for (Base64String password : passwords) {
-                String decoded = password.decodeString();
-                if (!decoded.replace(" ", "").contains("\"id\":\"" + id + "\"")) {
-                    removed.add(password);
+                try {
+                    JSONObject object = new JSONObject(password.decodeString());
+                    if (!object.has("id")) {
+                        throw new CorruptedVaultException();
+                    }
+                    if (!UUID.fromString(object.getString("id")).equals(uuid)) {
+                        removed.add(password);
+                    }
+                } catch (JSONException | IllegalArgumentException err) {
+                    throw new CorruptedVaultException();
                 }
             }
             savePasswords(removed.toArray(new Base64String[removed.size()]));
