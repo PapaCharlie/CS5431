@@ -5,7 +5,7 @@
     <form method="post" action="/savepassword" class="form-signin" id="newPasswordForm">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
-        <input type="text" name="url" class="form-control" placeholder="URL" required>
+        <input type="url" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
@@ -77,6 +77,32 @@
             });
         });
 
+        $("#changePasswordForm").submit(function (event) {
+            event.preventDefault();
+            var $inputs = $('#changePasswordForm :input');
+            var values = {};
+            $inputs.each(function () {
+                if (this.name) {
+                    values[this.name] = $(this).val();
+                }
+            });
+            var id = values.id;
+            delete values.id;
+            var changedPassword = {
+                id: id,
+                cipher: sjcl.encrypt(key, JSON.stringify(values))
+            };
+            console.log(changedPassword);
+            $.post('/changepassword', {id: id, changedPassword: JSON.stringify(changedPassword)}, function (data) {
+                var response = JSON.parse(data);
+                if (response.success) {
+                    window.location = "/home";
+                } else {
+                    alert(response.error);
+                }
+            });
+        });
+
         $('[data-toggle="tooltip"]').tooltip();
         $('.copy').each(function (index) {
             var $copy = $(this);
@@ -114,7 +140,14 @@
             $(this).closest("div.panel-default").remove();
             var entryid = $(this).attr("data-id");
             console.log(entryid);
-            //ajax post with entryid to delete this password
+            $.post("/deletepassword", {id: entryid}, function (data) {
+                var response = JSON.parse(data);
+                if (response.success) {
+                    window.location = "/home";
+                } else {
+                    alert(response.error);
+                }
+            });
         }
     });
 
@@ -151,11 +184,12 @@
                                                     "<h4 class='modal-title'>Edit Account Details</h4>" +
                                                 "</div>" +
                                 "<div class='modal-body'>" +
-                                    "<form method='post' action='/vault/changepassword'>" +
-                                        "<input type='text' name='website' class='form-control' placeholder='Website Name'>" +
-                                        "<input type='url' name='url' class='form-control' placeholder='URL'>" +
-                                        "<input type='text' name='username' class='form-control' placeholder='Username'>" +
-                                        "<input type='text' name='password' class='form-control' placeholder='New Password'>" +
+                                    "<form method='post' action='/changepassword' id='changePasswordForm' >" +
+                                        "<input type='hidden' name='id' value='" + entry.id + "'>" +
+                                        "<input type='text' name='name' class='form-control' placeholder='Website Name' value='" + entry.name + "' required>" +
+                                        "<input type='url' name='url' class='form-control' placeholder='URL' value='" + entry.url + "' required>" +
+                                        "<input type='text' name='username' class='form-control' placeholder='Username' value='" + entry.username + "' required>" +
+                                        "<input type='text' name='password' class='form-control' placeholder='New Password' value='" + entry.password + "' required>" +
                                         "<button class='btn btn-primary' type='submit'>Save new password</button>" +
                                     "</form>" +
                                 "</div>" +

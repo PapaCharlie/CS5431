@@ -26,6 +26,10 @@ public class FileUtils {
         }
     }
 
+    public static void empty(File file) throws IOException {
+        write(file, new byte[0], false);
+    }
+
     private static void write(File file, byte[] data, boolean append) throws IOException {
         try (FileWriter out = new FileWriter(file, append)) {
             for (byte b : data) {
