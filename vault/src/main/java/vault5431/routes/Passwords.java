@@ -22,7 +22,7 @@ class Passwords extends Routes {
 
         get("/home", (req, res) -> {
             Token token = validateToken(req);
-            if (token != null) {
+            if (token != null && token.isVerified()) {
                 Sys.debug("Received GET to /home.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
 
@@ -54,7 +54,7 @@ class Passwords extends Routes {
 
         post("/changepassword", (req, res) -> {
             Token token = Authentication.validateToken(req);
-            if (token != null) {
+            if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /vault/changepassword.", req.ip());
                 String w = req.queryParams("name");
                 if (w != null && w.length() > 0) {
@@ -71,7 +71,7 @@ class Passwords extends Routes {
 
         post("/savepassword", (req, res) -> {
             Token token = Authentication.validateToken(req);
-            if (token != null) {
+            if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 String password = req.queryParams("newPassword");
                 if (password != null && password.length() > 0) {

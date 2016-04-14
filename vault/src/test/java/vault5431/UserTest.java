@@ -29,7 +29,7 @@ public class UserTest extends VaultTest {
     static {
         try {
             user = getTempUser(password);
-            token = new Token(user);
+            token = new Token(user, false);
         } catch (Exception err) {
             err.printStackTrace();
             System.out.println("Could not create temp user!");

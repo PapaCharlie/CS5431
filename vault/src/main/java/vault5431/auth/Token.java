@@ -30,10 +30,11 @@ public class Token {
     private final LocalDateTime expiresAt;
     private final UUID id;
     private final Base64String randomString;
+    private final boolean verified;
     private final Base64String signature;
     private final String ip;
 
-    public Token(User user) {
+    public Token(User user, boolean verified) {
         this.username = user.hash;
         this.creationDate = LocalDateTime.now();
         this.expiresAt = RollingKeys.getEndOfCurrentWindow();
@@ -41,11 +42,12 @@ public class Token {
         byte[] randomBytes = new byte[16];
         random.nextBytes(randomBytes);
         this.randomString = new Base64String(randomBytes);
-        this.signature = RollingKeys.sign((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes());
+        this.verified = verified;
+        this.signature = RollingKeys.sign(toSignatureBody(username, creationDate, expiresAt, id, randomString, verified));
         this.ip = Sys.NO_IP;
     }
 
-    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String randomString, Base64String signature, String ip) throws InvalidTokenException {
+    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String randomString, boolean verified, Base64String signature, String ip) throws InvalidTokenException {
         this.username = username;
         this.randomString = randomString;
         this.ip = ip;
@@ -61,12 +63,17 @@ public class Token {
             throw new InvalidTokenException("Token has expired.");
         }
 
-        if (RollingKeys.verifySignature((creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString()).getBytes(), signature)) {
+        if (RollingKeys.verifySignature(toSignatureBody(username, creationDate, expiresAt, id, randomString, verified), signature)) {
             this.id = id;
             this.signature = signature;
+            this.verified = verified;
         } else {
             throw new InvalidTokenException("Could not verify token's signature.");
         }
+    }
+
+    private static byte[] toSignatureBody(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, Base64String randomString, boolean verified) {
+        return (username.toString() + creationDate.toString() + expiresAt.toString() + id.toString() + randomString.toString() + verified).getBytes();
     }
 
     public User getUser() {
@@ -79,6 +86,10 @@ public class Token {
 
     public Base64String getUsername() {
         return username;
+    }
+
+    public boolean isVerified() {
+        return verified;
     }
 
     /**
@@ -95,16 +106,17 @@ public class Token {
             LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
             LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
             UUID id = UUID.fromString(record.get(3));
-            Base64String encryptedKey = Base64String.fromBase64(record.get(4));
-            Base64String signature = Base64String.fromBase64(record.get(5));
-            return new Token(username, creationDate, expiresAt, id, encryptedKey, signature, ip);
+            Base64String randomString = Base64String.fromBase64(record.get(4));
+            boolean verified = record.get(5).trim().equals("true");
+            Base64String signature = Base64String.fromBase64(record.get(6));
+            return new Token(username, creationDate, expiresAt, id, randomString, verified, signature, ip);
         } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException err) {
             throw new CouldNotParseTokenException();
         }
     }
 
     public String toCookie() throws IOException {
-        return CSVUtils.makeRecord(username, creationDate, expiresAt, id, randomString, signature);
+        return CSVUtils.makeRecord(username, creationDate, expiresAt, id, randomString, verified, signature);
     }
 
     public boolean equals(Object object) {
@@ -116,6 +128,7 @@ public class Token {
                     && this.randomString.equals(other.randomString)
                     && this.signature.equals(other.signature)
                     && this.username.equals(other.username)
+                    && this.verified == other.verified
                     && this.ip.equals(other.ip);
         } else {
             return false;

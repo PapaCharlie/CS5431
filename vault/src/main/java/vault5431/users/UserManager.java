@@ -35,7 +35,6 @@ public class UserManager {
                 for (String dirname : home.list((dir, name) -> new File(dir, name).isDirectory())) {
                     Base64String hash = Base64String.fromBase64(dirname);
                     User user = new User(hash);
-                    Sys.debug("Loaded user from disk.", user);
                     addUser(user);
                 }
             }
@@ -93,6 +92,7 @@ public class UserManager {
                 Sys.info("Created vault file.", user);
             }
             PasswordUtils.savePassword(user.passwordHashFile, hashedPassword.decodeString());
+            SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumber);
 
             byte[] salt = PasswordUtils.generateSalt();
             SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);

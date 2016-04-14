@@ -18,6 +18,7 @@ import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
 import vault5431.users.exceptions.CorruptedLogException;
 import vault5431.users.exceptions.CorruptedVaultException;
+import vault5431.users.exceptions.CouldNotLoadPhoneNumberException;
 import vault5431.users.exceptions.VaultNotFoundException;
 
 import javax.crypto.SecretKey;
@@ -44,6 +45,7 @@ public final class User {
     public final File privCryptoKeyfile;
     public final File privSigningKeyFile;
     public final File vaultFile;
+    public final File phoneNumber;
     public final File vaultSaltFile;
     public final File passwordHashFile;
     public final File pubCryptoKeyFile;
@@ -63,7 +65,7 @@ public final class User {
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
         passwordHashFile = new File(getHome(), "password.hash");
-
+        phoneNumber = new File(getHome(), "phone.number");
         pubCryptoKeyFile = new File(privCryptoKeyfile + ".pub");
         pubCryptoSigFile = new File(pubCryptoKeyFile + ".sig");
         pubSigningKeyFile = new File(privSigningKeyFile + ".pub");
@@ -77,6 +79,18 @@ public final class User {
 
     public File getHome() {
         return new File(home, hash.getB64String());
+    }
+
+    public String getPhoneNumber() throws IOException, CouldNotLoadPhoneNumberException {
+        synchronized (phoneNumber) {
+            Sys.debug("Loading phone number.", this);
+            try {
+                return new String(SymmetricUtils.decrypt(Base64String.loadFromFile(phoneNumber)[0], getAdminEncryptionKey()));
+            } catch (BadCiphertextException err) {
+                err.printStackTrace();
+                throw new CouldNotLoadPhoneNumberException();
+            }
+        }
     }
 
     public PublicKey loadPublicSigningKey() throws IOException, InvalidPublicKeySignature, CouldNotLoadKeyException {

@@ -5,11 +5,13 @@ import vault5431.Sys;
 import vault5431.auth.RollingKeys;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
+import vault5431.twofactor.AuthMessageManager;
 import vault5431.users.UserManager;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.jar.Pack200;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static spark.Spark.get;
@@ -28,6 +30,7 @@ class Authentication extends Routes {
                 res.redirect("/home");
                 return emptyPage;
             } else {
+                res.removeCookie("token");
                 Sys.debug("Received GET to /.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
                 return new ModelAndView(attributes, "login.ftl");
@@ -45,14 +48,14 @@ class Authentication extends Routes {
                     && password.length() > 0) {
                 if (UserManager.userExists(username)
                         && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
-                    Token token = new Token(UserManager.getUser(username));
+                    Token token = new Token(UserManager.getUser(username), false);
                     res.cookie(
                             "token",
                             token.toCookie(),
                             (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
                             true
                     );
-                    res.redirect("/home");
+                    res.redirect("/twofactor");
                     return emptyPage;
                 } else {
                     Sys.debug("Failed login attempt.", req.ip());
@@ -65,6 +68,69 @@ class Authentication extends Routes {
                 String errorMessage = "This username/password combination does not exist!";
                 attributes.put("error", errorMessage);
                 return new ModelAndView(attributes, "login.ftl");
+            }
+        }, freeMarkerEngine);
+
+        get("/twofactor", (req, res) -> {
+            Token token = validateToken(req);
+            if (token != null) {
+                if (!token.isVerified()) {
+                    AuthMessageManager.sendAuthMessage(token.getUser());
+                    Sys.debug("Received GET to /twofactor", req.ip());
+                    Map<String, Object> attributes = new HashMap<>();
+                    return new ModelAndView(attributes, "twofactor.ftl");
+                } else {
+                    res.redirect("/home");
+                    return emptyPage;
+                }
+            } else {
+                res.redirect("/");
+                return emptyPage;
+            }
+        }, freeMarkerEngine);
+
+        post("/twofactor", (req, res) -> {
+            Token token = validateToken(req);
+            if (token != null) {
+                if (!token.isVerified()) {
+                    String authCode = req.queryParams("authCode");
+                    if (authCode != null && authCode.length() > 0) {
+                        try {
+                            int code = Integer.parseInt(authCode);
+                            if (AuthMessageManager.verifyAuthMessage(token.getUser(), code)) {
+                                Sys.debug("Two factor auth succesful!", token.getUser(), token.getIp());
+                                token.getUser().info("Succesful login.", token.getIp());
+                                res.cookie(
+                                        "token",
+                                        new Token(token.getUser(), true).toCookie(),
+                                        (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
+                                        true
+                                );
+                                res.redirect("/home");
+                                return emptyPage;
+                            } else {
+                                res.removeCookie("token");
+                                res.redirect("/");
+                                return emptyPage;
+                            }
+                        } catch (NumberFormatException err) {
+                            err.printStackTrace();
+                            Map<String, Object> attributes = new HashMap<>();
+                            attributes.put("error", "Code must be a number!");
+                            return new ModelAndView(attributes, "twofactor.ftl");
+                        }
+                    } else {
+                        Map<String, Object> attributes = new HashMap<>();
+                        attributes.put("error", "Code is required!");
+                        return new ModelAndView(attributes, "twofactor.ftl");
+                    }
+                } else {
+                    res.redirect("/home");
+                    return emptyPage;
+                }
+            } else {
+                res.redirect("/");
+                return emptyPage;
             }
         }, freeMarkerEngine);
 

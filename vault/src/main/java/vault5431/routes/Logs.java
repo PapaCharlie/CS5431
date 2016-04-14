@@ -46,7 +46,7 @@ class Logs extends Routes {
 
         get("/syslog", (req, res) -> {
             Token token = Authentication.validateToken(req);
-            if (token != null) {
+            if (token != null && token.isVerified()) {
                 Sys.debug("Received GET to /vault/syslog.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
 
