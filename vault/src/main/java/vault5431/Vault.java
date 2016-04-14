@@ -42,7 +42,7 @@ public class Vault {
         try {
             byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
             System.out.print("Please enter the admin password: ");
-            String adminPassword = "debug";
+            String adminPassword = new String(System.console().readPassword());
             SecretKey adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
             SecretKey adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
             keys = new AdminKeys(adminEncryptionKey, adminSigningKey);
@@ -127,9 +127,9 @@ public class Vault {
     }
 
     public static void main(String[] args) throws Exception {
-        port(5431);
+        port(443);
         
-        secure("./keystore.jks", "vault5431", null, null);
+        secure("./keystore.jks", new String(System.console().readPassword("Please enter the SSL certificate password:")), "./truststore.jks", new String(System.console().readPassword("Please enter the truststore password:")));
 
         Routes.initialize();
         awaitInitialization();
