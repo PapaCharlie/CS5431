@@ -9,11 +9,8 @@ import java.util.List;
  */
 public class CorruptedVaultException extends Exception {
 
-    private Password[] recoveredPasswords;
-
-    public CorruptedVaultException(Password[] recoveredPasswords) {
+    public CorruptedVaultException() {
         super();
-        this.recoveredPasswords = recoveredPasswords.clone();
     }
 
 }
