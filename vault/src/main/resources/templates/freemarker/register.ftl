@@ -16,7 +16,7 @@
         <label for="passwordsignup">Your Password </label>
         <p><input type="password" name="password" id="password" placeholder="Password" required></p>
         <label for="phonesignup">Your Phone Number (of form: 123-456-7890) </label>
-        <p><input type="text" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
+        <p><input type="tel" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
         <p><input type="submit" value="Sign Up"></p>
         <p>
             Already a Member? <a href="/" class="to_register">Log In!</a>
