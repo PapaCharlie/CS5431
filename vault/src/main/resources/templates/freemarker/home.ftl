@@ -5,7 +5,7 @@
     <form method="post" action="/savepassword" class="form-signin" id="newPasswordForm">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
-        <input type="text" name="url" class="form-control" placeholder="URL" required>
+        <input type="url" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
