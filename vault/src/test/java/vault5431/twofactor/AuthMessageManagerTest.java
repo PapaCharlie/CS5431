@@ -1,5 +1,6 @@
 package vault5431.twofactor;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import vault5431.Vault;
 
@@ -10,7 +11,7 @@ import static org.junit.Assert.*;
  */
 public class AuthMessageManagerTest {
 
-    @Test
+    @Ignore
     public void testAddToManager() throws Exception {
         int number = AuthMessageManager.sendAuthMessage(Vault.getDemoUser());
         assertTrue(AuthMessageManager.verifyAuthMessage(Vault.getDemoUser(), number));
