@@ -47,12 +47,11 @@ public class AuthMessageManager {
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
             Message sms = null;
             try {
-//                sms = msgFactory.create(params);
+                sms = msgFactory.create(params);
                 addToManager(user, auth);
-//            } catch (TwilioRestException t) {
-            } catch (Exception t) {
-//                System.out.println("Error creating message: " + t.getErrorMessage());
-//                System.out.println("Additional Info: " + t.getMoreInfo());
+            } catch (TwilioRestException t) {
+                System.out.println("Error creating message: " + t.getErrorMessage());
+                System.out.println("Additional Info: " + t.getMoreInfo());
                 return 0;
             }
             return auth.authCode;
