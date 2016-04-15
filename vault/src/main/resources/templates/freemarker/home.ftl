@@ -160,7 +160,7 @@
                                 "<div class='row'>" +
                                     "<div class='col-sm-4 col-md-4'>Username: " + entry.username + "</div>" +
                                     "<div id=" + entry.name + " class='col-sm-4 col-md-4'>Password:" +
-                                        "<input id='" + entry.id + "copy' type='password' value='" + entry.password + "'>" +
+                                        "<input id='" + entry.id + "copy' type='password' readonly value='" + entry.password + "'>" +
                                         "<button class='copy btn btn-default btn-sm' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#" + entry.id + "copy'>Copy</button>" +
                                         "<button class='reveal btn btn-default btn-sm' id='" + entry.id + "reveal'>Reveal</button>" +
                                     "</div>" +
