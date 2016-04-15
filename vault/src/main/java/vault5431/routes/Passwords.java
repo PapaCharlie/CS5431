@@ -52,7 +52,7 @@ class Passwords extends Routes {
         }, freeMarkerEngine);
 
         post("/changepassword", (req, res) -> {
-            Token token = Authentication.validateToken(req);
+            Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /changepassword.", req.ip());
                 String id = req.queryParams("id");
@@ -74,7 +74,7 @@ class Passwords extends Routes {
         });
 
         post("/deletepassword", (req, res) -> {
-            Token token = Authentication.validateToken(req);
+            Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /deletepassword.", req.ip());
                 String id = req.queryParams("id");
@@ -93,7 +93,7 @@ class Passwords extends Routes {
         });
 
         post("/savepassword", (req, res) -> {
-            Token token = Authentication.validateToken(req);
+            Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 String password = req.queryParams("newPassword");
