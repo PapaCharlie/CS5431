@@ -11,15 +11,15 @@ import static org.junit.Assert.*;
  */
 public class AuthMessageManagerTest {
 
-    @Ignore
+    @Test
     public void testAddToManager() throws Exception {
         int number = AuthMessageManager.sendAuthMessage(Vault.getDemoUser());
         assertTrue(AuthMessageManager.verifyAuthMessage(Vault.getDemoUser(), number));
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException ie) {
-            System.out.println("Interrupted");
-        }
-        assertFalse(AuthMessageManager.isWaiting(Vault.getDemoUser()));
+//        try {
+//            Thread.sleep(60000);
+//        } catch (InterruptedException ie) {
+//            System.out.println("Interrupted");
+//        }
+        assertTrue(AuthMessageManager.isWaiting(Vault.getDemoUser()));
     }
 }

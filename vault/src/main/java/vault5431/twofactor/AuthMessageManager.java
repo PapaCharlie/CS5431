@@ -52,7 +52,7 @@ public class AuthMessageManager {
                 addToManager(user, auth);
             } else {
                 addToManager(user, auth);
-                System.out.println(auth.authCode);
+                System.out.println(auth.toString());
             }
             return auth.authCode;
         } else {

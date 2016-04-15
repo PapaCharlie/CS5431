@@ -7,16 +7,22 @@ import java.security.SecureRandom;
  */
 public class AuthMessage {
     private static final SecureRandom random = new SecureRandom();
-
-    protected int authCode;
+    private static final String[] digits = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9",};
+    public int authCode;
 
     public AuthMessage() {
-        authCode = random.nextInt(1000000);
+        StringBuilder authCodeString = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            authCodeString.append(digits[random.nextInt(digits.length)]);
+            System.out.println(authCodeString.toString());
+        }
+
+        authCode = Integer.parseInt(authCodeString.toString());
     }
 
     @Override
     public String toString() {
-        return "Please enter the following authentication code: " + authCode;
+        return "Please enter the following authentication code: " + String.format("%06d", authCode);
     }
 
 }
