@@ -15,8 +15,7 @@
             <ul class="dropdown-menu" id="logTypes">
                 <li><a href="#">Display All</a></li>
                 <li value="Info"><a href="#">Info</a></li>
-                <li value="Debug"><a href="#">Debug</a></li>
-                <li vaue="Error"><a href="#">Error</a></li>
+                <li value="Error"><a href="#">Error</a></li>
                 <li value="Warning"><a href="#">Warning</a></li>
             </ul>
         </div>
