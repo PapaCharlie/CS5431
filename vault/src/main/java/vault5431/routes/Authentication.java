@@ -26,7 +26,7 @@ class Authentication extends Routes {
 
         get("/", (req, res) -> {
             Token token = validateToken(req);
-            if (token != null) {
+            if (token != null && token.isVerified()) {
                 res.redirect("/home");
                 return emptyPage;
             } else {

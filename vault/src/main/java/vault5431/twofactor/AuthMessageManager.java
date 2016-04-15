@@ -34,7 +34,7 @@ public class AuthMessageManager {
     private static final String ACCOUNT_SID = "AC0fde3a15c4eb806040031e5994a6f987";
     private static final String AUTH_TOKEN = "a8113b81179e3832fc3b780590a29b4e";
 
-    public static int sendAuthMessage(User user) throws IOException, CouldNotLoadPhoneNumberException {
+    public static int sendAuthMessage(User user) throws IOException, CouldNotLoadPhoneNumberException, TwilioRestException {
         if (!isWaiting(user)) {
             TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
             AuthMessage auth = new AuthMessage();
@@ -45,20 +45,8 @@ public class AuthMessageManager {
             params.add(new BasicNameValuePair("Body", auth.toString()));
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
-            Message sms = null;
-            if (true) { // set to false for testing
-                try {
-                    sms = msgFactory.create(params);
-                    addToManager(user, auth);
-                } catch (TwilioRestException t) {
-                    System.out.println("Error creating message: " + t.getErrorMessage());
-                    System.out.println("Additional Info: " + t.getMoreInfo());
-                    return 0;
-                }
-            } else {
-                addToManager(user, auth);
-                System.out.println(auth.authCode);
-            }
+            Message sms = msgFactory.create(params);
+            addToManager(user, auth);
             return auth.authCode;
         } else {
             return authCodeManager.get(user.hash).authCode;
