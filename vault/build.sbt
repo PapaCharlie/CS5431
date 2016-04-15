@@ -14,6 +14,7 @@ libraryDependencies ++= Seq(
   "com.twilio.sdk"        % "twilio-java-sdk"   % "5.9.0",
   "org.apache.commons"    % "commons-csv"       % "1.2",
   "org.freemarker"        % "freemarker"        % "2.3.23",
+  "org.json"              % "json"              % "20160212",
   "junit"                 % "junit"             % "4.12" % Test,
   "com.novocode"          % "junit-interface"   % "0.11" % Test
 )
@@ -27,5 +28,7 @@ initialize := {
 unmanagedBase := baseDirectory.value / "lib"
 
 mainClass in assembly := Some("vault5431.Vault")
+
+mainClass in (Compile, run) := Some("vault5431.Vault")
 
 test in assembly := {}

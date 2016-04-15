@@ -1,5 +1,6 @@
 package vault5431.routes;
 
+import org.json.JSONException;
 import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.Token;
@@ -8,6 +9,9 @@ import vault5431.users.User;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import org.json.JSONObject;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
@@ -16,6 +20,10 @@ import static spark.Spark.post;
  * Created by papacharlie on 3/25/16.
  */
 class Passwords extends Routes {
+
+    private static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
+    private static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
+    private static final String success = "{\"success\":true, \"error\": \"\"}";
 
     protected void routes() {
 
@@ -55,17 +63,32 @@ class Passwords extends Routes {
             Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /changepassword.", req.ip());
-                String id = req.queryParams("id");
-                String changedPassword = req.queryParams("changedPassword");
-                if (id != null
-                        && id.length() > 0
-                        && changedPassword != null
-                        && changedPassword.length() > 0) {
-                    token.getUser().changePassword(id, new Base64String(changedPassword), token);
-                    return "{\"success\":true, \"error\": \"\"}";
-                } else {
-                    return "{\"success\":false, \"error\": \"All fields are required!\"}";
+                UUID uuid;
+                try {
+                    String id = req.queryParams("id");
+                    if (id != null && id.length() > 0) {
+                        uuid = UUID.fromString(id);
+                    } else {
+                        return allFieldsRequired;
+                    }
+                } catch (IllegalArgumentException err) {
+                    return invalidRequest;
                 }
+                String changedPassword = req.queryParams("changedPassword");
+                if (changedPassword != null && changedPassword.length() > 0) {
+                    try {
+                        JSONObject pass = new JSONObject(changedPassword);
+                        pass.put("id", uuid);
+                        System.out.println(pass.toString());
+                        token.getUser().changePassword(uuid, new Base64String(pass.toString()), token);
+                        return success;
+                    } catch (JSONException err) {
+                        return invalidRequest;
+                    }
+                } else {
+                    return allFieldsRequired;
+                }
+
             } else {
                 Sys.debug("Received unauthorized POST to /changepassword.");
                 res.redirect("/");
@@ -79,11 +102,16 @@ class Passwords extends Routes {
                 Sys.debug("Received POST to /deletepassword.", req.ip());
                 String id = req.queryParams("id");
                 if (id != null && id.length() > 0) {
-                    System.out.println(id);
-                    token.getUser().deletePassword(id, token);
-                    return "{\"success\":true, \"error\": \"\"}";
+                    UUID uuid;
+                    try {
+                        uuid = UUID.fromString(id);
+                    } catch (IllegalArgumentException err) {
+                        return invalidRequest;
+                    }
+                    token.getUser().deletePassword(uuid, token);
+                    return success;
                 } else {
-                    return "{\"success\":false, \"error\": \"All fields are required!\"}";
+                    return allFieldsRequired;
                 }
             } else {
                 Sys.debug("Received unauthorized POST to /deletepassword.");
@@ -98,11 +126,18 @@ class Passwords extends Routes {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 String password = req.queryParams("newPassword");
                 if (password != null && password.length() > 0) {
-                    Base64String newPassword = new Base64String(password);
+                    JSONObject pass;
+                    try {
+                        pass = new JSONObject(password);
+                    } catch (JSONException err) {
+                        return invalidRequest;
+                    }
+                    pass.put("id", UUID.randomUUID());
+                    Base64String newPassword = new Base64String(pass.toString());
                     token.getUser().addPasswordToVault(newPassword, token);
-                    return "{\"success\":true, \"error\": \"\"}";
+                    return success;
                 } else {
-                    return "{\"success\":false, \"error\": \"All fields are required!\"}";
+                    return allFieldsRequired;
                 }
             } else {
                 Sys.debug("Received unauthorized POST to /savepassword.");
