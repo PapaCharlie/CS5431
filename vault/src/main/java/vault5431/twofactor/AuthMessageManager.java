@@ -46,8 +46,14 @@ public class AuthMessageManager {
             params.add(new BasicNameValuePair("Body", auth.toString()));
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
-            Message sms = msgFactory.create(params);
-            addToManager(user, auth);
+
+            if (true) { // set to false for testing
+                Message sms = msgFactory.create(params);
+                addToManager(user, auth);
+            } else {
+                addToManager(user, auth);
+                System.out.println(auth.toString());
+            }
             return auth.authCode;
         } else {
             return authCodeManager.get(user.hash).authCode;
