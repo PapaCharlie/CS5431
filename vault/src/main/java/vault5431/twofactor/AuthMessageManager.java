@@ -33,6 +33,7 @@ public class AuthMessageManager {
     private static final int TIME_TO_EXPIRE = 60000;
     private static final String ACCOUNT_SID = "AC0fde3a15c4eb806040031e5994a6f987";
     private static final String AUTH_TOKEN = "a8113b81179e3832fc3b780590a29b4e";
+    private static final String ADMIN_PHONE_NUMBER = "+16072755431";
 
     public static int sendAuthMessage(User user) throws IOException, CouldNotLoadPhoneNumberException, TwilioRestException {
         if (!isWaiting(user)) {
@@ -41,7 +42,7 @@ public class AuthMessageManager {
 
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("To", user.getPhoneNumber()));
-            params.add(new BasicNameValuePair("From", "+14848689228"));
+            params.add(new BasicNameValuePair("From", ADMIN_PHONE_NUMBER));
             params.add(new BasicNameValuePair("Body", auth.toString()));
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
