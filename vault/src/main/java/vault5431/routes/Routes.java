@@ -20,11 +20,12 @@ import static spark.Spark.staticFileLocation;
 public abstract class Routes {
 
     public static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
+    private static boolean initialized = false;
 
     public static Token validateToken(Request req) {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {
             try {
-                return Token.parseToken(req.cookie("token").trim(), req.ip());
+                return Token.pareCookie(req.cookie("token").trim(), req.ip());
             } catch (CouldNotParseTokenException err) {
                 Sys.debug("Received invalid token.", req.ip());
                 return null;
@@ -38,12 +39,17 @@ public abstract class Routes {
     }
 
     public static final String vault = "/vault";
-    private static final Configuration freeMarkerConfiguration = new Configuration();
+    private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
     public static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
 
     protected abstract void routes();
 
     public static void initialize() throws IOException {
+        if (initialized) {
+            return;
+        } else {
+            initialized = true;
+        }
         staticFileLocation("templates/static");
         freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/templates/freemarker");
         new Authentication().routes();

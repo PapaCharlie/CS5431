@@ -46,7 +46,7 @@ log:
 	cat ~/.vault5431/log | base64 --decode
 
 submission:
-	zip -r src.zip LICENSE Makefile README build.sbt keystore.jks truststore.jks lib/spark-template-freemarker-2.3.jar src/ project/build.properties project/plugins.sbt
+	zip -r src.zip LICENSE Makefile README build.sbt keystore.jks lib/spark-template-freemarker-2.3.jar src/ project/build.properties project/plugins.sbt ../redirector
 
 assembly:
 	cp $(MAIN) $(MAIN).bak

@@ -11,7 +11,7 @@
     <div class="login-triangle"></div>
     <h2 class="login-header">Log in</h2>
     <form action="/twofactor" method="post" id="twoFactorForm" name="twoFactorForm" class="login-container">
-        <p><input type="number" name="authCode" id="authCode" placeholder="code" autofocus></p>
+        <p><input type="number" name="authCode" id="authCode" placeholder="Code" autofocus required></p>
         <p><input type="submit" value="Submit code"></p>
     <#if error??>
         <p class="has-error">${error}</p>

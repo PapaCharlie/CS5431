@@ -32,7 +32,8 @@ public class UserManager {
             initialized = true;
             synchronized (mapLock) {
                 addUser(new User(Sys.SYS));
-                for (String dirname : home.list((dir, name) -> new File(dir, name).isDirectory())) {
+                for (String dirname : home.list((dir, name) ->
+                        new File(dir, name).isDirectory())) {
                     Base64String hash = Base64String.fromBase64(dirname);
                     User user = new User(hash);
                     addUser(user);
