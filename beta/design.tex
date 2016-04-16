@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs,dirtree,subcaption,nameref}
+
+\title{Vault 5431 - Design}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Sprint Report}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Server Environment}
+\label{sec:server_environment}
+
+\subsection{Platform}
+\label{sub:platform}
+\par The server is running Ubuntu 15.10 with weekly backups. SSH access is only allowed for SysAdmins whose keys have been cleared, with password login disabled.
+
+\subsection{Server Startup}
+\label{sub:server_startup}
+\par The first thing to do is to start the VaultRedirector server, which simply listens to all HTTP requests coming on port 80 and redirects to ``/'' on port 443 (dropping all of the request's contents in the process). This is to force users to use HTTPS and prevent them from accidentally sending information via an insecure channel.
+\par Next, the Vault server needs to be started up. The program requires access to three files: the \texttt{/root/.vault5431/} directory that stores all of the required data (see \nameref{sub:filesystem_design}), the Java KeyStore \texttt{keystore.jks} that contains the encrypted private key for the SSL certificate and the KeyStore \texttt{truststore.jks} that contains manually trusted certificates for the SMS messaging service. Upon startup, the program prompts the SysAdmin for three passwords: the admin password, from which the Admin Signing Key (ASK) and Admin Encryption Key (AEK) are generated using PBKDF2, the password under which the SSL certificate's private key is encrypted and the password used to verify the trust store's authenticity. The Admin password is only known to the four members of the team.
+
+\subsection{Filesystem Design}
+\label{sub:filesystem_design}
+
+\begin{figure}[H]
+  \centering
+  \begin{subfigure}[b]{0.3\textwidth}
+    \dirtree{%
+      .1 .vault5431/.
+      .2 (username hash).
+      .3 id\_rsa.crypto.
+      .3 id\_rsa.crypto.pub.
+      .3 id\_rsa.crypto.pub.sig.
+      .3 id\_rsa.signing.
+      .3 id\_rsa.signing.pub.
+      .3 id\_rsa.signing.pub.sig.
+      .3 log.
+      .3 password.hash.
+      .3 phone.number.
+      .3 vault.
+      .3 vault.salt.
+      .2 log.
+      .2 admin.salt.
+    }
+  \end{subfigure}
+  \caption{Directory Structure}
+  \label{fig:directory_structure}
+\end{figure}
+
+\subsection{Home Directories}
+\par All of the relevant data is stored in a directory called \texttt{.vault5431} in server's root. All of a given user's information and data is stored in their respective sub-directories. Each user is assigned a pair of asymmetric encryption keys and a pair of asymmetric signing keys at user creation. Both private keys are encrypted under the user's master password. The symmetric keys are encrypted under the encryption private key. A hashed version of the password is created using PBKDF2 and stored in under \texttt{password.hash}. An empty log file is created and encrypted under the user's public key. An empty vault file is created and encrypted under the symmetric cryptographic key. Though the encryption is currently turned off, the system is set up in such a way that when it wants to append to a given user's log, it encrypts under their private key, and simply appends it to the corresponding \texttt{log} file. Similarly, to decrypt the vault, the user must provide the master password to decrypt the private encryption key, which will first be checked against the hashed version, then used to decrypt the symmetric key and finally decrypt the vault if it is correct. The point of this nested encryption was to be able to avoid having to reencrypt the entire vault upon master password change. Though the signing keys are not currently in use, they will serve to sign passwords when/if we implement password sharing.
+\paragraph{Planned structure} Much of the current structure will be kept, but a lot of files will be removed from the user's directory. In the case that an attacker has compromised the machine and is able to edit the filesystem, there is currently nothing in place to prevent them from swapping out a user's public key and gaining access to all further log entries. Additionally, it was decided that having to reencrypt the whole Vault every time the master password was easier than having the nested encryption mentioned above. Additionally, it does not make cracking the Vault so much harder for the attacker than the lost time was made up. Therefore the symmetric keys \texttt{crypto.key} and \texttt{signing.key} will be phased out in the next iteration, and each public key will stored in a signed and trusted ``phonebook'' of sorts (see \texttt{pubkey\_dict} and \texttt{pubkey\_dict.sig}), out of the reach of attackers. All of this will alleviate runtime costs, reduce potential errors and increase the Integrity of the logs, at no measurable cost to the Integrity and Confidentiality of the Vault. The master admin signing and encryption keys will be derived from a master password that only the fours of us know. Even if this password were to be leaked, the user's logs and Vaults will not be at risk.
+
+\subsection{Rationale}
+\par We decided to use a filesystem over a database for two main reasons. First, it immediately prevents SQL injections from occurring, which is one less thing our system needs to worry about. Second, it makes it simpler to manage encryption of and signatures for individual files, which we will be extensively using to ensure the integrity and confidentiality of the user data.
+
+\section{Audit}
+For the audit section of our project, we organized our logs based on two types- the user logs and the system log. Currently, they are formatted very similarly but we made the distinction in case their uses begin to deviate in later sprints.
+\subsection{User Logs}
+\par All the information in our system is organized in a file system structure. Therefore, each user has his own directory containing his log files (base64 encoded), password files, keys, and other information found in his vault (possibly secure notes time permitting). Refer to section 1 for this directory layout. Each user log entry has six fields - log type (debug, info, warning, or error), the IP address that completed the specified action, the hashed username, the timestamp of when the action was initiated, signature, and a message that specifies the type of action that took place. The Vault username is hashed to prevent a user's username from being discovered in the case where an attacker somehow manages to get the log. We believe that because it is reasonable for a user to use same username in multiple places (to reduce memorization burden), an attacker should not be able to discover a username even if he successfully attacks our system. The signature is a system signature that is produced to indicate that the log entry was written by the system rather than some outside attacker.
+
+\par Currently, a log entry is created every time a new password is created or changed, or when the log is accessed. Later, log entries will be created when a password is deleted, when there is an unsuccessful login attempt to a given username, and when settings are changed. These do not yet exist because their corresponding functionalities were not implemented in this sprint.  The log entries are currently stored in CSV format as base64 encoded strings. We plan to encrypt them in later sprints.
+
+\par Finally, a user can currently see his personal log by successfully logging into his account and clicking on the log link on their dashboard. From there, he will be able to see each log entry with four fields – the log type, the IP address, timestamp, and message with the action. The signature validation, when it is implemented, will be done behind the scenes before the log is displayed.
+
+\subsection{System Log}
+The system log should only be viewed by the admins of our system (the four of us). We will have our own system keys to be able to access the system log (currently base64 encoded), and the system log entry fields are the same as for the user log. We create log entries for actions done by the server, as well as log entries for error events (ex: unsuccessful login events, user creation, etc.), so we have the information to recognize a potential attack on our system. Later on, we hope to use this log to help us implement the functionality of freezing a user vault when too many unsuccessful login attempts are made.
+
+\section{Authentication}
+
+\subsection{Tokens}
+\label{sub:tokens}
+\par Once a user has been authenticated (see below), it would be ideal if they could remain authenticated for the remainder of their session. This is the point of Tokens. Simply put, Tokens are a piece of unforgeable evidence that convinces the server that the user has been authenticated, meaning that it is okay to send the encrypted Vault to that user.
+
+\subsubsection{Secure Cookies}
+\label{ssub:secure_cookies}
+\par Most modern browsers offer a notion of ``Secure Cookies''. Secure cookies are only sent to the appropriate server if the connection to said server is secured over HTTPS, meaning that it is presumably safe to store the tokens in secure cookies. Cookies persist through multiple connections, and are a useful way to maintain state across multiple requests to the server within a session.
+
+\subsection{Token Generation and Signing}
+\label{sub:token_generation_and_signing}
+\par The tokens used in this system were inspired by JSON Web Tokens (see RFC 7519\cite{bib:RFC7519}), but modified to better suit the system. Here are the fields contained in the token:
+\begin{description}
+  \item[\texttt{username}] User id
+  \item[\texttt{creationDate}] Creation time
+  \item[\texttt{expiresAt}] Expiration time
+  \item[\texttt{id}] Token id
+  \item[\texttt{verified}] Boolean indicating whether or not the user has gone through 2FA.
+  \item[\texttt{signature}] Token signature.
+\end{description}
+\par The first two fields are rather self explanatory. If a token is presented to the server, but the current time is not between its creation time or its expiration time, it is immediately rejected. The user id represents which user this token was generated for. The token id is a random UUID assigned at token creation, and will be used to do token revocation, and keeping track of how many tokens have been assigned per day per user. The boolean field is used to indicate that the user has indeed put in the correct password, but has not been 2 factor authenticated. This is to prevent anyone but the user him/herself to attempt 2FA, but also prevents partially authenticated users from actually viewing the encrypted vault. Finally, all of the above fields are signed under the current Rolling Key.
+\par Token creation is very simple: when the user puts in the correct password, a token is generated with the \texttt{verified} field set to false, then signed. When the user successfully passes 2FA, the token is verified, singed again, and sent back.
+
+\subsubsection{Rolling Keys}
+\label{ssub:rolling_keys}
+\par Every night, at midnight EST, the server changes signing keys. This automatically voids any tokens assigned the day before, and reduces the window in which an attacker may crack the signing key. The current Rolling Key is always generated from a SecureRandom (Java's cryptographically strong random number generator) instance, making it impossible to guess the current key based on previous ones, were they ever to be cracked.
+
+\subsection{Token validation}
+\label{sub:token_validation}
+\par Here is the steps the system takes to validate tokens:
+\begin{enumerate}[1.]
+  \item The first thing to do is check whether or not the current time is between the token's purported creation time and expiration time. If not, the token is rejected, and the user must sign in again.
+  \item If the current time is within the token's validity window, then the signature is verified against the whole token. If the signature matches, then the previous time check was executed on valid dates, and the process can continue. If the signature does not match, indicating someone may have tampered with it, the token is rejected. Incidentally, the signature of a token from a previous day will never match because the keys used to sign it has changed, voiding it by default. This behavior is desired because an old valid token should not be a reason to assign a new valid token, otherwise if an attacker gains hold of a token, they will be authenticated forever.
+  \item If the signature matches, then the token's id is checked to see whether or not that token was voided through other means, i.e. by user action. If the token is void, it is rejected.
+  \item Finally, the presented token is checked against the user's request. If the token is verified, the user will be allowed to see their vault and logs. Otherwise, the user will only be allowed to view the 2FA page. On the other hand, only a user with a valid, but unverified token can view the 2FA page, to ensure that only the desired user may attempt 2FA.
+\end{enumerate}
+
+\section{Authorization}
+\section{Confidentiality}
+\section{Integrity}
+
+\begin{thebibliography}{30}
+  \bibitem{bib:RFC7519}
+    \url{https://www.ietf.org/rfc/rfc7519.txt}
+\end{thebibliography}
+
+\end{document}
