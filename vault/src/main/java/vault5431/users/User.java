@@ -3,7 +3,6 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
-import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.crypto.AsymmetricUtils;
@@ -23,14 +22,12 @@ import vault5431.users.exceptions.CorruptedVaultException;
 import vault5431.users.exceptions.CouldNotLoadPhoneNumberException;
 import vault5431.users.exceptions.VaultNotFoundException;
 
-import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 
 import static vault5431.Sys.NO_IP;

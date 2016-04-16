@@ -22,7 +22,6 @@
         <input id="filter" type="text" class="form-control" placeholder="Type here...">
     </div>
 
-    <!--<input id="filter" type="text" class="form-control" placeholder="Type here...">-->
     <div>
         <table class="logtable" style="width:100%">
             <tr>

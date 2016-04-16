@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs}
+
+\title{Vault 5431 - Sprint Report}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Sprint Report}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Activity Breakdown}
+\subsection{Paul}
+\par Most of my attention in this sprint was devoted to implementing the tokens, and moving the encryption of the vault from the server to the client. This involved a lot talking with my teammates to come up with a secure design that we were all satisfied with. I also worked on setting up the server environment so that we could have our own URL and SSL certificates.
+
+\subsection{Chang}
+\par For this particular sprint, I primarily implemented the two-factor authentication feature for Vault5431. I was responsible for setting up the integration of our system with Twilio and ensuring that codes are properly deleted at certain times. I met with all my other group members in order to discuss and design the authentication features. During these meetings, I contributed by critiquing and discussing our implementation details and made sure that all decisions made were carefully analyzed. I also helped to write the authentication design documentation, detailing the steps in authenticating a user as they log in.
+
+\subsection{Britney}
+\par For this sprint, I implemented the registration/sign up client side part of the system. I also met up with other group members to discuss the authentication specifics of the system, specifically client side interaction.  I will work more on other tasks for the final sprint, and also making sure that the login/registration portion of the system are more user friendly.
+
+\subsection{Alicia}
+\par For this Beta sprint, I worked on fixing the Vault interface to reflect the changes that were made to switch from server-side encryption and decryption of stored passwords to client-side. I also implemented a copy password function for a better user experience. I also met with my other group members to talk about the Authentification elements. For the report, I worked on assurance, productivity analysis, and updating essential security elements.
+
+\section{Productivity Analysis}
+\par For this sprint, we planned to complete Authentication as well as storing and retrieving vault passwords. We originally wanted to have the user log in with just his username and master password and have a second authentication layer upon accessing the Settings, but we decided to incorporate 2FA (via text) with login because we thought it is actually more secure if the master password were ever compromised then the attacker still can't get in without the user's phone. Another major change we made was switching the encryption and decryption of the stored password file from server side to client side (with Javascript). This change was made after discussing with Professor Clarkson who suggested that client-side enc/dec is better because the server would never know or be able to decrypt stored passwords.
+
+\par From a time commitment standpoint, we believe that overall things did not take significantly more time than expected. However, we did have a setback with the aforementioned server-side to client-side encryption/decryption of stored passwords. Also, we encountered problems with Twilio that we did not foresee. Specifically, the server did not trust Twilio's SSL certificate. To resolve this issue, we had to manually add the certificate to the trust store.
+
+\par Organizationally, we believe we did a fairly good job this sprint. Overall, our meetings were useful in making headway towards our sprint end goal. One aspect we will improve on for later sprints is to make a more concrete catalog of features we wish to complete in a given sprint. For this sprint, we knew we wanted to finish the authentication system and without writing down all of the tasks, we simply did them as they occurred. In retrospect, it would have saved us some time if we had a more specific catalog of goals.
+
+\end{document}
