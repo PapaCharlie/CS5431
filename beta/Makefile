@@ -29,7 +29,7 @@ links:
 	-rm $(PDF)
 	ln -s .build/*.pdf .
 
-submission:
+submission: all
 	cd ../vault && make submission
 	cp ../vault/src.zip .
 	zip -r beta.zip *.pdf FindBugsResult.html src.zip
