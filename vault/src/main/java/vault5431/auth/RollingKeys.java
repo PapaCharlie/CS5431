@@ -15,7 +15,7 @@ import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
- * Created by papacharlie on 4/5/16.
+ * Used to sign and encrypt tokens. RollingKeys roll every 24 hours at midnight.
  */
 public class RollingKeys {
 
@@ -24,8 +24,8 @@ public class RollingKeys {
     private static SecretKey encryptionKey = SymmetricUtils.getNewKey();
     private static SecretKey signingKey = SymmetricUtils.getNewKey();
 
+    // Roll keys every day at midnight
     static {
-
         final Runnable keyRoller = () -> {
             synchronized (lock) {
                 try {
@@ -48,21 +48,36 @@ public class RollingKeys {
                 24 * 60 * 60 * 1000,
                 MILLISECONDS
         );
-
     }
 
-    public static boolean verifySignature(byte[] content, Base64String signature) {
-        synchronized (lock) {
-            return SigningUtils.verifySignature(content, signature, signingKey);
-        }
-    }
-
+    /**
+     * Sign some arbitrary content using the current rolling key
+     * @param content content to sign
+     * @return content's signature
+     */
     public static Base64String sign(byte[] content) {
         synchronized (lock) {
             return SigningUtils.getSignature(content, signingKey);
         }
     }
 
+    /**
+     * Verify a signature based on the current rolling key
+     * @param content content to verify
+     * @param signature signature to verify against
+     * @return true iff signature matches content
+     */
+    public static boolean verifySignature(byte[] content, Base64String signature) {
+        synchronized (lock) {
+            return SigningUtils.verifySignature(content, signature, signingKey);
+        }
+    }
+
+    /**
+     * Encrypt some arbitrary content using the current rolling key
+     * @param content content to encrypt
+     * @return encrypted content (first 16 bytes are iv)
+     */
     public static Base64String encrypt(byte[] content) {
         synchronized (lock) {
             Base64String encryptedContent = null;
@@ -77,6 +92,11 @@ public class RollingKeys {
         }
     }
 
+    /**
+     * Decrypt content encrypted by {@link #encrypt(byte[])}.
+     * @param ciphertext encrypted content
+     * @return decrypted content
+     */
     public static byte[] decrypt(Base64String ciphertext) {
         synchronized (lock) {
             byte[] content = null;
@@ -91,6 +111,10 @@ public class RollingKeys {
         }
     }
 
+    /**
+     * Finds the nearest midnight LocalDateTime.
+     * @return next midnight
+     */
     public static LocalDateTime getEndOfCurrentWindow() {
         return LocalDateTime.now().plusDays(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
     }

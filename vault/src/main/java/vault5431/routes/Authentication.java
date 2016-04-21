@@ -102,7 +102,7 @@ class Authentication extends Routes {
                                 token.getUser().info("Succesful login.", token.getIp());
                                 res.cookie(
                                         "token",
-                                        new Token(token.getUser(), true).toCookie(),
+                                        token.verify().toCookie(),
                                         (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
                                         true
                                 );

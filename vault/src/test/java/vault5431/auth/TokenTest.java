@@ -4,7 +4,6 @@ import org.junit.Test;
 import vault5431.Vault;
 import vault5431.VaultTest;
 import vault5431.auth.exceptions.InvalidTokenException;
-import vault5431.users.User;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,15 +17,15 @@ public class TokenTest extends VaultTest {
         Token token = new Token(Vault.getDemoUser(), false);
         System.out.println(token.toCookie());
         Thread.sleep(100);
-        Token parsedToken = Token.parseToken(token.toCookie());
+        Token parsedToken = Token.pareCookie(token.toCookie());
         assertTrue(token.equals(parsedToken));
 
         token = new Token(Vault.getDemoUser(), true);
         Thread.sleep(100);
-        parsedToken = Token.parseToken(token.toCookie());
+        parsedToken = Token.pareCookie(token.toCookie());
         assertTrue(token.equals(parsedToken));
 
-        Token.parseToken(token.toCookie().replace("true", "false"));
+        Token.pareCookie(token.toCookie().replace("true", "false"));
     }
 
 }

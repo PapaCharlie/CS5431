@@ -40,18 +40,6 @@ public class UtilsTest extends VaultTest {
     }
 
     @Test
-    public void passwordTest() throws Exception {
-        Password password = new Password("Testpass", "https://www.test.com/", "test", "youknowit");
-        Password[] passwords = Password.fromCSV(CSVUtils.parseRecord(password.toRecord()));
-        assertTrue(passwords.length > 0);
-        Password deserialized = passwords[0];
-        assertEquals(password.getName(), deserialized.getName());
-        assertEquals(password.getWebsite(), deserialized.getWebsite());
-        assertEquals(password.getUsername(), deserialized.getUsername());
-        assertEquals(password.getPassword(), deserialized.getPassword());
-    }
-
-    @Test
     public void testBase64StringSave() throws Exception {
         File tmp = getTempFile("b64");
         Base64String base64String = new Base64String("test");

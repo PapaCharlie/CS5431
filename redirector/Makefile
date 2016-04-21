@@ -11,3 +11,6 @@ $(SBT_TASKS):
 
 deploy: assembly
 	rsync -vrc --progress target/scala-2.10/vault5431-redirector-assembly-0.2.jar root@vault5431.com:.
+
+submission:
+	zip -r redirector.zip Makefile build.sbt src/ project/build.properties project/plugins.sbt
