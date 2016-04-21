@@ -72,22 +72,29 @@
             });
         });
 
+//        $(document).on("click", ".changePasswordForm", function () {
         $(".changePasswordForm").on('submit', function (event) {
-//            event.preventDefault(); //got rid of the html form methods/actions
-            var $inputs = $('.changePasswordForm :input');
+            event.preventDefault(); //got rid of the html form methods/actions
+            var $inputs = $(this).find(':input');//  $('.changePasswordForm :input');
+//            console.log($inputs);
             var values = {};
             $inputs.each(function () {
                 if (this.name) {
+//                    console.log($(this).val());
                     values[this.name] = $(this).val();
                 }
             });
             var id = values.id;
             delete values.id;
             $.post('/changepassword', {id: id, changedPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
+//                console.log(data);
                 var response = JSON.parse(data);
+                console.log(response);
                 if (response.success) {
-                    window.location = "/home";
+//                    console.log("success post");
+//                    window.location = "/home";
                 } else {
+//                    console.log("failed post");
                     alert(response.error);
                 }
             });
