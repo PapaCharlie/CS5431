@@ -16,6 +16,7 @@
     <script type="text/javascript" src="/sjcl.js"></script>
     <#--<script type="text/javascript" src="/cryptico.min.js"></script>-->
     <script type="text/javascript" src="/clipboard.min.js"></script>
+    <script type="text/javascript" src="/home.js"></script>
     <link href="/vault.css" rel="stylesheet">
     <@page_head/>
 </head>

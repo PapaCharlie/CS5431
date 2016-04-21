@@ -34,7 +34,7 @@
                     newPassword.id = encryptedPassword.id;
                     return newPassword;
                 });
-                getAccordions(passwords);
+                getAccordions2(passwords);
             }
         } else {
             document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -53,7 +53,7 @@
             }
         });
 
-        $("#newPasswordForm").submit(function (event) {
+        $("#newPasswordForm").on('submit', function (event) {
             event.preventDefault();
             var $inputs = $('#newPasswordForm :input');
             var values = {};
@@ -72,9 +72,9 @@
             });
         });
 
-        $("#changePasswordForm").submit(function (event) {
-            event.preventDefault();
-            var $inputs = $('#changePasswordForm :input');
+        $(".changePasswordForm").on('submit', function (event) {
+//            event.preventDefault(); //got rid of the html form methods/actions
+            var $inputs = $('.changePasswordForm :input');
             var values = {};
             $inputs.each(function () {
                 if (this.name) {
@@ -140,6 +140,7 @@
             });
         }
     });
+
 
     function getAccordions(passwords) {
         passwords.forEach(function (entry) {
