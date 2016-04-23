@@ -5,7 +5,7 @@
     <form method="post" action="/savepassword" class="form-signin" id="newPasswordForm">
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
-        <input type="url" name="url" class="form-control" placeholder="URL" required>
+        <input type="text" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
@@ -25,16 +25,12 @@
     $(function () {
         if (sessionStorage.getItem("password")) {
             var data = ${payload};
-            if (data) {
-                var salt = sjcl.codec.base64url.toBits(data.salt);
-                var password = sjcl.codec.base64url.toBits(sessionStorage.getItem("password"));
-                var key = sjcl.hash.sha256.hash(sjcl.bitArray.concat(salt, password));
-                var passwords = data.passwords.map(function (encryptedPassword) {
-                    var newPassword = JSON.parse(sjcl.decrypt(key, JSON.stringify(encryptedPassword)));
-                    newPassword.id = encryptedPassword.id;
-                    return newPassword;
-                });
-                getAccordions2(passwords);
+            if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
+                var key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
+                var passwords = decryptPasswords(data.passwords, key);
+                getAccordions(passwords);
+            } else {
+                console.log("Bad payload");
             }
         } else {
             document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
@@ -55,14 +51,14 @@
 
         $("#newPasswordForm").on('submit', function (event) {
             event.preventDefault();
-            var $inputs = $('#newPasswordForm :input');
+            var inputs = $(this).find(':input');
             var values = {};
-            $inputs.each(function () {
+            inputs.each(function () {
                 if (this.name) {
-                    values[this.name] = $(this).val();
+                    values[this.name] = encrypt(key, $(this).val());
                 }
             });
-            $.post('/savepassword', {newPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
+            $.post('/savepassword', {newPassword: JSON.stringify(values)}, function (data) {
                 var response = JSON.parse(data);
                 if (response.success) {
                     window.location = "/home";
@@ -72,29 +68,26 @@
             });
         });
 
-//        $(document).on("click", ".changePasswordForm", function () {
         $(".changePasswordForm").on('submit', function (event) {
-            event.preventDefault(); //got rid of the html form methods/actions
-            var $inputs = $(this).find(':input');//  $('.changePasswordForm :input');
-//            console.log($inputs);
+            event.preventDefault();
+            var inputs = $(this).find(':input');
             var values = {};
-            $inputs.each(function () {
+            inputs.each(function () {
                 if (this.name) {
-//                    console.log($(this).val());
                     values[this.name] = $(this).val();
                 }
             });
             var id = values.id;
             delete values.id;
-            $.post('/changepassword', {id: id, changedPassword: sjcl.encrypt(key, JSON.stringify(values))}, function (data) {
-//                console.log(data);
+            $.post('/changepassword', {
+                id: id,
+                changedPassword: sjcl.encrypt(key, JSON.stringify(values))
+            }, function (data) {
                 var response = JSON.parse(data);
                 console.log(response);
                 if (response.success) {
-//                    console.log("success post");
-//                    window.location = "/home";
+                    window.location = "/home";
                 } else {
-//                    console.log("failed post");
                     alert(response.error);
                 }
             });
@@ -147,68 +140,6 @@
             });
         }
     });
-
-
-    function getAccordions(passwords) {
-        passwords.forEach(function (entry) {
-            $("#accordion").append(
-                    "<div class='panel panel-default'>" +
-                        "<div class='panel-heading'>" +
-                            "<h4 class='panel-title'>" +
-                                "<a data-toggle='collapse' data-parent='#accordion' href=#" + entry.id + ">" +
-                                entry.name + "</a>" +
-                                "<button class='delete btn btn-danger btn-xs' data-id='"+entry.id+"' style='float: right' aria-hidden='true'>Delete</button>" +
-                            "</h4>" +
-                        "</div>" +
-                        "<div id=" + entry.id + " class='panel-collapse collapse'>" +
-                            "<div class='panel-body'>" +
-                                "<div class='row'>" +
-                                    "<div class='col-sm-4 col-md-4'>URL: " + entry.url + "</div>" +
-                                "</div>" +
-                                "<div class='row'>" +
-                                    "<div class='col-sm-4 col-md-4'>Username: " + entry.username + "</div>" +
-                                    "<div id=" + entry.name + " class='col-sm-4 col-md-4'>Password:" +
-                                        "<input id='" + entry.id + "copy' type='password' readonly value='" + entry.password + "'>" +
-                                        "<button class='copy btn btn-default btn-sm' data-toggle='tooltip' title='Copied!' data-placement='bottom' data-trigger='click' data-clipboard-action='copy' data-clipboard-target='#" + entry.id + "copy'>Copy</button>" +
-                                        "<button class='reveal btn btn-default btn-sm' id='" + entry.id + "reveal'>Reveal</button>" +
-                                    "</div>" +
-                                    "<button type='button' class='btn btn-warning' data-toggle='modal' data-target='#" + entry.id + "modal'>Edit Account Info</button>" +
-                                    "<div id='" + entry.id + "modal' class='modal fade' role='dialog'>" +
-                                        "<div class='modal-dialog'>" +
-                                            <!-- Modal content-->
-                                            "<div class='modal-content'>" +
-                                                "<div class='modal-header'>" +
-                                                    "<button type='button' class='close' data-dismiss='modal'>&times;</button>" +
-                                                    "<h4 class='modal-title'>Edit Account Details</h4>" +
-                                                "</div>" +
-                                "<div class='modal-body'>" +
-                                    "<form method='post' action='/changepassword' id='changePasswordForm' >" +
-                                        "<input type='hidden' name='id' value='" + entry.id + "'>" +
-                                        "<input type='text' name='name' class='form-control' placeholder='Website Name' value='" + entry.name + "' required>" +
-                                        "<input type='url' name='url' class='form-control' placeholder='URL' value='" + entry.url + "' required>" +
-                                        "<input type='text' name='username' class='form-control' placeholder='Username' value='" + entry.username + "' required>" +
-                                        "<input type='text' name='password' class='form-control' placeholder='New Password' value='" + entry.password + "' required>" +
-                                        "<button class='btn btn-primary' type='submit'>Save new password</button>" +
-                                    "</form>" +
-                                "</div>" +
-                    "<div class='modal-footer'>" +
-                        "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
-                    "</div>" +
-                    "</div>" +
-                    "</div>" +
-                    "</div>" +
-//                                        "<form method='post' action='/vault/changepassword'>"+
-//                                            "<input type='hidden' name='name' value='"+entry.name+"'>"+
-//                                            "<button class='btn btn-warning' type='submit'>Change password</button>"+
-//                                        "</form>"+
-                    "</div>" +
-                    "</div>" +
-                    "</div>" +
-                    "</div>"
-            );
-
-        });
-    }
 
 </script>
 </#macro>

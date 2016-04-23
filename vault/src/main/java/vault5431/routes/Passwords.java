@@ -2,11 +2,13 @@ package vault5431.routes;
 
 import org.json.JSONException;
 import spark.ModelAndView;
+import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.User;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import static spark.Spark.post;
 class Passwords extends Routes {
 
     private static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
+    private static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
     private static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
     private static final String success = "{\"success\":true, \"error\": \"\"}";
 
@@ -125,14 +128,21 @@ class Passwords extends Routes {
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 String password = req.queryParams("newPassword");
+                System.out.println(Arrays.toString(req.queryParams().toArray()));
                 if (password != null && password.length() > 0) {
+                    System.out.println(password);
                     JSONObject pass;
                     try {
                         pass = new JSONObject(password);
+                        pass.put("id", UUID.randomUUID().toString());
+                        Password.fromJSON(pass);
                     } catch (JSONException err) {
+                        err.printStackTrace();
                         return invalidRequest;
+                    } catch (IllegalArgumentException err) {
+                        System.out.println("Zerp?");
+                        return String.format(invalidRequestWithError, err.getMessage());
                     }
-                    pass.put("id", UUID.randomUUID());
                     Base64String newPassword = new Base64String(pass.toString());
                     token.getUser().addPasswordToVault(newPassword, token);
                     return success;
