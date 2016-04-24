@@ -20,7 +20,7 @@ import static spark.Spark.post;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class Authentication extends Routes {
+class AuthenticationRoutes extends Routes {
 
     protected void routes() {
 

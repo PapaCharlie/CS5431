@@ -106,6 +106,7 @@ function getAccordions(passwords) {
         var input1 = $('<input/>',{
             'type': 'hidden',
             'name': 'id',
+            'class': 'form-control',
             'value': entry.id
         }).appendTo(form);
         var changename = $('<input/>',{

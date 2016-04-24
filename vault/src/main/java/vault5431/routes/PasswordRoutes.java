@@ -8,10 +8,7 @@ import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.User;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import org.json.JSONObject;
 
@@ -21,7 +18,7 @@ import static spark.Spark.post;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class Passwords extends Routes {
+class PasswordRoutes extends Routes {
 
     private static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
     private static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
@@ -38,15 +35,15 @@ class Passwords extends Routes {
 
                 User user = token.getUser();
                 Base64String salt = user.loadVaultSalt();
-                Base64String[] passwords = user.loadPasswords(token);
+                LinkedList<Password> passwords = user.loadPasswords(token);
                 StringBuilder array = new StringBuilder();
                 array.append("[");
-                if (passwords.length > 0) {
-                    for (int i = 0; i < passwords.length - 1; i++) {
-                        array.append(passwords[i].decodeString());
+                if (passwords.size() > 0) {
+                    for (int i = 0; i < passwords.size() - 1; i++) {
+                        array.append(passwords.get(i).toJSON());
                         array.append(',');
                     }
-                    array.append(passwords[passwords.length - 1].decodeString());
+                    array.append(passwords.get(passwords.size() - 1).toJSON());
                 } else {
                     attributes.put("empty", true);
                 }
@@ -61,43 +58,6 @@ class Passwords extends Routes {
                 return emptyPage;
             }
         }, freeMarkerEngine);
-
-        post("/changepassword", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                Sys.debug("Received POST to /changepassword.", req.ip());
-                UUID uuid;
-                try {
-                    String id = req.queryParams("id");
-                    if (id != null && id.length() > 0) {
-                        uuid = UUID.fromString(id);
-                    } else {
-                        return allFieldsRequired;
-                    }
-                } catch (IllegalArgumentException err) {
-                    return invalidRequest;
-                }
-                String changedPassword = req.queryParams("changedPassword");
-                if (changedPassword != null && changedPassword.length() > 0) {
-                    try {
-                        JSONObject pass = new JSONObject(changedPassword);
-                        pass.put("id", uuid);
-                        System.out.println(pass.toString());
-                        token.getUser().changePassword(uuid, new Base64String(pass.toString()), token);
-                        return success;
-                    } catch (JSONException err) {
-                        return invalidRequest;
-                    }
-                } else {
-                    return allFieldsRequired;
-                }
-
-            } else {
-                Sys.debug("Received unauthorized POST to /changepassword.");
-                res.redirect("/");
-                return "";
-            }
-        });
 
         post("/deletepassword", (req, res) -> {
             Token token = validateToken(req);
@@ -123,19 +83,56 @@ class Passwords extends Routes {
             }
         });
 
+        post("/changepassword", (req, res) -> {
+            Token token = validateToken(req);
+            if (token != null && token.isVerified()) {
+                Sys.debug("Received POST to /changepassword.", req.ip());
+                UUID uuid;
+                try {
+                    String id = req.queryParams("id");
+                    if (id != null && id.length() > 0) {
+                        uuid = UUID.fromString(id);
+                    } else {
+                        System.out.println("No id field");
+                        return allFieldsRequired;
+                    }
+                } catch (IllegalArgumentException err) {
+                    return invalidRequest;
+                }
+                String changedPassword = req.queryParams("changedPassword");
+                if (changedPassword != null && changedPassword.length() > 0) {
+                    try {
+                        JSONObject pass = new JSONObject(changedPassword);
+                        pass.put("id", uuid.toString());
+                        token.getUser().changePassword(Password.fromJSON(pass), token);
+                        return success;
+                    } catch (JSONException err) {
+                        System.out.println("No changedPassword field");
+                        return invalidRequest;
+                    }
+                } else {
+                    return allFieldsRequired;
+                }
+
+            } else {
+                Sys.debug("Received unauthorized POST to /changepassword.");
+                res.redirect("/");
+                return "";
+            }
+        });
+
         post("/savepassword", (req, res) -> {
             Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received POST to /savepassword.", req.ip());
                 String password = req.queryParams("newPassword");
-                System.out.println(Arrays.toString(req.queryParams().toArray()));
                 if (password != null && password.length() > 0) {
-                    System.out.println(password);
                     JSONObject pass;
                     try {
                         pass = new JSONObject(password);
                         pass.put("id", UUID.randomUUID().toString());
-                        Password.fromJSON(pass);
+                        Password newPassword = Password.fromJSON(pass);
+                        token.getUser().addPasswordToVault(newPassword, token);
                     } catch (JSONException err) {
                         err.printStackTrace();
                         return invalidRequest;
@@ -143,8 +140,6 @@ class Passwords extends Routes {
                         System.out.println("Zerp?");
                         return String.format(invalidRequestWithError, err.getMessage());
                     }
-                    Base64String newPassword = new Base64String(pass.toString());
-                    token.getUser().addPasswordToVault(newPassword, token);
                     return success;
                 } else {
                     return allFieldsRequired;

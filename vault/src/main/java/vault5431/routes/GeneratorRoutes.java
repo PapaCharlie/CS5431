@@ -4,6 +4,7 @@ import spark.ModelAndView;
 import vault5431.PasswordGenerator;
 import vault5431.Sys;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,7 +14,11 @@ import static spark.Spark.post;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class Generator extends Routes {
+class GeneratorRoutes extends Routes {
+
+    private static boolean parseCheckbox(String formField) {
+        return formField != null && formField.trim().toLowerCase().equals("true");
+    }
 
     protected void routes() {
         get("/generator", (req, res) -> {
@@ -25,11 +30,18 @@ class Generator extends Routes {
         post("/generator", (req, res) -> {
             Sys.debug("Received POST to /generator.", req.ip());
             String length = req.queryParams("length");
+            boolean lower = parseCheckbox(req.queryParams("lower"));
+            boolean upper = parseCheckbox(req.queryParams("upper"));
+            boolean numbers = parseCheckbox(req.queryParams("numbers"));
+            boolean symbols = parseCheckbox(req.queryParams("symbols"));
+            if (!(lower || upper || numbers || symbols)) {
+                return "{\"success\":false, \"error\":\"Need at least one set of letters!\"}";
+            }
             if (length != null) {
                 try {
                     int chars = Integer.parseInt(length);
-                    if (chars >= 6 && chars <= 100) {
-                        String pass = PasswordGenerator.generatePassword(chars);
+                    if (6 <= chars && chars <= 100) {
+                        String pass = PasswordGenerator.generatePassword(chars, lower, upper, numbers, symbols);
                         return String.format("{\"success\":true, \"password\":\"%s\"}", pass);
                     } else {
                         return "{\"success\":false, \"error\":\"Number must be between 6 and 100.\"}";

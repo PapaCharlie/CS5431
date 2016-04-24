@@ -3,6 +3,7 @@ package vault5431.users;
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
+import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.Token;
 import vault5431.crypto.AsymmetricUtils;
@@ -27,8 +28,7 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.UUID;
+import java.util.*;
 
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.getAdminEncryptionKey;
@@ -128,28 +128,18 @@ public final class User {
         }
     }
 
-    public void addPasswordToVault(Base64String password, Token token) throws IOException {
+    public void addPasswordToVault(Password password, Token token) throws IOException {
         synchronized (vaultFile) {
             info("Added password.", token.getIp());
-            FileUtils.append(vaultFile, password);
+            FileUtils.append(vaultFile, new Base64String(password.toJSON()));
         }
     }
 
-    public void changePassword(UUID uuid, Base64String password, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
+    public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException {
         synchronized (vaultFile) {
-            Base64String[] passwords = loadPasswords(token);
-            for (int i = 0; i < passwords.length; i++) {
-                try {
-                    JSONObject object = new JSONObject(passwords[i].decodeString());
-                    if (!object.has("id")) {
-                        throw new CorruptedVaultException();
-                    }
-                    if (UUID.fromString(object.getString("id")).equals(uuid)) {
-                        passwords[i] = password;
-                    }
-                } catch (JSONException | IllegalArgumentException err) {
-                    throw new CorruptedVaultException();
-                }
+            LinkedList<Password> passwords = loadPasswords(token);
+            if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
+                passwords.add(password);
             }
             savePasswords(passwords);
             info("Edited password.", token.getIp());
@@ -158,45 +148,40 @@ public final class User {
 
     public void deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
         synchronized (vaultFile) {
-            Base64String[] passwords = loadPasswords(token);
-            ArrayList<Base64String> removed = new ArrayList<>(passwords.length - 1);
-            for (Base64String password : passwords) {
-                try {
-                    JSONObject object = new JSONObject(password.decodeString());
-                    if (!object.has("id")) {
-                        throw new CorruptedVaultException();
-                    }
-                    if (!UUID.fromString(object.getString("id")).equals(uuid)) {
-                        removed.add(password);
-                    }
-                } catch (JSONException | IllegalArgumentException err) {
-                    throw new CorruptedVaultException();
-                }
+            LinkedList<Password> passwords = loadPasswords(token);
+            if (passwords.removeIf((pass) -> pass.getID().equals(uuid))) {
+                savePasswords(passwords);
+                info("Deleted password.", token.getIp());
             }
-            savePasswords(removed.toArray(new Base64String[removed.size()]));
-            info("Deleted password", token.getIp());
         }
     }
 
-    private void savePasswords(Base64String[] passwords) throws IOException {
+    private void savePasswords(LinkedList<Password> passwords) throws IOException {
         synchronized (vaultFile) {
             FileUtils.empty(vaultFile);
-            for (Base64String password : passwords) {
-                FileUtils.append(vaultFile, password);
+            for (Password password : passwords) {
+                FileUtils.append(vaultFile, new Base64String(password.toJSON()));
             }
         }
     }
 
-    public Base64String[] loadPasswords(Token token) throws VaultNotFoundException {
+    public LinkedList<Password> loadPasswords(Token token) throws VaultNotFoundException {
         synchronized (vaultFile) {
             info("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {
                 Sys.error("User's vault file could not be found.", this);
                 throw new VaultNotFoundException();
             }
-            Base64String[] passwords = null;
+            LinkedList<Password> passwords = new LinkedList<>();
             try {
-                passwords = Base64String.loadFromFile(vaultFile);
+                for (Base64String base64String : Base64String.loadFromFile(vaultFile)) {
+                    try {
+                        passwords.add(Password.fromJSON(new JSONObject(base64String.decodeString())));
+                    } catch (IllegalArgumentException | JSONException err) {
+                        err.printStackTrace();
+                        error("Password was corrupted! Loading remaining passwords.", token.getIp());
+                    }
+                }
             } catch (IOException err) {
                 err.printStackTrace();
                 error("Could not find vault!");

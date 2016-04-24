@@ -52,10 +52,10 @@ public abstract class Routes {
         }
         staticFileLocation("templates/static");
         freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/templates/freemarker");
-        new Authentication().routes();
-        new Generator().routes();
-        new Logs().routes();
-        new Passwords().routes();
+        new AuthenticationRoutes().routes();
+        new GeneratorRoutes().routes();
+        new LogRoutes().routes();
+        new PasswordRoutes().routes();
     }
 
 }
