@@ -22,12 +22,12 @@ import static spark.Spark.halt;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class Logs extends Routes {
+class LogRoutes extends Routes {
 
     protected void routes() {
 
         get("/userlog", (req, res) -> {
-            Token token = Authentication.validateToken(req);
+            Token token = validateToken(req);
             if (token != null && token.isVerified()) {
                 Sys.debug("Received authenticated GET to /vault/userlog.", req.ip());
                 Map<String, Object> attributes = new HashMap<>();
@@ -43,27 +43,6 @@ class Logs extends Routes {
                 return emptyPage;
             }
         }, freeMarkerEngine);
-
-//        get("/syslog", (req, res) -> {
-//            Token token = Authentication.validateToken(req);
-//            if (token != null && token.isVerified()) {
-//                Sys.debug("Received GET to /vault/syslog.", req.ip());
-//                Map<String, Object> attributes = new HashMap<>();
-//
-//                List<Map<String, String>> sysloglist = new ArrayList<>();
-//
-//                for (SystemLogEntry e : Sys.loadLog()) {
-//                    sysloglist.add(e.toMap());
-//                }
-//
-//                attributes.put("sysloglist", sysloglist);
-//                return new ModelAndView(attributes, "syslog.ftl");
-//            } else {
-//                Sys.debug("Received unauthorized GET to /vault/syslog.");
-//                res.redirect("/");
-//                return emptyPage;
-//            }
-//        }, freeMarkerEngine);
 
     }
 

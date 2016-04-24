@@ -25,7 +25,13 @@ function decrypt(key, encryptedData) {
 }
 
 function decryptPasswords(encryptedPasswords, key) {
-    return encryptedPasswords.map(function (encryptedPassword) {
+    var decodedPasswords;
+    if (typeof encryptedPasswords === "string" && encryptedPasswords instanceof String) {
+        decodedPasswords = JSON.parse(encryptedPasswords);
+    } else {
+        decodedPasswords = encryptedPasswords;
+    }
+    return decodedPasswords.map(function (encryptedPassword) {
         var decryptedPassword = {};
         decryptedPassword.name = decrypt(key, encryptedPassword.name);
         decryptedPassword.url = decrypt(key, encryptedPassword.url);
