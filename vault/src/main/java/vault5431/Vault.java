@@ -36,6 +36,10 @@ public class Vault {
     private static final User demoUser = loadDemoUser();
     private static boolean initialized = false;
 
+    /**
+     * Prompts SysAdmin at startup to enter the admin password. It then derives the admin signing and encryption.
+     * @return The set of AdminKeys
+     */
     private static AdminKeys readAdminKeys() {
         initialize();
         AdminKeys keys = null;
@@ -55,6 +59,10 @@ public class Vault {
         return keys;
     }
 
+    /**
+     * Creates and/or loads the demo user from disk.
+     * @return User instance representing the demo user
+     */
     private static User loadDemoUser() {
         initialize();
         if (!UserManager.userExists(demoUsername)) {
@@ -69,7 +77,9 @@ public class Vault {
         return UserManager.getUser(demoUsername);
     }
 
-
+    /**
+     * Creates ~/.vault5431 directory and starts the user manager.
+     */
     private synchronized static void initialize() {
         if(initialized) {
             return;
@@ -119,12 +129,18 @@ public class Vault {
         return demoUser;
     }
 
-    public static SecretKey getAdminSigningKey() {
-        return adminKeys.signingKey;
-    }
-
+    /**
+     * Returns the admin signing key derived from the SysAdmin password.
+     */
     public static SecretKey getAdminEncryptionKey() {
         return adminKeys.encryptionKey;
+    }
+
+    /**
+     * Returns the admin encryption key derived from the SysAdmin password.
+     */
+    public static SecretKey getAdminSigningKey() {
+        return adminKeys.signingKey;
     }
 
     public static void main(String[] args) throws Exception {

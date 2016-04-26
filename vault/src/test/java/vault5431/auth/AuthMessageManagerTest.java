@@ -1,10 +1,9 @@
-package vault5431.twofactor;
+package vault5431.auth;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import vault5431.Vault;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by cyj on 4/12/16.

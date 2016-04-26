@@ -8,12 +8,15 @@ import vault5431.io.Base64String;
 import vault5431.logging.CSVUtils;
 import vault5431.users.User;
 import vault5431.users.UserManager;
+import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.UUID;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 
 /**
@@ -33,23 +36,25 @@ public class Token {
 
     /**
      * Generate a new Token for {@code user}.
-     * @param user user for which to generate token
+     *
+     * @param user     user for which to generate token
      * @param verified whether or not {@code user} has successfully completed 2FA
      */
-    public Token(User user, boolean verified) {
+    protected Token(User user, boolean verified) throws CouldNotLoadSettingsException {
         this.username = user.hash;
         this.creationDate = LocalDateTime.now();
-        this.expiresAt = RollingKeys.getEndOfCurrentWindow();
+        this.expiresAt = LocalDateTime.now().plusMinutes((long) user.loadSettings().getSessionLength());
         this.id = UUID.randomUUID();
         byte[] randomBytes = new byte[16];
         random.nextBytes(randomBytes);
         this.verified = verified;
-        this.signature = RollingKeys.sign(toSignatureBody(username, creationDate, expiresAt, id, verified));
+        this.signature = RollingKeys.sign(toSignatureBody(username, this.creationDate, this.expiresAt, id, verified));
         this.ip = Sys.NO_IP;
     }
 
     /**
-     * Private constructor used for {@link #pareCookie(String)}
+     * Private constructor used for {@link #parseCookie(String)}
+     *
      * @throws InvalidTokenException thrown when parsed token is not valid
      */
     private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified, Base64String signature, String ip) throws InvalidTokenException {
@@ -84,8 +89,16 @@ public class Token {
         return UserManager.getUser(this.username);
     }
 
+    public int secondsUntilExpiration() {
+        return (int) LocalDateTime.now().until(expiresAt, SECONDS);
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
     public String getIp() {
-        return this.ip;
+        return ip;
     }
 
     public Base64String getUsername() {
@@ -98,29 +111,31 @@ public class Token {
 
     /**
      * Return a token that's been verified. Only to be called when user has completed 2FA
+     *
      * @throws InvalidTokenException if the token has expired or the signature cannot be verified.
      */
-    public Token verify() throws InvalidTokenException {
+    protected Token verify() throws InvalidTokenException {
         return new Token(
                 username, creationDate, expiresAt, id, true,
                 RollingKeys.sign(toSignatureBody(username, creationDate, expiresAt, id, true)),
                 this.ip);
     }
 
-    public static Token pareCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
-        return pareCookie(cookie, Sys.NO_IP);
+    protected static Token parseCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
+        return parseCookie(cookie, Sys.NO_IP);
     }
 
     /**
      * Parse a cookie given by the client.
+     *
      * @param cookie raw cookie from request
-     * @param ip ip that presented this token
+     * @param ip     ip that presented this token
      * @return the parsed token
      * @throws CouldNotParseTokenException if the token cannot be parsed
-     * @throws InvalidTokenException if the signature does not match or if the current time is outside
-     * the token's validity window
+     * @throws InvalidTokenException       if the signature does not match or if the current time is outside
+     *                                     the token's validity window
      */
-    public static Token pareCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
+    protected static Token parseCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
         try {
             CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
             Base64String username = Base64String.fromBase64(record.get(0));
@@ -137,6 +152,7 @@ public class Token {
 
     /**
      * Dump to string for cookie
+     *
      * @throws IOException
      */
     public String toCookie() throws IOException {
@@ -150,13 +166,7 @@ public class Token {
     public boolean equals(Object object) {
         if (object instanceof Token) {
             Token other = (Token) object;
-            return this.creationDate.equals(other.creationDate)
-                    && this.expiresAt.equals(other.expiresAt)
-                    && this.id.equals(other.id)
-                    && this.signature.equals(other.signature)
-                    && this.username.equals(other.username)
-                    && this.verified == other.verified
-                    && this.ip.equals(other.ip);
+            return this.id.equals(other.id) && this.username.equals(other.username);
         } else {
             return false;
         }

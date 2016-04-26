@@ -1,17 +1,18 @@
 package vault5431;
 
 import org.json.JSONObject;
-import vault5431.io.Base64String;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.HashMap;
 
 /**
- * Basic password generator class
- * TODO: Pronounceable passwords?
+ * Basic password generator class.
  */
 public class PasswordGenerator {
+
     private static final SecureRandom random = new SecureRandom();
 
     private static final String LOWERCASE = "abcdefghijklmnopqrstuvwxyz";
@@ -25,6 +26,7 @@ public class PasswordGenerator {
     private static final HashMap<String, String> PRECEDENCE_MAP = new HashMap<>();
 
     static {
+        // Read the adjacency list from the resource directory.
         try (BufferedReader br = new BufferedReader(new InputStreamReader(PasswordGenerator.class.getResourceAsStream("/adjacency.json")))) {
             String line;
             while ((line = br.readLine()) != null) {
