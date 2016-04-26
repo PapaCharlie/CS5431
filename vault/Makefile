@@ -54,11 +54,11 @@ assembly:
 	sed -i "s#port(5431);#port(443);#g" $(MAIN)
 	sed -i 's#secure("./keystore.jks", "vault5431", null, null);#secure("./keystore.jks", new String(System.console().readPassword("Please enter the SSL certificate password:")), "./truststore.jks", new String(System.console().readPassword("Please enter the truststore password:")));#g' $(MAIN)
 	sed -i 's#String adminPassword = "debug";#String adminPassword = new String(System.console().readPassword());#g' $(MAIN)
-	"$(SBT)" "assembly"
-	mv $(MAIN).bak $(MAIN)
+	# "$(SBT)" "assembly"
+	# mv $(MAIN).bak $(MAIN)
 
 deploy: assembly up
 
 up:
-	rsync -vrc --progress target/scala-2.10/vault5431-assembly-0.2.jar root@vault5431.com:.
+	rsync -vrc --progress target/scala-2.10/vault5431-assembly-0.3.jar root@vault5431.com:.
 	rsync -vrc --progress ServerMakefile root@vault5431.com:Makefile
