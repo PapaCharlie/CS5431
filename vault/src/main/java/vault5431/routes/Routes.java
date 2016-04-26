@@ -4,9 +4,11 @@ import freemarker.template.Configuration;
 import spark.*;
 import spark.template.freemarker.FreeMarkerEngine;
 import vault5431.Sys;
+import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
+import vault5431.routes.exceptions.SessionExpiredException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -24,12 +26,12 @@ public abstract class Routes {
     public static Token validateToken(Request req) {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {
             try {
-                return Token.pareCookie(req.cookie("token").trim(), req.ip());
+                return AuthenticationHandler.parseFromCookie(req.cookie("token").trim(), req.ip());
             } catch (CouldNotParseTokenException err) {
                 Sys.debug("Received invalid token.", req.ip());
                 return null;
             } catch (InvalidTokenException err) {
-                Sys.warning("Received tampered token. There is reason to believe this IP is acting maliciously.", req.ip());
+                Sys.warning(String.format("Rejecting token. Reason: %s. There is reason to believe this IP is acting maliciously.", err.getMessage()), req.ip());
                 return null;
             }
         } else {
@@ -46,8 +48,7 @@ public abstract class Routes {
                 return authenticatedHandle(request, response, token);
             } else {
                 Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()));
-                response.redirect("/");
-                return emptyPage;
+                throw new SessionExpiredException();
             }
         }
     }
@@ -62,8 +63,7 @@ public abstract class Routes {
                 return authenticatedHandle(request, response, token);
             } else {
                 Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()));
-                response.redirect("/");
-                return "";
+                throw new SessionExpiredException();
             }
         }
     }
@@ -96,9 +96,11 @@ public abstract class Routes {
         } else {
             initialized = true;
         }
+
         staticFileLocation("static");
         freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/freemarker");
         new AuthenticationRoutes().routes();
+        new ExceptionRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();

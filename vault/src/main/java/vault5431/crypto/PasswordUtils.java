@@ -1,7 +1,6 @@
 package vault5431.crypto;
 
 import org.bouncycastle.util.Arrays;
-import vault5431.Sys;
 import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;

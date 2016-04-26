@@ -128,7 +128,7 @@ public class Sys {
     public static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
             try {
-                System.out.println(entry.toString());
+                System.out.println("[SYS] " + entry.toString());
                 try {
                     Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey());
                     FileUtils.append(logFile, encryptedEntry);

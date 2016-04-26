@@ -1,19 +1,17 @@
 package vault5431.routes;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.Password;
 import vault5431.Sys;
-import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.users.User;
 
-import java.util.*;
-
-import org.json.JSONObject;
-
-import static spark.Spark.get;
-import static spark.Spark.post;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by papacharlie on 3/25/16.

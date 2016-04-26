@@ -17,15 +17,15 @@ public class TokenTest extends VaultTest {
         Token token = new Token(Vault.getDemoUser(), false);
         System.out.println(token.toCookie());
         Thread.sleep(100);
-        Token parsedToken = Token.pareCookie(token.toCookie());
+        Token parsedToken = Token.parseCookie(token.toCookie());
         assertTrue(token.equals(parsedToken));
 
         token = new Token(Vault.getDemoUser(), true);
         Thread.sleep(100);
-        parsedToken = Token.pareCookie(token.toCookie());
+        parsedToken = Token.parseCookie(token.toCookie());
         assertTrue(token.equals(parsedToken));
 
-        Token.pareCookie(token.toCookie().replace("true", "false"));
+        Token.parseCookie(token.toCookie().replace("true", "false"));
     }
 
 }
