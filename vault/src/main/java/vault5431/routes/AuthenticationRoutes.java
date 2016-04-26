@@ -11,7 +11,6 @@ import vault5431.users.UserManager;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.Pack200;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static spark.Spark.get;
@@ -140,7 +139,7 @@ class AuthenticationRoutes extends Routes {
             return new ModelAndView(attributes, "register.ftl");
         }, freeMarkerEngine);
 
-        post("/register", (req, res) -> {
+        get("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             String username = req.queryParams("username");
@@ -172,7 +171,7 @@ class AuthenticationRoutes extends Routes {
             }
         }, freeMarkerEngine);
 
-        get("/logout", (req, res) -> {
+        authenticatedGet("/logout", (req, res, token) -> {
             res.removeCookie("token");
             res.redirect("/");
             return emptyPage;

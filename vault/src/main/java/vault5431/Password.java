@@ -19,8 +19,8 @@ import static vault5431.Utils.isValidJSON;
  */
 public class Password {
 
-    // Tested with sjcl: 500 characters dumps to a JSON string shorter than 900 characters.
-    public static final int MAX_ENCRYPTED_LENGTH = 1000;
+    // Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
+    public static final int MAX_ENCRYPTED_LENGTH = 750;
 
     private JSONObject name;
     private JSONObject url;

@@ -27,127 +27,92 @@ class PasswordRoutes extends Routes {
 
     protected void routes() {
 
-        get("/home", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                Sys.debug("Received GET to /home.", req.ip());
-                Map<String, Object> attributes = new HashMap<>();
-
-                User user = token.getUser();
-                Base64String salt = user.loadVaultSalt();
-                LinkedList<Password> passwords = user.loadPasswords(token);
-                StringBuilder array = new StringBuilder();
-                array.append("[");
-                if (passwords.size() > 0) {
-                    for (int i = 0; i < passwords.size() - 1; i++) {
-                        array.append(passwords.get(i).toJSON());
-                        array.append(',');
-                    }
-                    array.append(passwords.get(passwords.size() - 1).toJSON());
-                } else {
-                    attributes.put("empty", true);
+        authenticatedGet("/home", (req, res, token) -> {
+            Map<String, Object> attributes = new HashMap<>();
+            User user = token.getUser();
+            Base64String salt = user.loadVaultSalt();
+            LinkedList<Password> passwords = user.loadPasswords(token);
+            StringBuilder array = new StringBuilder();
+            array.append("[");
+            if (passwords.size() > 0) {
+                for (int i = 0; i < passwords.size() - 1; i++) {
+                    array.append(passwords.get(i).toJSON());
+                    array.append(',');
                 }
-                array.append(']');
-                attributes.put("payload", String.format("{\"salt\":\"%s\",\"passwords\":%s}", salt.toString(), array.toString()));
-
-                return new ModelAndView(attributes, "home.ftl");
+                array.append(passwords.get(passwords.size() - 1).toJSON());
             } else {
-                Sys.debug("Received unauthorized GET to /home.");
-                res.removeCookie("token");
-                res.redirect("/");
-                return emptyPage;
+                attributes.put("empty", true);
             }
+            array.append(']');
+            attributes.put("payload", String.format("{\"salt\":\"%s\",\"passwords\":%s}", salt.toString(), array.toString()));
+            return new ModelAndView(attributes, "home.ftl");
         }, freeMarkerEngine);
 
-        post("/deletepassword", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                Sys.debug("Received POST to /deletepassword.", req.ip());
-                String id = req.queryParams("id");
-                if (id != null && id.length() > 0) {
-                    UUID uuid;
-                    try {
-                        uuid = UUID.fromString(id);
-                    } catch (IllegalArgumentException err) {
-                        return invalidRequest;
-                    }
-                    token.getUser().deletePassword(uuid, token);
-                    return success;
-                } else {
-                    return allFieldsRequired;
-                }
-            } else {
-                Sys.debug("Received unauthorized POST to /deletepassword.");
-                res.redirect("/");
-                return "";
-            }
-        });
-
-        post("/changepassword", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                Sys.debug("Received POST to /changepassword.", req.ip());
+        authenticatedPost("/deletepassword", (req, res, token) -> {
+            String id = req.queryParams("id");
+            if (id != null && id.length() > 0) {
                 UUID uuid;
                 try {
-                    String id = req.queryParams("id");
-                    if (id != null && id.length() > 0) {
-                        uuid = UUID.fromString(id);
-                    } else {
-                        System.out.println("No id field");
-                        return allFieldsRequired;
-                    }
+                    uuid = UUID.fromString(id);
                 } catch (IllegalArgumentException err) {
                     return invalidRequest;
                 }
-                String changedPassword = req.queryParams("changedPassword");
-                if (changedPassword != null && changedPassword.length() > 0) {
-                    try {
-                        JSONObject pass = new JSONObject(changedPassword);
-                        pass.put("id", uuid.toString());
-                        token.getUser().changePassword(Password.fromJSON(pass), token);
-                        return success;
-                    } catch (JSONException err) {
-                        System.out.println("No changedPassword field");
-                        return invalidRequest;
-                    }
-                } else {
-                    return allFieldsRequired;
-                }
-
+                token.getUser().deletePassword(uuid, token);
+                return success;
             } else {
-                Sys.debug("Received unauthorized POST to /changepassword.");
-                res.redirect("/");
-                return "";
+                return allFieldsRequired;
             }
         });
 
-        post("/savepassword", (req, res) -> {
-            Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                Sys.debug("Received POST to /savepassword.", req.ip());
-                String password = req.queryParams("newPassword");
-                if (password != null && password.length() > 0) {
-                    JSONObject pass;
-                    try {
-                        pass = new JSONObject(password);
-                        pass.put("id", UUID.randomUUID().toString());
-                        Password newPassword = Password.fromJSON(pass);
-                        token.getUser().addPasswordToVault(newPassword, token);
-                    } catch (JSONException err) {
-                        err.printStackTrace();
-                        return invalidRequest;
-                    } catch (IllegalArgumentException err) {
-                        System.out.println("Zerp?");
-                        return String.format(invalidRequestWithError, err.getMessage());
-                    }
-                    return success;
+        authenticatedPost("/changepassword", (req, res, token) -> {
+            Sys.debug("Received POST to /changepassword.", req.ip());
+            UUID uuid;
+            try {
+                String id = req.queryParams("id");
+                if (id != null && id.length() > 0) {
+                    uuid = UUID.fromString(id);
                 } else {
+                    System.out.println("No id field");
                     return allFieldsRequired;
                 }
+            } catch (IllegalArgumentException err) {
+                return invalidRequest;
+            }
+            String changedPassword = req.queryParams("changedPassword");
+            if (changedPassword != null && changedPassword.length() > 0) {
+                try {
+                    JSONObject pass = new JSONObject(changedPassword);
+                    pass.put("id", uuid.toString());
+                    token.getUser().changePassword(Password.fromJSON(pass), token);
+                    return success;
+                } catch (JSONException err) {
+                    System.out.println("No changedPassword field");
+                    return invalidRequest;
+                }
             } else {
-                Sys.debug("Received unauthorized POST to /savepassword.");
-                res.redirect("/");
-                return "";
+                return allFieldsRequired;
+            }
+        });
+
+        authenticatedPost("/savepassword", (req, res, token) -> {
+            String password = req.queryParams("newPassword");
+            if (password != null && password.length() > 0) {
+                JSONObject pass;
+                try {
+                    pass = new JSONObject(password);
+                    pass.put("id", UUID.randomUUID().toString());
+                    Password newPassword = Password.fromJSON(pass);
+                    token.getUser().addPasswordToVault(newPassword, token);
+                } catch (JSONException err) {
+                    err.printStackTrace();
+                    return invalidRequest;
+                } catch (IllegalArgumentException err) {
+                    System.out.println("Zerp?");
+                    return String.format(invalidRequestWithError, err.getMessage());
+                }
+                return success;
+            } else {
+                return allFieldsRequired;
             }
         });
     }
