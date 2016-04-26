@@ -193,12 +193,7 @@ public final class User {
 
     public boolean verifyPassword(Base64String hashedPassword) throws IOException {
         synchronized (passwordHashFile) {
-            if (PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString())) {
-                return true;
-            } else {
-                warning("Failed password verification attempt.");
-                return false;
-            }
+            return PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString());
         }
     }
 
@@ -211,8 +206,8 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-                PublicKey pubKey = loadPublicCryptoKey();
-                FileUtils.append(logFile, AsymmetricUtils.encrypt(entry.toCSV().getBytes(), pubKey));
+//                PublicKey pubKey = loadPublicCryptoKey();
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey()));
                 System.out.println(entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -221,12 +216,12 @@ public final class User {
             } catch (BadCiphertextException err) {
                 err.printStackTrace();
                 Sys.error("Serialization of log entry was too long, or unencryptable.", this);
-            } catch (InvalidPublicKeySignature err) {
-                Sys.error("User's public key does not match the signature! Halting.", this);
-                throw new RuntimeException("Invalid public key signature.");
-            } catch (CouldNotLoadKeyException err) {
-                Sys.error("Key could not be loaded from disk. Requires immediate attention.", this);
-                throw new RuntimeException("Cannot load key from disk.");
+//            } catch (InvalidPublicKeySignature err) {
+//                Sys.error("User's public key does not match the signature! Halting.", this);
+//                throw new RuntimeException("Invalid public key signature.");
+//            } catch (CouldNotLoadKeyException err) {
+//                Sys.error("Key could not be loaded from disk. Requires immediate attention.", this);
+//                throw new RuntimeException("Cannot load key from disk.");
             }
         }
     }
@@ -284,10 +279,10 @@ public final class User {
             Sys.debug("Loading log.", this, token.getIp());
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-            PrivateKey privKey = loadPrivateCryptoKey(token);
+//            PrivateKey privKey = loadPrivateCryptoKey(token);
             for (int i = 0; i < encryptedEntries.length; i++) {
                 try {
-                    String decryptedEntry = new String(AsymmetricUtils.decrypt(encryptedEntries[i], privKey));
+                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));
                     CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
                     decryptedEntries[i] = UserLogEntry.fromCSV(record);
                 } catch (BadCiphertextException err) {

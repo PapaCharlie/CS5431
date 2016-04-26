@@ -72,7 +72,6 @@ class PasswordRoutes extends Routes {
                 if (id != null && id.length() > 0) {
                     uuid = UUID.fromString(id);
                 } else {
-                    System.out.println("No id field");
                     return allFieldsRequired;
                 }
             } catch (IllegalArgumentException err) {
@@ -86,7 +85,6 @@ class PasswordRoutes extends Routes {
                     token.getUser().changePassword(Password.fromJSON(pass), token);
                     return success;
                 } catch (JSONException err) {
-                    System.out.println("No changedPassword field");
                     return invalidRequest;
                 }
             } else {
@@ -107,7 +105,6 @@ class PasswordRoutes extends Routes {
                     err.printStackTrace();
                     return invalidRequest;
                 } catch (IllegalArgumentException err) {
-                    System.out.println("Zerp?");
                     return String.format(invalidRequestWithError, err.getMessage());
                 }
                 return success;
