@@ -43,9 +43,8 @@ public class Vault {
             byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
             System.out.print("Please enter the admin password: ");
             // This line changed at deploy time to prompt SysAdmin for admin password
-            char[] password = System.console().readPassword();
-            String adminPassword = new String(password);
-            
+            String adminPassword = new String(System.console().readPassword());
+            System.out.println(adminPassword);
             SecretKey adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
             SecretKey adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
             keys = new AdminKeys(adminEncryptionKey, adminSigningKey);
