@@ -6,6 +6,7 @@ import vault5431.auth.RollingKeys;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
 import vault5431.twofactor.AuthMessageManager;
+import vault5431.users.User;
 import vault5431.users.UserManager;
 
 import java.time.LocalDateTime;
@@ -45,29 +46,28 @@ class AuthenticationRoutes extends Routes {
                     && username.length() > 0
                     && password != null
                     && password.length() > 0) {
-                if (UserManager.userExists(username)
-                        && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
-                    Token token = new Token(UserManager.getUser(username), false);
-                    res.cookie(
-                            "token",
-                            token.toCookie(),
-                            (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
-                            true
-                    );
-                    res.redirect("/twofactor");
-                    return emptyPage;
-                } else {
-                    Sys.debug("Failed login attempt.", req.ip());
-                    String errorMessage = "This username/password combination does not exist!";
-                    attributes.put("error", errorMessage);
-                    return new ModelAndView(attributes, "login.ftl");
+                if (UserManager.userExists(username)) {
+                    User user = UserManager.getUser(username);
+                    if (user.verifyPassword(Base64String.fromBase64(password))) {
+                        Token token = new Token(UserManager.getUser(username), false);
+                        res.cookie(
+                                "token",
+                                token.toCookie(),
+                                (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
+                                true
+                        );
+                        res.redirect("/twofactor");
+                        return emptyPage;
+                    } else {
+                        user.warning("Failed password verification attempt.", req.ip());
+                    }
                 }
-            } else {
-                Sys.debug("Failed login attempt.", req.ip());
-                String errorMessage = "This username/password combination does not exist!";
-                attributes.put("error", errorMessage);
-                return new ModelAndView(attributes, "login.ftl");
             }
+            Sys.debug("Failed login attempt.", req.ip());
+            String errorMessage = "This username/password combination does not exist!";
+            attributes.put("error", errorMessage);
+            return new ModelAndView(attributes, "login.ftl");
+
         }, freeMarkerEngine);
 
         get("/twofactor", (req, res) -> {
@@ -108,6 +108,7 @@ class AuthenticationRoutes extends Routes {
                                 res.redirect("/home");
                                 return emptyPage;
                             } else {
+                                token.getUser().warning("Invalid two factor authentication attempt!", token.getIp());
                                 res.removeCookie("token");
                                 res.redirect("/");
                                 return emptyPage;
@@ -139,7 +140,7 @@ class AuthenticationRoutes extends Routes {
             return new ModelAndView(attributes, "register.ftl");
         }, freeMarkerEngine);
 
-        get("/register", (req, res) -> {
+        post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             String username = req.queryParams("username");

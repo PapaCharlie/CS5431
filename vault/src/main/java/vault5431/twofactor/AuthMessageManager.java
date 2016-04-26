@@ -47,7 +47,7 @@ public class AuthMessageManager {
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
 
-            if (true) { // set to false for testing
+            if (false) { // set to false for testing
                 msgFactory.create(params);
                 addToManager(user, auth);
             } else {
