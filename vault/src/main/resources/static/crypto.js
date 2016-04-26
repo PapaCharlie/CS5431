@@ -8,20 +8,39 @@ function hash(data) {
 
 function encrypt(key, data) {
     var stringData;
-    if (typeof data !== "string" && !(data instanceof String)) {
+    if (typeof data !== "string" || !(data instanceof String)) {
         stringData = JSON.stringify(data);
     } else {
         stringData = data;
     }
-    return JSON.parse(sjcl.encrypt(key, stringData));
+    var cipher = JSON.parse(sjcl.encrypt(key, stringData));
+    for (var prop in sjcl.json.defaults) {
+        if (sjcl.json.defaults.hasOwnProperty(prop)) {
+            if (cipher.hasOwnProperty(prop)) {
+                delete cipher[prop];
+            }
+        }
+    }
+    return cipher;
 }
 
 function decrypt(key, encryptedData) {
-    if (typeof encryptedData !== "string" && !(encryptedData instanceof String)) {
-        return sjcl.decrypt(key, JSON.stringify(encryptedData));
+    var cipher;
+    if (typeof encryptedData === "object" || encryptedData instanceof Object) {
+        cipher = encryptedData;
+    } else if (typeof encryptedData === "string" || encryptedData instanceof String) {
+        cipher = JSON.parse(encryptedData);
     } else {
-        return sjcl.decrypt(key, encryptedData);
+        return;
     }
+    for (var prop in sjcl.json.defaults) {
+        if (sjcl.json.defaults.hasOwnProperty(prop)) {
+            if (!cipher.hasOwnProperty(prop)) {
+                cipher[prop] = sjcl.json.defaults[prop];
+            }
+        }
+    }
+    return JSON.parse(sjcl.decrypt(key, JSON.stringify(cipher)));
 }
 
 function decryptPasswords(encryptedPasswords, key) {

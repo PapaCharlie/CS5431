@@ -4,7 +4,6 @@ import spark.ModelAndView;
 import vault5431.PasswordGenerator;
 import vault5431.Sys;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +20,7 @@ class GeneratorRoutes extends Routes {
     }
 
     protected void routes() {
+
         get("/generator", (req, res) -> {
             Sys.debug("Received GET to /generator.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
@@ -34,6 +34,7 @@ class GeneratorRoutes extends Routes {
             boolean upper = parseCheckbox(req.queryParams("upper"));
             boolean numbers = parseCheckbox(req.queryParams("numbers"));
             boolean symbols = parseCheckbox(req.queryParams("symbols"));
+            boolean pronounceable = parseCheckbox(req.queryParams("pronounceable"));
             if (!(lower || upper || numbers || symbols)) {
                 return "{\"success\":false, \"error\":\"Need at least one set of letters!\"}";
             }
@@ -41,17 +42,20 @@ class GeneratorRoutes extends Routes {
                 try {
                     int chars = Integer.parseInt(length);
                     if (6 <= chars && chars <= 100) {
-                        String pass = PasswordGenerator.generatePassword(chars, lower, upper, numbers, symbols);
+                        String pass = PasswordGenerator.generatePassword(chars, lower, upper, numbers, symbols, pronounceable);
                         return String.format("{\"success\":true, \"password\":\"%s\"}", pass);
                     } else {
                         return "{\"success\":false, \"error\":\"Number must be between 6 and 100.\"}";
                     }
                 } catch (NumberFormatException err) {
                     return "{\"success\":false, \"error\":\"Invalid number!\"}";
+                } catch (IllegalArgumentException err) {
+                    return String.format("{\"success\":false, \"error\":\"%s\"}", err.getMessage());
                 }
             } else {
                 return "{\"success\":false, \"error\":\"Length field is required!\"}";
             }
         });
+
     }
 }

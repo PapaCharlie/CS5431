@@ -25,6 +25,9 @@
             <label class="checkbox-inline">
                 <input type="checkbox" name="symbols" id="symbols" checked> !@#$
             </label>
+            <label class="checkbox-inline">
+                <input type="checkbox" name="pronounceable" id="pronounceable"> Pronounceable
+            </label>
         </div>
         <button class="btn btn-success" type="submit">Generate</button>
     </form>
@@ -34,6 +37,18 @@
     </div>
     <script>
         $(function () {
+            $('input#pronounceable').on('change', function () {
+                if ($(this).is(':checked')) {
+                    document.getElementById("length").min = "12";
+                    document.getElementById("numbers").disabled = true;
+                    document.getElementById("symbols").disabled = true;
+                } else {
+                    document.getElementById("length").min = "6";
+                    document.getElementById("numbers").disabled = false;
+                    document.getElementById("symbols").disabled = false;
+                }
+            });
+
             $("#generator").submit(function (event) {
                 event.preventDefault();
                 var length = $(this).find(':input#length')[0].value;
