@@ -77,14 +77,18 @@ public class Password {
     /**
      * @return The JSON representation of the Password.
      */
-    public String toJSON() {
+    public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
         json.put("name", name);
         json.put("url", url);
         json.put("username", username);
         json.put("password", password);
         json.put("id", id.toString());
-        return json.toString();
+        return json;
+    }
+
+    public String toJSON() {
+        return toJSONObject().toString();
     }
 
     /**
@@ -95,7 +99,7 @@ public class Password {
     }
 
     /**
-     * Parses a JSON object ideally created by #toJSON, otherwise simply requires all fields be present in the object.
+     * Parses a JSON object ideally created by #toJSONObject, otherwise simply requires all fields be present in the object.
      *
      * @param json JSONObject representing the
      * @return Password instance parse from JSON.
