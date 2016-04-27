@@ -5,46 +5,34 @@ import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.Password;
 import vault5431.Sys;
-import vault5431.io.Base64String;
 import vault5431.users.User;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Created by papacharlie on 3/25/16.
  */
 class PasswordRoutes extends Routes {
 
-    private static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
-    private static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
-    private static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
-    private static final String success = "{\"success\":true, \"error\": \"\"}";
-
     protected void routes() {
 
         authenticatedGet("/home", (req, res, token) -> {
             Map<String, Object> attributes = new HashMap<>();
-            User user = token.getUser();
-            Base64String salt = user.loadVaultSalt();
-            LinkedList<Password> passwords = user.loadPasswords(token);
-            StringBuilder array = new StringBuilder();
-            array.append("[");
-            if (passwords.size() > 0) {
-                for (int i = 0; i < passwords.size() - 1; i++) {
-                    array.append(passwords.get(i).toJSON());
-                    array.append(',');
-                }
-                array.append(passwords.get(passwords.size() - 1).toJSON());
-            } else {
-                attributes.put("empty", true);
-            }
-            array.append(']');
-            attributes.put("payload", String.format("{\"salt\":\"%s\",\"passwords\":%s}", salt.toString(), array.toString()));
             return new ModelAndView(attributes, "home.ftl");
-        }, freeMarkerEngine);
+        });
+
+        authenticatedGet("/passwords", (req, res, token) -> {
+            User user = token.getUser();
+            JSONObject vault = new JSONObject();
+            vault.put("salt", user.loadVaultSalt().toString());
+            LinkedList<Password> passwords = user.loadPasswords(token);
+            vault.put("passwords", passwords.stream().map(Password::toJSONObject).collect(Collectors.toList()));
+            return vault.toString();
+        });
 
         authenticatedPost("/deletepassword", (req, res, token) -> {
             String id = req.queryParams("id");

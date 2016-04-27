@@ -20,7 +20,12 @@ import static spark.Spark.*;
  */
 public abstract class Routes {
 
-    public static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
+    protected static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
+    protected static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
+    protected static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
+    protected static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
+    protected static final String success = "{\"success\":true, \"error\": \"\"}";
+
     private static boolean initialized = false;
 
     public static Token validateToken(Request req) {
@@ -39,20 +44,6 @@ public abstract class Routes {
         }
     }
 
-    protected interface AuthenticatedViewRoute extends TemplateViewRoute {
-        ModelAndView authenticatedHandle(Request request, Response response, Token token) throws Exception;
-
-        default ModelAndView handle(Request request, Response response) throws Exception {
-            Token token = validateToken(request);
-            if (token != null) {
-                return authenticatedHandle(request, response, token);
-            } else {
-                Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()));
-                throw new SessionExpiredException();
-            }
-        }
-    }
-
     protected interface AuthenticatedRoute extends Route {
         Object authenticatedHandle(Request request, Response response, Token token) throws Exception;
 
@@ -60,7 +51,12 @@ public abstract class Routes {
             Token token = validateToken(request);
             if (token != null) {
                 Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()));
-                return authenticatedHandle(request, response, token);
+                Object res = authenticatedHandle(request, response, token);
+                if (res instanceof ModelAndView) {
+                    return freeMarkerEngine.render((ModelAndView)res);
+                } else {
+                    return res;
+                }
             } else {
                 Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()));
                 throw new SessionExpiredException();
@@ -68,16 +64,8 @@ public abstract class Routes {
         }
     }
 
-    public static void authenticatedGet(String path, AuthenticatedViewRoute route, TemplateEngine engine) {
-        get(path, route, engine);
-    }
-
     public static void authenticatedGet(String path, AuthenticatedRoute route) {
         get(path, route);
-    }
-
-    public static void authenticatedPost(String path, AuthenticatedViewRoute route, TemplateEngine engine) {
-        post(path, route, engine);
     }
 
     public static void authenticatedPost(String path, AuthenticatedRoute route) {
@@ -101,6 +89,7 @@ public abstract class Routes {
         freeMarkerConfiguration.setClassForTemplateLoading(Routes.class, "/freemarker");
         new AuthenticationRoutes().routes();
         new ExceptionRoutes().routes();
+        new SettingsRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();

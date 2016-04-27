@@ -41,7 +41,7 @@ public class AuthenticationHandler {
     }
 
     public static void logout(User user, Token token) {
-        
+
     }
 
     public static void send2FACode(User user) throws CouldNotLoadPhoneNumberException, IOException, TwilioRestException {

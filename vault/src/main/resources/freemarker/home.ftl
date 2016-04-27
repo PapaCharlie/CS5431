@@ -15,23 +15,24 @@
 <div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
     <h4 class="storedpasswords-heading">Stored Accounts</h4>
     <div class="panel-group" id="accordion">
-        <#if empty??>
-            No stored passwords!
-        </#if>
     </div>
 </div>
 
 <script>
     $(function () {
+        var key;
+        var passwords;
         if (sessionStorage.getItem("password")) {
-            var data = ${payload};
-            if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                var key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
-                var passwords = decryptPasswords(data.passwords, key);
-                getAccordions(passwords);
-            } else {
-                console.log("Bad payload");
-            }
+            $.get("/passwords", function (payload) {
+                var data = JSON.parse(payload);
+                if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
+                    key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
+                    passwords = decryptPasswords(data.passwords, key);
+                    getAccordions(passwords);
+                } else {
+                    console.log("Bad payload");
+                }
+            });
         } else {
             document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
             window.location = "/";

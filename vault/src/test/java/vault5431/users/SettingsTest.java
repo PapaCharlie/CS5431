@@ -1,6 +1,7 @@
-package vault5431;
+package vault5431.users;
 
 import org.junit.Test;
+import vault5431.VaultTest;
 import vault5431.users.Settings;
 
 import static org.junit.Assert.*;

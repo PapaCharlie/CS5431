@@ -48,9 +48,9 @@ class GeneratorRoutes extends Routes {
                         return "{\"success\":false, \"error\":\"Number must be between 6 and 100.\"}";
                     }
                 } catch (NumberFormatException err) {
-                    return "{\"success\":false, \"error\":\"Invalid number!\"}";
+                    return invalidRequest;
                 } catch (IllegalArgumentException err) {
-                    return String.format("{\"success\":false, \"error\":\"%s\"}", err.getMessage());
+                    return String.format(invalidRequestWithError, err.getMessage());
                 }
             } else {
                 return "{\"success\":false, \"error\":\"Length field is required!\"}";

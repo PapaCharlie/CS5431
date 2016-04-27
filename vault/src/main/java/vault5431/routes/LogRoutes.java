@@ -28,7 +28,7 @@ class LogRoutes extends Routes {
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
 
-        }, freeMarkerEngine);
+        });
 
     }
 
