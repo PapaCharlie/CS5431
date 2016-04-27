@@ -22,7 +22,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 /**
  * Created by cyj on 4/9/16.
  */
-class AuthMessageManager {
+class TwoFactorAuthHandler {
 
     private static final int MAX_2FA_ATTEMPTS = 10;
 
@@ -47,7 +47,7 @@ class AuthMessageManager {
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
 
-            if (true) { // set to false for testing
+            if (false) { // set to false for testing
                 msgFactory.create(params);
                 addToManager(user, auth);
             } else {
