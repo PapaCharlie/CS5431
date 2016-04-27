@@ -6,7 +6,7 @@
 
 <#macro display_page>
 <!DOCTYPE html>
-<html lang="en" ng-app="vault">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Vault5431</title>
@@ -14,7 +14,6 @@
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="/bootstrap.min.js"></script>
     <script type="text/javascript" src="/sjcl.js"></script>
-    <#--<script type="text/javascript" src="/cryptico.min.js"></script>-->
     <script type="text/javascript" src="/clipboard.min.js"></script>
     <script type="text/javascript" src="/home.js"></script>
     <script type="text/javascript" src="/crypto.js"></script>
@@ -26,7 +25,7 @@
     <ul class="nav nav-sidebar">
         <li><a href="/home">Vault</a></li>
         <li><a href="/generator">Password Generator</a></li>
-    <#--<li><a href="">Settings</a></li>-->
+        <li><a href="/settings">Settings</a></li>
         <li><a href="/userlog">User Log</a></li>
         <li><a href="" id="logout" onclick="logout()">Logout</a></li>
     </ul>
@@ -38,10 +37,9 @@
 </div>
     <@page_body/>
 <script>
-    function logout () {
-        document.cookie = "token=;expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    function logout() {
         sessionStorage.removeItem("password");
-        window.location = "/";
+        window.location = "/logout";
     }
 </script>
 </body>

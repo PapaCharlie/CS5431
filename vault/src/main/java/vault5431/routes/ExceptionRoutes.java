@@ -2,10 +2,7 @@ package vault5431.routes;
 
 import spark.ModelAndView;
 import spark.Response;
-import vault5431.auth.exceptions.CouldNotParseTokenException;
-import vault5431.auth.exceptions.InvalidTokenException;
-import vault5431.auth.exceptions.TooMany2FAAttemptsException;
-import vault5431.auth.exceptions.TooManyFailedLogins;
+import vault5431.auth.exceptions.*;
 import vault5431.routes.exceptions.SessionExpiredException;
 
 import java.util.HashMap;
@@ -42,6 +39,10 @@ public class ExceptionRoutes extends Routes {
 
         exception(TooManyFailedLogins.class, (e, req, res) -> {
             renderFatalError("Suspicious activity has been observed on your account, and no further logins will be accepted. Try again later.", res);
+        });
+
+        exception(TooManyConcurrentSessionsException.class, (e, req, res) -> {
+            renderFatalError("You are logged from too many places. Please log out of other devices before using this one.", res);
         });
 
         exception(TooMany2FAAttemptsException.class, (e, req, res) -> {

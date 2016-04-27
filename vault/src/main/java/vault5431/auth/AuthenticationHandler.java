@@ -32,11 +32,34 @@ public class AuthenticationHandler {
     private static final HashSet<User> bannedUsers = new HashSet<>();
 
     public static Token parseFromCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
-        return Token.parseCookie(cookie.trim(), ip);
+        Token token = Token.parseCookie(cookie.trim(), ip);
+        if (token != null && tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
+            return token;
+        } else {
+            return null;
+        }
+    }
+
+    public static void logout(User user, Token token) {
+        
     }
 
     public static void send2FACode(User user) throws CouldNotLoadPhoneNumberException, IOException, TwilioRestException {
-        AuthMessageManager.sendAuthMessage(user);
+        TwoFactorAuthHandler.sendAuthMessage(user);
+    }
+
+    private static void banUser(User user, String ip) {
+        synchronized (tokenCache) {
+            bannedUsers.add(user);
+            Sys.warning("Banned.", user, ip);
+            scheduler.schedule(() -> {
+                synchronized (tokenCache) {
+                    Sys.info("Unbanned.", user);
+                    bannedUsers.remove(user);
+                    failedLogins.remove(user);
+                }
+            }, BAN_LENGTH, SECONDS);
+        }
     }
 
     public static Token acquireUnverifiedToken(User user, Base64String password, String ip)
@@ -47,15 +70,7 @@ public class AuthenticationHandler {
                     failedLogins.put(user, 0);
                 }
                 if (failedLogins.get(user) > MAX_FAILED_LOGINS) {
-                    bannedUsers.add(user);
-                    Sys.warning("Banned.", user, ip);
-                    scheduler.schedule(() -> {
-                        synchronized (tokenCache) {
-                            Sys.info("Unbanned.", user);
-                            bannedUsers.remove(user);
-                            failedLogins.remove(user);
-                        }
-                    }, BAN_LENGTH, SECONDS);
+                    banUser(user, ip);
                     throw new TooManyFailedLogins();
                 }
                 if (user.verifyPassword(password)) {
@@ -90,10 +105,15 @@ public class AuthenticationHandler {
     public static Token acquireVerifiedToken(Token token, int twoFACode) throws InvalidTokenException, TooMany2FAAttemptsException {
         synchronized (tokenCache) {
             if (tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
-                if (AuthMessageManager.verifyAuthMessage(token.getUser(), twoFACode)) {
-                    return token.verify();
-                } else {
-                    return null;
+                try {
+                    if (TwoFactorAuthHandler.verifyAuthMessage(token.getUser(), twoFACode)) {
+                        return token.verify();
+                    } else {
+                        return null;
+                    }
+                } catch (TooMany2FAAttemptsException err) {
+                    banUser(token.getUser(), token.getIp());
+                    throw err;
                 }
             } else {
                 throw new InvalidTokenException();

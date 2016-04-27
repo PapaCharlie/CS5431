@@ -52,8 +52,8 @@ submission:
 assembly:
 	cp $(MAIN) $(MAIN).bak
 	sed -i "s#port(5431);#port(443);#g" $(MAIN)
-	sed -i 's#secure("./keystore.jks", "vault5431", null, null);#secure("./keystore.jks", new String(System.console().readPassword("Please enter the SSL certificate password:")), "./truststore.jks", new String(System.console().readPassword("Please enter the truststore password:")));#g' $(MAIN)
-	sed -i 's#String adminPassword = "debug";#String adminPassword = new String(System.console().readPassword());#g' $(MAIN)
+	sed -i 's#secure("./keystore.jks", "vault5431", null, null);#secure("./keystore.jks", new String(System.console().readPassword("Please enter the SSL certificate password: ")), "./truststore.jks", new String(System.console().readPassword("Please enter the truststore password: ")));#g' $(MAIN)
+	sed -i 's#String adminPassword = "debug";#String adminPassword = new String(System.console().readPassword("Please enter the admin password: "));#g' $(MAIN)
 	"$(SBT)" "assembly"
 	mv $(MAIN).bak $(MAIN)
 
