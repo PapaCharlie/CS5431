@@ -1,20 +1,13 @@
 package vault5431.routes;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 import spark.ModelAndView;
-import vault5431.Password;
-import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
+import vault5431.users.Password;
 import vault5431.users.Settings;
-import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
-
-import static spark.Spark.get;
 
 /**
  * Created by papacharlie on 2016-04-27.
@@ -89,6 +82,9 @@ public class SettingsRoutes extends Routes {
             String reEncryptedPasswords = req.queryParams("reEncryptedPasswords");
             if (!provided(oldPassword, newPassword1, newPassword2, reEncryptedPasswords)) {
                 return allFieldsRequired;
+            }
+            if (!(Base64String.isValidBase64Data(newPassword1) && Base64String.isValidBase64Data(newPassword2) && Base64String.isValidBase64Data(oldPassword))) {
+                return invalidRequest;
             }
             if (!newPassword1.equals(newPassword2)) {
                 return String.format(invalidRequestWithError, "New passwords must be equal.");

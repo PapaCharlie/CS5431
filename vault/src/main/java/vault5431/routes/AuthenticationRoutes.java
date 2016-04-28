@@ -1,5 +1,6 @@
 package vault5431.routes;
 
+import com.twilio.sdk.TwilioRestException;
 import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
@@ -43,6 +44,10 @@ class AuthenticationRoutes extends Routes {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "login.ftl");
             }
+            if (!Base64String.isValidBase64Data(password)) {
+                attributes.put("erro", "Invalid password");
+                return new ModelAndView(attributes, "login.ftl");
+            }
             if (UserManager.userExists(username)) {
                 User user = UserManager.getUser(username);
                 Token token = AuthenticationHandler.acquireUnverifiedToken(user, Base64String.fromBase64(password), req.ip());
@@ -67,11 +72,17 @@ class AuthenticationRoutes extends Routes {
 
         get("/twofactor", (req, res) -> {
             Token token = validateToken(req);
+            Map<String, Object> attributes = new HashMap<>();
             if (token != null) {
                 if (!token.isVerified()) {
-                    AuthenticationHandler.send2FACode(token.getUser());
+                    try {
+                        AuthenticationHandler.send2FACode(token.getUser());
+                    } catch (TwilioRestException err) {
+                        err.printStackTrace();
+                        attributes.put("error", "The number you gave in at registration was invalid.");
+                        return new ModelAndView(attributes, "twofactor.ftl");
+                    }
                     Sys.debug("Received GET to /twofactor", req.ip());
-                    Map<String, Object> attributes = new HashMap<>();
                     return new ModelAndView(attributes, "twofactor.ftl");
                 } else {
                     res.redirect("/home");
@@ -142,6 +153,10 @@ class AuthenticationRoutes extends Routes {
             if (!provided(username, password, phoneNumnber)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
+            }
+            if (!Base64String.isValidBase64Data(password)) {
+                attributes.put("erro", "Invalid password");
+                return new ModelAndView(attributes, "login.ftl");
             }
             if (!UserManager.userExists(username)) {
                 try {

@@ -2,7 +2,6 @@ package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
-import vault5431.Password;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;

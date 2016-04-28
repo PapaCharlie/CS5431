@@ -1,5 +1,6 @@
 package vault5431.users;
 
+import org.apache.commons.io.FileUtils;
 import vault5431.Sys;
 import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
@@ -7,8 +8,6 @@ import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;

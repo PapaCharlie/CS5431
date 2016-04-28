@@ -1,4 +1,4 @@
-package vault5431;
+package vault5431.users;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +13,7 @@ import java.util.UUID;
 public class Password {
 
     // Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
-    public static final int MAX_ENCRYPTED_LENGTH = 750;
+    protected static final int MAX_ENCRYPTED_LENGTH = 750;
 
     private JSONObject name;
     private JSONObject url;
@@ -76,34 +76,10 @@ public class Password {
     }
 
     /**
-     * @return The JSON representation of the Password.
-     */
-    public JSONObject toJSONObject() {
-        JSONObject json = new JSONObject();
-        json.put("name", name);
-        json.put("url", url);
-        json.put("username", username);
-        json.put("password", password);
-        json.put("id", id.toString());
-        return json;
-    }
-
-    public String toJSON() {
-        return toJSONObject().toString();
-    }
-
-    /**
-     * @return The Password's unique ID.
-     */
-    public UUID getID() {
-        return id;
-    }
-
-    /**
      * Parses a JSON object ideally created by #toJSONObject, otherwise simply requires all fields be present in the object.
      *
-     * @param json JSONObject representing the
-     * @return Password instance parse from JSON.
+     * @param json JSONObject representing the Password
+     * @return Password instance parsed from JSON.
      * @throws IllegalArgumentException Thrown by Password constructor or if JSON object does not contain all required
      *                                  fields.
      */
@@ -129,7 +105,7 @@ public class Password {
         }
     }
 
-    public static Password fromJSON(Base64String json) throws IllegalArgumentException {
+    public static Password fromJSON(Base64String json) {
         return fromJSON(json.decodeString());
     }
 
@@ -145,6 +121,30 @@ public class Password {
         }
     }
 
+    /**
+     * @return The JSON representation of the Password.
+     */
+    public JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        json.put("name", name);
+        json.put("url", url);
+        json.put("username", username);
+        json.put("password", password);
+        json.put("id", id.toString());
+        return json;
+    }
+
+    public String toJSON() {
+        return toJSONObject().toString();
+    }
+
+    /**
+     * @return The Password's unique ID.
+     */
+    public UUID getID() {
+        return id;
+    }
+
     public int hashCode() {
         return id.hashCode();
     }
@@ -152,11 +152,11 @@ public class Password {
     public boolean equals(Object object) {
         if (object instanceof Password) {
             Password other = (Password) object;
-            return name.equals(other.name) &&
-                    url.equals(other.url) &&
-                    username.equals(other.username) &&
-                    password.equals(other.password) &&
-                    id.equals(other.id);
+            return name.equals(other.name)
+                    && url.equals(other.url)
+                    && username.equals(other.username)
+                    && password.equals(other.password)
+                    && id.equals(other.id);
         } else {
             return false;
         }
