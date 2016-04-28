@@ -17,7 +17,7 @@ import static spark.Spark.*;
 
 public class Vault {
 
-    protected static final class AdminKeys {
+    private static final class AdminKeys {
         protected final SecretKey encryptionKey;
         protected final SecretKey signingKey;
 
@@ -33,15 +33,17 @@ public class Vault {
     private static final String demoPassword = "password";
     private static final String demoPhonenumber = "+16109455656";
     private static final AdminKeys adminKeys = readAdminKeys();
-    private static final User demoUser = loadDemoUser();
     private static boolean initialized = false;
 
+    /**
+     * Prompts SysAdmin at startup to enter the admin password. It then derives the admin signing and encryption.
+     * @return The set of AdminKeys
+     */
     private static AdminKeys readAdminKeys() {
         initialize();
         AdminKeys keys = null;
         try {
             byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
-            System.out.print("Please enter the admin password: ");
             // This line changed at deploy time to prompt SysAdmin for admin password
             String adminPassword = "debug";
             SecretKey adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
@@ -55,21 +57,9 @@ public class Vault {
         return keys;
     }
 
-    private static User loadDemoUser() {
-        initialize();
-        if (!UserManager.userExists(demoUsername)) {
-            try {
-                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword), demoPhonenumber);
-            } catch (Exception err) {
-                err.printStackTrace();
-                System.err.println("Could not create demo user!");
-                System.exit(1);
-            }
-        }
-        return UserManager.getUser(demoUsername);
-    }
-
-
+    /**
+     * Creates ~/.vault5431 directory and starts the user manager.
+     */
     private synchronized static void initialize() {
         if(initialized) {
             return;
@@ -115,16 +105,18 @@ public class Vault {
         UserManager.initialize();
     }
 
-    public static User getDemoUser() {
-        return demoUser;
-    }
-
-    public static SecretKey getAdminSigningKey() {
-        return adminKeys.signingKey;
-    }
-
+    /**
+     * Returns the admin signing key derived from the SysAdmin password.
+     */
     public static SecretKey getAdminEncryptionKey() {
         return adminKeys.encryptionKey;
+    }
+
+    /**
+     * Returns the admin encryption key derived from the SysAdmin password.
+     */
+    public static SecretKey getAdminSigningKey() {
+        return adminKeys.signingKey;
     }
 
     public static void main(String[] args) throws Exception {

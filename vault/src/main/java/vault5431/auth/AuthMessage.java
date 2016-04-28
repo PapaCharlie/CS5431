@@ -1,4 +1,4 @@
-package vault5431.twofactor;
+package vault5431.auth;
 
 import java.security.SecureRandom;
 

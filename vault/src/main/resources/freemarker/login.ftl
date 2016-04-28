@@ -29,10 +29,9 @@
         sessionStorage.removeItem("password");
         $("#loginForm").submit(function (event) {
             $passwordField = $('#password');
-            var hashedPassword = sjcl.hash.sha256.hash(sjcl.codec.utf8String.toBits($passwordField.val()));
-            sessionStorage.setItem("password", sjcl.codec.base64url.fromBits(hashedPassword));
-            var hash = sjcl.hash.sha256.hash(hashedPassword);
-            $passwordField.val(sjcl.codec.base64url.fromBits(hash));
+            var hashedPassword = hash(toBits($passwordField.val()));
+            sessionStorage.setItem("password", fromBits(hashedPassword));
+            $passwordField.val(fromBits(hash("auth" + $passwordField.val())));
         });
     });
 </script>

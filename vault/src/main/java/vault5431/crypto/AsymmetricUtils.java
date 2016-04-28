@@ -7,7 +7,6 @@ import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
 import java.io.File;
 import java.io.IOException;
 import java.security.*;

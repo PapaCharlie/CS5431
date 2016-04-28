@@ -2,18 +2,15 @@ package vault5431.routes;
 
 import spark.ModelAndView;
 import vault5431.Sys;
-import vault5431.auth.RollingKeys;
+import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
 import vault5431.io.Base64String;
-import vault5431.twofactor.AuthMessageManager;
+import vault5431.users.User;
 import vault5431.users.UserManager;
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.jar.Pack200;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -42,40 +39,37 @@ class AuthenticationRoutes extends Routes {
             Map<String, Object> attributes = new HashMap<>();
             String username = req.queryParams("username");
             String password = req.queryParams("password");
-            if (username != null
-                    && username.length() > 0
-                    && password != null
-                    && password.length() > 0) {
-                if (UserManager.userExists(username)
-                        && UserManager.getUser(username).verifyPassword(Base64String.fromBase64(password))) {
-                    Token token = new Token(UserManager.getUser(username), false);
+            if (!provided(username, password)) {
+                attributes.put("error", "All fields are required!");
+                return new ModelAndView(attributes, "login.ftl");
+            }
+            if (UserManager.userExists(username)) {
+                User user = UserManager.getUser(username);
+                Token token = AuthenticationHandler.acquireUnverifiedToken(user, Base64String.fromBase64(password), req.ip());
+                if (token != null) {
                     res.cookie(
                             "token",
                             token.toCookie(),
-                            (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
+                            token.secondsUntilExpiration(),
                             true
                     );
                     res.redirect("/twofactor");
                     return emptyPage;
                 } else {
-                    Sys.debug("Failed login attempt.", req.ip());
-                    String errorMessage = "This username/password combination does not exist!";
-                    attributes.put("error", errorMessage);
-                    return new ModelAndView(attributes, "login.ftl");
+                    user.warning("Failed password verification attempt.", req.ip());
                 }
-            } else {
-                Sys.debug("Failed login attempt.", req.ip());
-                String errorMessage = "This username/password combination does not exist!";
-                attributes.put("error", errorMessage);
-                return new ModelAndView(attributes, "login.ftl");
             }
+            Sys.debug("Failed login attempt.", req.ip());
+            String errorMessage = "This username/password combination does not exist!";
+            attributes.put("error", errorMessage);
+            return new ModelAndView(attributes, "login.ftl");
         }, freeMarkerEngine);
 
         get("/twofactor", (req, res) -> {
             Token token = validateToken(req);
             if (token != null) {
                 if (!token.isVerified()) {
-                    AuthMessageManager.sendAuthMessage(token.getUser());
+                    AuthenticationHandler.send2FACode(token.getUser());
                     Sys.debug("Received GET to /twofactor", req.ip());
                     Map<String, Object> attributes = new HashMap<>();
                     return new ModelAndView(attributes, "twofactor.ftl");
@@ -91,37 +85,36 @@ class AuthenticationRoutes extends Routes {
 
         post("/twofactor", (req, res) -> {
             Token token = validateToken(req);
+            Map<String, Object> attributes = new HashMap<>();
             if (token != null) {
                 if (!token.isVerified()) {
                     String authCode = req.queryParams("authCode");
-                    if (authCode != null && authCode.length() > 0) {
-                        try {
-                            int code = Integer.parseInt(authCode);
-                            if (AuthMessageManager.verifyAuthMessage(token.getUser(), code)) {
-                                Sys.debug("Two factor auth succesful!", token.getUser(), token.getIp());
-                                token.getUser().info("Succesful login.", token.getIp());
-                                res.cookie(
-                                        "token",
-                                        token.verify().toCookie(),
-                                        (int) LocalDateTime.now().until(RollingKeys.getEndOfCurrentWindow(), SECONDS),
-                                        true
-                                );
-                                res.redirect("/home");
-                                return emptyPage;
-                            } else {
-                                res.removeCookie("token");
-                                res.redirect("/");
-                                return emptyPage;
-                            }
-                        } catch (NumberFormatException err) {
-                            err.printStackTrace();
-                            Map<String, Object> attributes = new HashMap<>();
-                            attributes.put("error", "Code must be a number!");
+                    if (!provided(authCode)) {
+                        attributes.put("error", "Code is required!");
+                        return new ModelAndView(attributes, "twofactor.ftl");
+                    }
+                    try {
+                        int code = Integer.parseInt(authCode);
+                        Token verifiedToken = AuthenticationHandler.acquireVerifiedToken(token, code);
+                        if (verifiedToken != null) {
+                            Sys.debug("Two factor auth succesful!", verifiedToken.getUser(), verifiedToken.getIp());
+                            verifiedToken.getUser().info("Succesful login.", verifiedToken.getIp());
+                            res.cookie(
+                                    "token",
+                                    verifiedToken.toCookie(),
+                                    verifiedToken.secondsUntilExpiration(),
+                                    true
+                            );
+                            res.redirect("/home");
+                            return emptyPage;
+                        } else {
+                            token.getUser().warning("Invalid two factor authentication attempt!", token.getIp());
+                            attributes.put("error", "This isn't the right code!");
                             return new ModelAndView(attributes, "twofactor.ftl");
                         }
-                    } else {
-                        Map<String, Object> attributes = new HashMap<>();
-                        attributes.put("error", "Code is required!");
+                    } catch (NumberFormatException err) {
+                        err.printStackTrace();
+                        attributes.put("error", "Code must be a number!");
                         return new ModelAndView(attributes, "twofactor.ftl");
                     }
                 } else {
@@ -146,33 +139,33 @@ class AuthenticationRoutes extends Routes {
             String username = req.queryParams("username");
             String password = req.queryParams("password");
             String phoneNumnber = req.queryParams("phoneNumber");
-            if (username != null
-                    && username.length() > 0
-                    && password != null
-                    && password.length() > 0
-                    && phoneNumnber != null
-                    && phoneNumnber.length() > 0) {
-                if (!UserManager.userExists(username)) {
-                    try {
-                        UserManager.create(username, Base64String.fromBase64(password), phoneNumnber);
-                    } catch (Exception err) {
-                        err.printStackTrace();
-                        System.err.println("Could not create user!");
-                        System.exit(1);
-                    }
-                    res.redirect("/");
-                    return emptyPage;
-                } else {
-                    attributes.put("error", "This username is already taken!");
-                    return new ModelAndView(attributes, "register.ftl");
-                }
-            } else {
+            if (!provided(username, password, phoneNumnber)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
             }
+            if (!UserManager.userExists(username)) {
+                try {
+                    UserManager.create(username, Base64String.fromBase64(password), phoneNumnber);
+                } catch (IllegalArgumentException err) {
+                    err.printStackTrace();
+                    attributes.put("error", "Invalid password!");
+                    return new ModelAndView(attributes, "register.ftl");
+                } catch (Exception err) {
+                    err.printStackTrace();
+                    System.err.println("Could not create user!");
+                    System.exit(1);
+                }
+                res.redirect("/");
+                return emptyPage;
+            } else {
+                attributes.put("error", "This username is already taken!");
+                return new ModelAndView(attributes, "register.ftl");
+            }
+
         }, freeMarkerEngine);
 
-        get("/logout", (req, res) -> {
+        authenticatedGet("/logout", (req, res, token) -> {
+            AuthenticationHandler.logout(token);
             res.removeCookie("token");
             res.redirect("/");
             return emptyPage;
@@ -181,9 +174,7 @@ class AuthenticationRoutes extends Routes {
         get("/unauthorized", (req, res) -> {
             Sys.debug("Displaying unauthorized page.", req.ip());
             res.status(401);
-            if (req.cookie("token") != null && req.cookie("token").length() > 0) {
-                res.removeCookie("token");
-            }
+            res.removeCookie("token");
             Map<String, Object> attributes = new HashMap<>();
             return new ModelAndView(attributes, "unauthorized.ftl");
         }, freeMarkerEngine);
