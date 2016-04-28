@@ -1,5 +1,6 @@
 package vault5431.routes;
 
+import com.twilio.sdk.TwilioRestException;
 import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
@@ -71,11 +72,17 @@ class AuthenticationRoutes extends Routes {
 
         get("/twofactor", (req, res) -> {
             Token token = validateToken(req);
+            Map<String, Object> attributes = new HashMap<>();
             if (token != null) {
                 if (!token.isVerified()) {
-                    AuthenticationHandler.send2FACode(token.getUser());
+                    try {
+                        AuthenticationHandler.send2FACode(token.getUser());
+                    } catch (TwilioRestException err) {
+                        err.printStackTrace();
+                        attributes.put("error", "The number you gave in at registration was invalid.");
+                        return new ModelAndView(attributes, "twofactor.ftl");
+                    }
                     Sys.debug("Received GET to /twofactor", req.ip());
-                    Map<String, Object> attributes = new HashMap<>();
                     return new ModelAndView(attributes, "twofactor.ftl");
                 } else {
                     res.redirect("/home");

@@ -42,7 +42,11 @@
             e.preventDefault();
             sessionStorage.removeItem("password");
             window.location.href = "/logout";
-        })
+        });
+
+        if (!sessionStorage.getItem("password")) {
+            window.location.href = "/logout";
+        }
     });
 </script>
 </body>
