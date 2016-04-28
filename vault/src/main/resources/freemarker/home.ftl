@@ -30,6 +30,35 @@
                     passwords = decryptPasswords(key, data.passwords);
                     getAccordions(passwords);
 
+                    $('[data-toggle="tooltip"]').tooltip();
+                    $('.copy').each(function (index) {
+                        var $copy = $(this);
+                        var c = new Clipboard(this, {
+                            target: function (trigger) {
+                                var v = document.createElement("input");
+                                v.className = "temp";
+                                v.value = trigger.previousElementSibling.value;
+                                $("div.panel").append(v);
+                                return v;
+                            }
+                        });
+
+                        c.on('success', function (e) {
+                            $("input").remove(".temp");
+                            $copy.on("click", function (e) {
+                                e.preventDefault();
+                                $(this).tooltip("show");
+                            });
+                            $copy.mouseout(function (e) {
+                                e.preventDefault();
+                                $copy.tooltip("destroy");
+                            });
+                            console.info('Action:', e.action);
+                            console.info('Text:', e.text);
+                            console.info('Trigger:', e.trigger);
+                        });
+                    });
+
                     $(".changePasswordForm").on('submit', function (event) {
                         event.preventDefault();
                         console.log("hmm?{");
@@ -91,34 +120,8 @@
             }).done(defaultErrorHandler);
         });
 
-        $('[data-toggle="tooltip"]').tooltip();
-        $('.copy').each(function (index) {
-            var $copy = $(this);
-            var c = new Clipboard(this, {
-                target: function (trigger) {
-                    var v = document.createElement("input");
-                    v.className = "temp"
-                    v.value = trigger.previousElementSibling.value;
-                    $("div.panel").append(v);
-                    return v;
-                }
-            });
 
-            c.on('success', function (e) {
-                $("input").remove(".temp");
-                $copy.on("click", function (e) {
-                    e.preventDefault();
-                    $(this).tooltip("show");
-                });
-                $copy.mouseout(function (e) {
-                    e.preventDefault();
-                    $copy.tooltip("destroy");
-                });
-                console.info('Action:', e.action);
-                console.info('Text:', e.text);
-                console.info('Trigger:', e.trigger);
-            });
-        });
+
     });
 
 
