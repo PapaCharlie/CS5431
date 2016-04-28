@@ -6,10 +6,20 @@ $(document).ready(function () {
 
             var rex = new RegExp($(this).val(), 'i');
             $('.filterable').hide();
+            $('.search').each(function(i, obj){
+                if(rex.test($(this).text())) {
+                    //console.log(rex.test($(this).text()));
+                    $(this).parent().show();
+                }
+
+            })
+
+           /*
+            $('.filterable').hide();
             $('.filterable').filter(function () {
                 return rex.test($(this).text());
             }).show();
-
+           */
         })
 
     }(jQuery));
