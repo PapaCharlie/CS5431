@@ -32,8 +32,33 @@ public class UserLogEntry extends LogEntry {
     }
 
     /**
+     * @param entry is a CSV record representation of a SystemLogEntry
+     * @return a SystemLogEntry with the relevant information from the CSV string
+     */
+    public static UserLogEntry fromCSV(CSVRecord entry) {
+        return new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+    }
+
+    /**
+     * @param entries is a CSVParser containing multiple CSVRecords, each of which represents
+     *                a SystemLogEntry
+     * @return Array of SystemLogEntries derived from the CSVParser
+     * @throws IOException
+     */
+    public static UserLogEntry[] fromCSV(CSVParser entries) throws IOException {
+        List<CSVRecord> records = entries.getRecords();
+        UserLogEntry[] parsedEntries = new UserLogEntry[records.size()];
+        for (int i = 0; i < parsedEntries.length; i++) {
+            CSVRecord entry = records.get(i);
+            parsedEntries[i] = new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+        }
+        return parsedEntries;
+    }
+
+    /**
      * Checks the signature of a log to ensure that the log entry is written by the
      * system and not an outsider user/attacker
+     *
      * @param signature
      * @return true if there if signatures match, false otherwise.
      */
@@ -66,31 +91,6 @@ public class UserLogEntry extends LogEntry {
      */
     public String toCSV() throws IOException {
         return CSVUtils.makeRecord(logType, ip, affectedUser, timestamp, message, signature);
-    }
-
-    /**
-     * @param entry is a CSV record representation of a SystemLogEntry
-     * @return a SystemLogEntry with the relevant information from the CSV string
-     */
-    public static UserLogEntry fromCSV(CSVRecord entry) {
-        return new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
-    }
-
-    /**
-     *
-     * @param entries is a CSVParser containing multiple CSVRecords, each of which represents
-     *                a SystemLogEntry
-     * @return Array of SystemLogEntries derived from the CSVParser
-     * @throws IOException
-     */
-    public static UserLogEntry[] fromCSV(CSVParser entries) throws IOException {
-        List<CSVRecord> records = entries.getRecords();
-        UserLogEntry[] parsedEntries = new UserLogEntry[records.size()];
-        for (int i = 0; i < parsedEntries.length; i++) {
-            CSVRecord entry = records.get(i);
-            parsedEntries[i] = new UserLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
-        }
-        return parsedEntries;
     }
 
     /**

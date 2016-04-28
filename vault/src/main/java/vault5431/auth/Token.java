@@ -85,6 +85,35 @@ public class Token {
         return (username.toString() + creationDate.toString() + expiresAt.toString() + id.toString() + verified).getBytes();
     }
 
+    protected static Token parseCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
+        return parseCookie(cookie, Sys.NO_IP);
+    }
+
+    /**
+     * Parse a cookie given by the client.
+     *
+     * @param cookie raw cookie from request
+     * @param ip     ip that presented this token
+     * @return the parsed token
+     * @throws CouldNotParseTokenException if the token cannot be parsed
+     * @throws InvalidTokenException       if the signature does not match or if the current time is outside
+     *                                     the token's validity window
+     */
+    protected static Token parseCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
+        try {
+            CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
+            Base64String username = Base64String.fromBase64(record.get(0));
+            LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
+            LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
+            UUID id = UUID.fromString(record.get(3));
+            boolean verified = record.get(4).trim().equals("true");
+            Base64String signature = Base64String.fromBase64(record.get(5));
+            return new Token(username, creationDate, expiresAt, id, verified, signature, ip);
+        } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException err) {
+            throw new CouldNotParseTokenException();
+        }
+    }
+
     public User getUser() {
         return UserManager.getUser(this.username);
     }
@@ -119,35 +148,6 @@ public class Token {
                 username, creationDate, expiresAt, id, true,
                 RollingKeys.sign(toSignatureBody(username, creationDate, expiresAt, id, true)),
                 this.ip);
-    }
-
-    protected static Token parseCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
-        return parseCookie(cookie, Sys.NO_IP);
-    }
-
-    /**
-     * Parse a cookie given by the client.
-     *
-     * @param cookie raw cookie from request
-     * @param ip     ip that presented this token
-     * @return the parsed token
-     * @throws CouldNotParseTokenException if the token cannot be parsed
-     * @throws InvalidTokenException       if the signature does not match or if the current time is outside
-     *                                     the token's validity window
-     */
-    protected static Token parseCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
-        try {
-            CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
-            Base64String username = Base64String.fromBase64(record.get(0));
-            LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
-            LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
-            UUID id = UUID.fromString(record.get(3));
-            boolean verified = record.get(4).trim().equals("true");
-            Base64String signature = Base64String.fromBase64(record.get(5));
-            return new Token(username, creationDate, expiresAt, id, verified, signature, ip);
-        } catch (IOException | IndexOutOfBoundsException | DateTimeParseException | IllegalArgumentException err) {
-            throw new CouldNotParseTokenException();
-        }
     }
 
     /**

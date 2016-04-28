@@ -43,6 +43,10 @@ class AuthenticationRoutes extends Routes {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "login.ftl");
             }
+            if (!Base64String.isValidBase64Data(password)) {
+                attributes.put("erro", "Invalid password");
+                return new ModelAndView(attributes, "login.ftl");
+            }
             if (UserManager.userExists(username)) {
                 User user = UserManager.getUser(username);
                 Token token = AuthenticationHandler.acquireUnverifiedToken(user, Base64String.fromBase64(password), req.ip());
@@ -142,6 +146,10 @@ class AuthenticationRoutes extends Routes {
             if (!provided(username, password, phoneNumnber)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
+            }
+            if (!Base64String.isValidBase64Data(password)) {
+                attributes.put("erro", "Invalid password");
+                return new ModelAndView(attributes, "login.ftl");
             }
             if (!UserManager.userExists(username)) {
                 try {

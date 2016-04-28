@@ -24,6 +24,7 @@ public class PasswordGenerator {
     private static final String SYMBOLS = "!@#$%^&*()-_+={}[]<>?";
 
     private static final HashMap<String, String> PRECEDENCE_MAP = new HashMap<>();
+    private static final String[] SYLLABLES = PRECEDENCE_MAP.keySet().toArray(new String[PRECEDENCE_MAP.keySet().size()]);
 
     static {
         // Read the adjacency list from the resource directory.
@@ -40,8 +41,6 @@ public class PasswordGenerator {
             System.exit(1);
         }
     }
-
-    private static final String[] SYLLABLES = PRECEDENCE_MAP.keySet().toArray(new String[PRECEDENCE_MAP.keySet().size()]);
 
     private static String randomChar(String s) {
         return Character.toString(s.charAt(random.nextInt(s.length())));

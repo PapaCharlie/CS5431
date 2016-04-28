@@ -37,39 +37,8 @@ public class Settings {
         this(5, 60);
     }
 
-    public int getConcurrentSessions() {
-        return concurrentSessions;
-    }
-
-    public int getSessionLength() {
-        return sessionLength;
-    }
-
-    public Settings withConcurrentSessions(int concurrentSessions) throws IllegalArgumentException {
-        return new Settings(concurrentSessions, this.sessionLength); // Let constructor validate fields
-    }
-
-    public Settings withSessionLength(int sessionLength) throws IllegalArgumentException {
-        return new Settings(this.concurrentSessions, sessionLength); // Let constructor validate fields
-    }
-
-    protected void saveToFile(File settingsFile) throws IOException, BadCiphertextException {
-        FileUtils.write(settingsFile, SymmetricUtils.encrypt(toJson().getBytes(), getAdminEncryptionKey()));
-    }
-
     protected static Settings loadFromFile(File settingsFile) throws IOException, IllegalArgumentException, BadCiphertextException {
         return fromJSON(new String(SymmetricUtils.decrypt(FileUtils.read(settingsFile)[0], getAdminEncryptionKey())));
-    }
-
-    public JSONObject toJSONObject() {
-        JSONObject json = new JSONObject();
-        json.put("concurrentSessions", concurrentSessions);
-        json.put("sessionLength", sessionLength);
-        return json;
-    }
-
-    public String toJson() {
-        return toJSONObject().toString();
     }
 
     public static Settings fromJSON(JSONObject json) throws IllegalArgumentException {
@@ -97,6 +66,37 @@ public class Settings {
 
     public static Settings fromJSON(Base64String json) throws IllegalArgumentException {
         return fromJSON(json.decodeString());
+    }
+
+    public int getConcurrentSessions() {
+        return concurrentSessions;
+    }
+
+    public int getSessionLength() {
+        return sessionLength;
+    }
+
+    public Settings withConcurrentSessions(int concurrentSessions) throws IllegalArgumentException {
+        return new Settings(concurrentSessions, this.sessionLength); // Let constructor validate fields
+    }
+
+    public Settings withSessionLength(int sessionLength) throws IllegalArgumentException {
+        return new Settings(this.concurrentSessions, sessionLength); // Let constructor validate fields
+    }
+
+    protected void saveToFile(File settingsFile) throws IOException, BadCiphertextException {
+        FileUtils.write(settingsFile, SymmetricUtils.encrypt(toJson().getBytes(), getAdminEncryptionKey()));
+    }
+
+    public JSONObject toJSONObject() {
+        JSONObject json = new JSONObject();
+        json.put("concurrentSessions", concurrentSessions);
+        json.put("sessionLength", sessionLength);
+        return json;
+    }
+
+    public String toJson() {
+        return toJSONObject().toString();
     }
 
 }

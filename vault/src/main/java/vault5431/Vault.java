@@ -4,7 +4,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
-import vault5431.users.User;
 import vault5431.users.UserManager;
 
 import javax.crypto.SecretKey;
@@ -17,26 +16,17 @@ import static spark.Spark.*;
 
 public class Vault {
 
-    private static final class AdminKeys {
-        protected final SecretKey encryptionKey;
-        protected final SecretKey signingKey;
-
-        protected AdminKeys(SecretKey encryptionKey, SecretKey signingKey) {
-            this.encryptionKey = encryptionKey;
-            this.signingKey = signingKey;
-        }
-    }
-
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     private static final File adminSaltFile = new File(home, "admin.salt");
     private static final String demoUsername = "demoUser";
     private static final String demoPassword = "password";
     private static final String demoPhonenumber = "+16109455656";
-    private static final AdminKeys adminKeys = readAdminKeys();
     private static boolean initialized = false;
+    private static final AdminKeys adminKeys = readAdminKeys();
 
     /**
      * Prompts SysAdmin at startup to enter the admin password. It then derives the admin signing and encryption.
+     *
      * @return The set of AdminKeys
      */
     private static AdminKeys readAdminKeys() {
@@ -61,7 +51,7 @@ public class Vault {
      * Creates ~/.vault5431 directory and starts the user manager.
      */
     private synchronized static void initialize() {
-        if(initialized) {
+        if (initialized) {
             return;
         } else {
             initialized = true;
@@ -129,6 +119,16 @@ public class Vault {
         awaitInitialization();
 
         System.out.println("Hosting at: https://localhost:5431");
+    }
+
+    private static final class AdminKeys {
+        protected final SecretKey encryptionKey;
+        protected final SecretKey signingKey;
+
+        protected AdminKeys(SecretKey encryptionKey, SecretKey signingKey) {
+            this.encryptionKey = encryptionKey;
+            this.signingKey = signingKey;
+        }
     }
 
 }

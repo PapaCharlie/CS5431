@@ -1,7 +1,10 @@
 package vault5431.routes;
 
 import freemarker.template.Configuration;
-import spark.*;
+import spark.ModelAndView;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 import spark.template.freemarker.FreeMarkerEngine;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
@@ -25,7 +28,9 @@ public abstract class Routes {
     protected static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
     protected static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
     protected static final String success = "{\"success\":true, \"error\": \"\"}";
-
+    protected static final String vault = "/vault";
+    private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
+    protected static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
     private static boolean initialized = false;
 
     protected static Token validateToken(Request req) {
@@ -41,26 +46,6 @@ public abstract class Routes {
             }
         } else {
             return null;
-        }
-    }
-
-    protected interface AuthenticatedRoute extends Route {
-        Object authenticatedHandle(Request request, Response response, Token token) throws Exception;
-
-        default Object handle(Request request, Response response) throws Exception {
-            Token token = validateToken(request);
-            if (token != null) {
-                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token.getUser(), token.getIp());
-                Object res = authenticatedHandle(request, response, token);
-                if (res instanceof ModelAndView) {
-                    return freeMarkerEngine.render((ModelAndView) res);
-                } else {
-                    return res;
-                }
-            } else {
-                Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()), request.ip());
-                throw new SessionExpiredException();
-            }
         }
     }
 
@@ -89,12 +74,6 @@ public abstract class Routes {
         return true;
     }
 
-    protected static final String vault = "/vault";
-    private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
-    protected static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
-
-    protected abstract void routes();
-
     public static void initialize() throws IOException {
         if (initialized) {
             return;
@@ -110,6 +89,28 @@ public abstract class Routes {
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();
+    }
+
+    protected abstract void routes();
+
+    protected interface AuthenticatedRoute extends Route {
+        Object authenticatedHandle(Request request, Response response, Token token) throws Exception;
+
+        default Object handle(Request request, Response response) throws Exception {
+            Token token = validateToken(request);
+            if (token != null) {
+                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token.getUser(), token.getIp());
+                Object res = authenticatedHandle(request, response, token);
+                if (res instanceof ModelAndView) {
+                    return freeMarkerEngine.render((ModelAndView) res);
+                } else {
+                    return res;
+                }
+            } else {
+                Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()), request.ip());
+                throw new SessionExpiredException();
+            }
+        }
     }
 
 }
