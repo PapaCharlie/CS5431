@@ -84,6 +84,8 @@ class AuthenticationRoutes extends Routes {
             }
         }, freeMarkerEngine);
 
+//        authenticatedPost("/changemasterpassword");
+
         post("/twofactor", (req, res) -> {
             Token token = validateToken(req);
             if (token != null) {
