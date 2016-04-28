@@ -2,7 +2,6 @@ package vault5431.routes;
 
 
 import spark.ModelAndView;
-import vault5431.Sys;
 import vault5431.logging.UserLogEntry;
 
 import java.util.ArrayList;

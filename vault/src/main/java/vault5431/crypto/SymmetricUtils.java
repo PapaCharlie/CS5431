@@ -84,10 +84,10 @@ public class SymmetricUtils {
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
             System.exit(1);
-        } catch (BadPaddingException | IllegalBlockSizeException  err) {
+        } catch (BadPaddingException | IllegalBlockSizeException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
-        }  catch (InvalidKeyException err) {
+        } catch (InvalidKeyException err) {
             Sys.error("Generated a wrong key! Requires immediate action.");
             throw new RuntimeException("Generated a wrong key!");
         }

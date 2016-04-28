@@ -18,12 +18,6 @@ public class Base64String {
 
     public Base64String(byte[] data) {
         b64String = Base64.getUrlEncoder().encodeToString(data);
-        try {
-            // Check if the data is correct b64 data.
-            decodeString();
-        } catch (Exception err) {
-            throw new IllegalArgumentException("Given data is not valid Base64 data!");
-        }
     }
 
     public static Base64String fromBase64(byte[] b64data) {
@@ -40,12 +34,12 @@ public class Base64String {
         return FileUtils.read(file);
     }
 
-    public String toString() {
-        return getB64String();
-    }
-
     public static Base64String empty() {
         return fromBase64(new byte[0]);
+    }
+
+    public String toString() {
+        return getB64String();
     }
 
     public byte[] getB64Bytes() {
@@ -57,7 +51,24 @@ public class Base64String {
     }
 
     public String decodeString() {
-        return new String(Base64.getUrlDecoder().decode(b64String));
+        return new String(decodeBytes());
+    }
+
+    public static boolean isValidBase64Data(String data) {
+        return Base64String.fromBase64(data).isValidBase64Data();
+    }
+
+    public static boolean isValidBase64Data(byte[] data) {
+        return Base64String.fromBase64(data).isValidBase64Data();
+    }
+
+    public boolean isValidBase64Data() {
+        try {
+            decodeString();
+            return true;
+        } catch (Exception err) {
+            return false;
+        }
     }
 
     public byte[] decodeBytes() {
@@ -70,11 +81,7 @@ public class Base64String {
 
     private void setB64data(byte[] b64data) {
         this.b64String = new String(b64data);
-        try {
-            decodeString();
-        } catch (Exception err) {
-            throw new IllegalArgumentException("Given data is not valid Base64 data!");
-        }
+
     }
 
     public int hashCode() {
