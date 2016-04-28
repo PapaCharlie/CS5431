@@ -18,8 +18,6 @@ class LogRoutes extends Routes {
     protected void routes() {
 
         authenticatedGet("/userlog", (req, res, token) -> {
-
-            Sys.debug("Received authenticated GET to /vault/userlog.", req.ip());
             Map<String, Object> attributes = new HashMap<>();
             List<Map<String, String>> loglst = new ArrayList<>();
             for (UserLogEntry u : token.getUser().loadLog(token)) {
@@ -27,7 +25,6 @@ class LogRoutes extends Routes {
             }
             attributes.put("userloglist", loglst);
             return new ModelAndView(attributes, "userlog.ftl");
-
         });
 
     }

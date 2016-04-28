@@ -8,6 +8,8 @@ import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.io.Base64String;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -111,7 +113,7 @@ public class UserManager {
                     } else {
                         Sys.info("Created vault file.", user);
                     }
-                    PasswordUtils.savePassword(user.passwordHashFile, hashedPassword.decodeString());
+                    PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
                     SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumberFile);
                     new Settings().saveToFile(user.settingsFile);
 
@@ -123,11 +125,16 @@ public class UserManager {
                     return user;
                 } else {
                     Sys.error("Could not create directory! Not adding to user map.", user);
+                    FileUtils.deleteDirectory(homedir);
                     return null;
                 }
             } else {
                 return getUser(username);
             }
+        } catch (Exception err) {
+            err.printStackTrace();
+            FileUtils.deleteDirectory(user.getHome());
+            throw err;
         } finally {
             userMapLock.writeLock().unlock();
         }

@@ -55,9 +55,17 @@ public class PasswordUtils {
         return Arrays.areEqual(hash, key.getEncoded());
     }
 
+    public static void savePassword(File passwordFile, Base64String password) throws IOException {
+        savePassword(passwordFile, password.decodeString());
+    }
+
     public static void savePassword(File passwordFile, String password) throws IOException {
         byte[] salt = generateSalt();
         new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded())).saveToFile(passwordFile);
+    }
+
+    public static boolean verifyPasswordInFile(File passwordFile, Base64String password) throws IOException {
+        return verifyPasswordInFile(passwordFile, password.decodeString());
     }
 
     public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException {

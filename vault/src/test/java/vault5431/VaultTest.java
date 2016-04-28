@@ -2,6 +2,7 @@ package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.AfterClass;
+import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.users.User;
 import vault5431.users.UserManager;
@@ -41,7 +42,7 @@ public class VaultTest {
         while (UserManager.userExists(username)) {
             username = PasswordGenerator.generatePassword(10);
         }
-        User user = UserManager.create(username, PasswordUtils.hashPassword(password), "");
+        User user = UserManager.create(username, PasswordUtils.hashPassword("auth" + HashUtils.hash256(password.getBytes()).decodeString()), "");
         createdUsers.push(username);
         return user;
     }

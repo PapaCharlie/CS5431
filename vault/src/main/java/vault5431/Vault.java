@@ -33,7 +33,6 @@ public class Vault {
     private static final String demoPassword = "password";
     private static final String demoPhonenumber = "+16109455656";
     private static final AdminKeys adminKeys = readAdminKeys();
-    private static final User demoUser = loadDemoUser();
     private static boolean initialized = false;
 
     /**
@@ -56,24 +55,6 @@ public class Vault {
             System.exit(1);
         }
         return keys;
-    }
-
-    /**
-     * Creates and/or loads the demo user from disk.
-     * @return User instance representing the demo user
-     */
-    private static User loadDemoUser() {
-        initialize();
-        if (!UserManager.userExists(demoUsername)) {
-            try {
-                UserManager.create(demoUsername, PasswordUtils.hashPassword(demoPassword), demoPhonenumber);
-            } catch (Exception err) {
-                err.printStackTrace();
-                System.err.println("Could not create demo user!");
-                System.exit(1);
-            }
-        }
-        return UserManager.getUser(demoUsername);
     }
 
     /**
@@ -122,10 +103,6 @@ public class Vault {
         }
 
         UserManager.initialize();
-    }
-
-    public static User getDemoUser() {
-        return demoUser;
     }
 
     /**

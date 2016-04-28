@@ -4,7 +4,10 @@ import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import vault5431.Password;
 import vault5431.Sys;
+import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
+import vault5431.auth.exceptions.TooManyConcurrentSessionsException;
+import vault5431.auth.exceptions.TooManyFailedLogins;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
@@ -19,6 +22,7 @@ import vault5431.users.exceptions.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.UUID;
 
@@ -79,21 +83,19 @@ public final class User {
         }
     }
 
-    public void addPasswordToVault(Password password, Token token) throws IOException {
-        synchronized (vaultFile) {
-            info("Added password.", token.getIp());
-            FileUtils.append(vaultFile, new Base64String(password.toJSON()));
-        }
-    }
-
-    public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException {
-        synchronized (vaultFile) {
-            LinkedList<Password> passwords = loadPasswords(token);
-            if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
-                passwords.add(password);
+    public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, Token token)
+            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException {
+        synchronized (passwordHashFile) {
+            // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
+            Token successToken = AuthenticationHandler.acquireUnverifiedToken(this, oldPassword, token.getIp());
+            if (successToken != null) {
+                warning("Changing master password!", token.getIp());
+                PasswordUtils.savePassword(passwordHashFile, newPassword);
+                warning("Saving newly encrypted vault!", token.getIp());
+                savePasswords(new LinkedList<>(Arrays.asList(reEncryptedPasswords)));
+                info("Master password change succesful.", token.getIp());
             }
-            savePasswords(passwords);
-            info("Edited password.", token.getIp());
+            return successToken;
         }
     }
 
@@ -110,6 +112,24 @@ public final class User {
             } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
                 throw new CouldNotLoadSettingsException();
             }
+        }
+    }
+
+    public void addPasswordToVault(Password password, Token token) throws IOException {
+        synchronized (vaultFile) {
+            info("Added password.", token.getIp());
+            FileUtils.append(vaultFile, new Base64String(password.toJSON()));
+        }
+    }
+
+    public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException {
+        synchronized (vaultFile) {
+            LinkedList<Password> passwords = loadPasswords(token);
+            if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
+                passwords.add(password);
+            }
+            savePasswords(passwords);
+            info("Edited password.", token.getIp());
         }
     }
 
@@ -160,7 +180,7 @@ public final class User {
 
     public boolean verifyPassword(Base64String hashedPassword) throws IOException {
         synchronized (passwordHashFile) {
-            return PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword.decodeString());
+            return PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword);
         }
     }
 

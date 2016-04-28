@@ -28,7 +28,7 @@ public abstract class Routes {
 
     private static boolean initialized = false;
 
-    public static Token validateToken(Request req) {
+    protected static Token validateToken(Request req) {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {
             try {
                 return AuthenticationHandler.parseFromCookie(req.cookie("token").trim(), req.ip());
@@ -50,39 +50,48 @@ public abstract class Routes {
         default Object handle(Request request, Response response) throws Exception {
             Token token = validateToken(request);
             if (token != null) {
-                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()));
+                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token.getUser(), token.getIp());
                 Object res = authenticatedHandle(request, response, token);
                 if (res instanceof ModelAndView) {
-                    return freeMarkerEngine.render((ModelAndView)res);
+                    return freeMarkerEngine.render((ModelAndView) res);
                 } else {
                     return res;
                 }
             } else {
-                Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()));
+                Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()), request.ip());
                 throw new SessionExpiredException();
             }
         }
     }
 
-    public static void authenticatedGet(String path, AuthenticatedRoute route) {
+    protected static void authenticatedGet(String path, AuthenticatedRoute route) {
         get(path, route);
     }
 
-    public static void authenticatedPost(String path, AuthenticatedRoute route) {
+    protected static void authenticatedPost(String path, AuthenticatedRoute route) {
         post(path, route);
     }
 
-    public static void authenticatedPut(String path, AuthenticatedRoute route) {
+    protected static void authenticatedPut(String path, AuthenticatedRoute route) {
         put(path, route);
     }
 
-    public static void authenticatedDelete(String path, AuthenticatedRoute route) {
+    protected static void authenticatedDelete(String path, AuthenticatedRoute route) {
         delete(path, route);
     }
 
-    public static final String vault = "/vault";
+    protected static boolean provided(String... formFields) {
+        for (String field : formFields) {
+            if (!(field != null && field.length() > 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected static final String vault = "/vault";
     private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
-    public static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
+    protected static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
 
     protected abstract void routes();
 

@@ -32,9 +32,7 @@
         sessionStorage.removeItem("password");
         $("#signupForm").submit(function (event) {
             $passwordField = $('#password');
-            var hashedPassword = sjcl.hash.sha256.hash(sjcl.codec.utf8String.toBits($passwordField.val()));
-            var hash = sjcl.hash.sha256.hash(hashedPassword);
-            $passwordField.val(sjcl.codec.base64url.fromBits(hash));
+            $passwordField.val(fromBits(hash("auth" + $passwordField.val())));
         });
     });
 </script>

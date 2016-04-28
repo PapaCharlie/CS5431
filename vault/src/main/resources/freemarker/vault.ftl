@@ -27,7 +27,7 @@
         <li><a href="/generator">Password Generator</a></li>
         <li><a href="/settings">Settings</a></li>
         <li><a href="/userlog">User Log</a></li>
-        <li><a href="" id="logout" onclick="logout()">Logout</a></li>
+        <li><a href="" id="logout">Logout</a></li>
     </ul>
 </div>
 <div class="page-header mainheader">
@@ -37,10 +37,13 @@
 </div>
     <@page_body/>
 <script>
-    function logout() {
-        sessionStorage.removeItem("password");
-        window.location = "/logout";
-    }
+    $(function () {
+        $("#logout").click(function (e) {
+            e.preventDefault();
+            sessionStorage.removeItem("password");
+            window.location.href = "/logout";
+        })
+    });
 </script>
 </body>
 </html>
