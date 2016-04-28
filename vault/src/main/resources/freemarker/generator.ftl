@@ -26,7 +26,7 @@
                 <input type="checkbox" name="symbols" id="symbols" checked> !@#$
             </label>
             <label class="checkbox-inline">
-                <input type="checkbox" name="pronounceable" id="pronounceable"> Pronounceable
+                <input type="checkbox" name="pronounceable" id="pronounceable" data-toggle="tooltip" title="Default no 1-9 and !@#$" data-trigger="click"> Pronounceable
             </label>
         </div>
         <button class="btn btn-success" type="submit">Generate</button>
@@ -37,6 +37,7 @@
     </div>
     <script>
         $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
             $('input#pronounceable').on('change', function () {
                 if ($(this).is(':checked')) {
                     document.getElementById("length").min = "12";
