@@ -2,11 +2,14 @@
  * Created by papacharlie on 2016-04-13.
  */
 
+
 function getAccordions(passwords) {
     if (passwords.length > 0) {
-        passwords.forEach(function (entry) {
-            //$("#accordion").append($('<div></div>').addClass("panel panel-default"));
-
+        var p =
+        passwords.sort(function(a,b){
+            return a.name.localeCompare(b.name);
+        });
+        p.forEach(function (entry) {
             var pd = $('<div/>', {
                 'class': 'panel panel-default'
             });
@@ -138,7 +141,7 @@ function getAccordions(passwords) {
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(form);
-            var changeurl = $('<button/>', {
+            var changeform = $('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'submit',
                 'text': 'Save changes'
