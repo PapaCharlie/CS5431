@@ -72,6 +72,14 @@ public abstract class Routes {
         post(path, route);
     }
 
+    public static void authenticatedPut(String path, AuthenticatedRoute route) {
+        put(path, route);
+    }
+
+    public static void authenticatedDelete(String path, AuthenticatedRoute route) {
+        delete(path, route);
+    }
+
     public static final String vault = "/vault";
     private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
     public static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);

@@ -141,7 +141,7 @@ function getAccordions(passwords) {
             var changeurl = $('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'submit',
-                'text': 'Save new password'
+                'text': 'Save changes'
             }).appendTo(form);
 
             var modalfooter = $("<div class='modal-footer'>" +
@@ -149,9 +149,18 @@ function getAccordions(passwords) {
                 "</div>").appendTo(mc);
 
             $('#accordion').append(pd);
+
         });
     } else {
         $('#accordion').text("No stored passwords!");
     }
 }
 
+function defaultErrorHandler(data) {
+    var response = JSON.parse(data);
+    if (response.success) {
+        window.location = "/home";
+    } else {
+        alert(response.error);
+    }
+}

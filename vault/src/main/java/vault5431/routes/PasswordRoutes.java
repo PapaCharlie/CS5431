@@ -34,8 +34,8 @@ class PasswordRoutes extends Routes {
             return vault.toString();
         });
 
-        authenticatedPost("/deletepassword", (req, res, token) -> {
-            String id = req.queryParams("id");
+        authenticatedDelete("/passwords/:id", (req, res, token) -> {
+            String id = req.params(":id");
             if (id != null && id.length() > 0) {
                 UUID uuid;
                 try {
@@ -50,11 +50,10 @@ class PasswordRoutes extends Routes {
             }
         });
 
-        authenticatedPost("/changepassword", (req, res, token) -> {
-            Sys.debug("Received POST to /changepassword.", req.ip());
+        authenticatedPut("/passwords/:id", (req, res, token) -> {
             UUID uuid;
+            String id = req.params(":id");
             try {
-                String id = req.queryParams("id");
                 if (id != null && id.length() > 0) {
                     uuid = UUID.fromString(id);
                 } else {
@@ -78,7 +77,7 @@ class PasswordRoutes extends Routes {
             }
         });
 
-        authenticatedPost("/savepassword", (req, res, token) -> {
+        authenticatedPost("/passwords", (req, res, token) -> {
             String password = req.queryParams("newPassword");
             if (password != null && password.length() > 0) {
                 JSONObject pass;

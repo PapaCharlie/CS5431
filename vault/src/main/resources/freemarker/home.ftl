@@ -29,6 +29,32 @@
                     key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
                     passwords = decryptPasswords(data.passwords, key);
                     getAccordions(passwords);
+
+                    $(".changePasswordForm").on('submit', function (event) {
+                        event.preventDefault();
+                        console.log("hmm?{");
+                        var inputs = $(this).find(':input');
+                        var id;
+                        var values = {};
+                        inputs.each(function () {
+                            if (this.name) {
+                                if (this.name !== "id") {
+                                    values[this.name] = encrypt(key, this.value);
+                                } else {
+                                    id = this.value;
+                                }
+                            }
+                        });
+                        $.ajax({
+                            type: "PUT",
+                            url: "/passwords/" + id,
+                            data: {
+                                id: id,
+                                changedPassword: JSON.stringify(values)
+                            }
+                        }).done(defaultErrorHandler);
+                    });
+
                 } else {
                     console.log("Bad payload");
                 }
@@ -59,41 +85,11 @@
                     values[this.name] = encrypt(key, this.value);
                 }
             });
-            $.post('/savepassword', {newPassword: JSON.stringify(values)}, function (data) {
-                var response = JSON.parse(data);
-                if (response.success) {
-                    window.location = "/home";
-                } else {
-                    alert(response.error);
-                }
-            });
-        });
-
-        $(".changePasswordForm").on('submit', function (event) {
-            event.preventDefault();
-            var inputs = $(this).find(':input');
-            var id;
-            var values = {};
-            inputs.each(function () {
-                if (this.name) {
-                    if (this.name !== "id") {
-                        values[this.name] = encrypt(key, this.value);
-                    } else {
-                        id = this.value;
-                    }
-                }
-            });
-            $.post('/changepassword', {
-                id: id,
-                changedPassword: JSON.stringify(values)
-            }, function (data) {
-                var response = JSON.parse(data);
-                if (response.success) {
-                    window.location = "/home";
-                } else {
-                    alert(response.error);
-                }
-            });
+            $.ajax({
+                type: "POST",
+                url: "/passwords",
+                data: {newPassword: JSON.stringify(values)}
+            }).done(defaultErrorHandler);
         });
 
         $('[data-toggle="tooltip"]').tooltip();
@@ -130,16 +126,13 @@
     $(document).on("click", ".delete", function () {
         var r = confirm("Are you sure you want to delete this Account?");
         if (r == true) {
-            $(this).closest("div.panel-default").remove();
-            var entryid = $(this).attr("data-id");
-            $.post("/deletepassword", {id: entryid}, function (data) {
-                var response = JSON.parse(data);
-                if (response.success) {
-                    window.location = "/home";
-                } else {
-                    alert(response.error);
-                }
-            });
+//            $(this).closest("div.panel-default").remove();
+            var id = $(this).attr("data-id");
+            $.ajax({
+                type: "DELETE",
+                url: "/passwords/" + id,
+                data: {id: id}
+            }).done(defaultErrorHandler);
         }
     });
 
