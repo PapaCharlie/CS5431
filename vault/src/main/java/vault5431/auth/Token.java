@@ -43,7 +43,8 @@ public class Token {
     protected Token(User user, boolean verified) throws CouldNotLoadSettingsException {
         this.username = user.hash;
         this.creationDate = LocalDateTime.now();
-        this.expiresAt = LocalDateTime.now().plusMinutes((long) user.loadSettings().getSessionLength());
+        LocalDateTime expires = LocalDateTime.now().plusMinutes((long) user.loadSettings().getSessionLength());
+        this.expiresAt = RollingKeys.getEndOfCurrentWindow().isBefore(expires) ? RollingKeys.getEndOfCurrentWindow() : expires;
         this.id = UUID.randomUUID();
         byte[] randomBytes = new byte[16];
         random.nextBytes(randomBytes);
