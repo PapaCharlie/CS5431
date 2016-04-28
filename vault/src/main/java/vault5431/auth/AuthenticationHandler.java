@@ -74,6 +74,7 @@ public class AuthenticationHandler {
                 }
                 if (failedLogins.get(user) > MAX_FAILED_LOGINS) {
                     banUser(user, ip);
+                    Sys.debug("Banning user because too many failed logins.", user, ip);
                     throw new TooManyFailedLogins();
                 }
                 if (user.verifyPassword(password)) {
@@ -93,6 +94,7 @@ public class AuthenticationHandler {
                         }, token.secondsUntilExpiration(), SECONDS);
                         return token;
                     } else {
+                        Sys.debug("Rejecting user because too many concurrent users.", user, ip);
                         throw new TooManyConcurrentSessionsException();
                     }
                 } else {
