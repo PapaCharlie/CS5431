@@ -16,9 +16,13 @@
         <p><input type="text" name="username" placeholder="Username" required></p>
         <label for="passwordsignup">Your Password </label>
         <p><input type="password" name="password" id="password" placeholder="Password" required></p>
+        <div id="strength" style="color:#FF0000;display:none"> Password is not strong </div>
+        <label for="paswordsignup">Your Password (confirm) </label>
+        <p><input type="password" id="confirm" name="confirm" class= "form-error" placeholder="Password" required></p>
+        <div id="alert" style="color:#FF0000;display:none" role="alert"> These passwords don't match </div>
         <label for="phonesignup">Your Phone Number (of form: 123-456-7890) </label>
         <p><input type="tel" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
-        <p><input type="submit" value="Sign Up"></p>
+        <p><input type="submit" id="submit" value="Sign Up"></p>
         <p>
             Already a Member? <a href="/" class="to_register">Log In!</a>
         </p>
@@ -35,6 +39,63 @@
             $passwordField.val(fromBits(hash("auth" + $passwordField.val())));
         });
     });
+    $('#password').on('input', function(){
+        $('#confirm').val("");
+        $('#confirm').css('border-color', '#888');
+        $('#alert').hide();
+    });
+
+
+
+    $('#confirm').focus(function(){
+        $('#confirm').css('border-color', '#888');
+        $('#alert').hide();
+    });
+
+
+    $('#confirm').blur(function(){
+        var password = $('#password').val();
+        var confirm = $('#confirm').val();
+        console.log(password);
+        if(password != confirm){
+            $('#confirm').css('border-color', 'red');
+            $('#alert').show();
+            
+        }
+    });
+
+    //checks if password is at least 16 characters long
+    function is_basic16(password){
+        if(password.length >= 16){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    //according to Kelly's paper where he defines the comprehensive8 criteria
+    function is_comprehensive8(password){
+        var check_length = password.length >= 8;
+        var patt = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d])/;
+        var result = patt.test(password) && check_length;
+        return result;
+    }
+
+    $('#password').blur(function(){
+        var password = $('#password').val();
+        if(!(is_basic16(password) || is_comprehensive8(password))){
+            $('#password').css('border-color', 'red');
+            $('#strength').show();
+        }
+
+    });
+
+    $('#password').focus(function(){
+        $('#password').css('border-color','#888');
+        $('#strength').hide();
+    });
+
 </script>
 </body>
 </html>
