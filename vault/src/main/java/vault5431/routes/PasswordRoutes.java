@@ -3,8 +3,7 @@ package vault5431.routes;
 import org.json.JSONException;
 import org.json.JSONObject;
 import spark.ModelAndView;
-import vault5431.Password;
-import vault5431.Sys;
+import vault5431.users.Password;
 import vault5431.users.User;
 
 import java.util.HashMap;
