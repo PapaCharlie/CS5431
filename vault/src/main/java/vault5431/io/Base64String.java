@@ -18,6 +18,12 @@ public class Base64String {
 
     public Base64String(byte[] data) {
         b64String = Base64.getUrlEncoder().encodeToString(data);
+        try {
+            // Check if the data is correct b64 data.
+            decodeString();
+        } catch (Exception err) {
+            throw new IllegalArgumentException("Given data is not valid Base64 data!");
+        }
     }
 
     public static Base64String fromBase64(byte[] b64data) {
@@ -64,6 +70,11 @@ public class Base64String {
 
     private void setB64data(byte[] b64data) {
         this.b64String = new String(b64data);
+        try {
+            decodeString();
+        } catch (Exception err) {
+            throw new IllegalArgumentException("Given data is not valid Base64 data!");
+        }
     }
 
     public int hashCode() {

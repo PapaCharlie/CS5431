@@ -62,6 +62,13 @@ class TwoFactorAuthHandler {
         }
     }
 
+    protected static void removeUser(User user) {
+        synchronized (authCodeMap) {
+            authCodeMap.remove(user);
+            attemptsMap.remove(user);
+        }
+    }
+
     private static void addToManager(User user, AuthMessage m) {
         synchronized (authCodeMap) {
             authCodeMap.putIfAbsent(user, m);

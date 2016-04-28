@@ -27,7 +27,7 @@
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
                     key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
-                    passwords = decryptPasswords(data.passwords, key);
+                    passwords = decryptPasswords(key, data.passwords);
                     getAccordions(passwords);
 
                     $(".changePasswordForm").on('submit', function (event) {

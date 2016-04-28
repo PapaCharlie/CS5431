@@ -6,6 +6,14 @@ function hash(data) {
     return sjcl.hash.sha256.hash(data);
 }
 
+function toBits(data) {
+    return sjcl.codec.utf8String.toBits(data);
+}
+
+function fromBits(data) {
+    return sjcl.codec.base64url.fromBits(data);
+}
+
 function encrypt(key, data) {
     var stringData;
     if (typeof data !== "string" || !(data instanceof String)) {
@@ -43,7 +51,7 @@ function decrypt(key, encryptedData) {
     return JSON.parse(sjcl.decrypt(key, JSON.stringify(cipher)));
 }
 
-function decryptPasswords(encryptedPasswords, key) {
+function decryptPasswords(key, encryptedPasswords) {
     var decodedPasswords;
     if (typeof encryptedPasswords === "string" && encryptedPasswords instanceof String) {
         decodedPasswords = JSON.parse(encryptedPasswords);

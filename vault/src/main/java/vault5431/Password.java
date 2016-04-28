@@ -1,5 +1,6 @@
 package vault5431;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import vault5431.io.Base64String;
@@ -130,6 +131,18 @@ public class Password {
 
     public static Password fromJSON(Base64String json) throws IllegalArgumentException {
         return fromJSON(json.decodeString());
+    }
+
+    public static Password[] fromJSON(JSONArray jsonArray) throws IllegalArgumentException {
+        try {
+            Password[] passwords = new Password[jsonArray.length()];
+            for (int i = 0; i < passwords.length; i++) {
+                passwords[i] = fromJSON(jsonArray.getJSONObject(i));
+            }
+            return passwords;
+        } catch (JSONException | IllegalArgumentException err) {
+            throw new IllegalArgumentException("All fields must be valid passwords!");
+        }
     }
 
     public int hashCode() {

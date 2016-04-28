@@ -1,8 +1,16 @@
 package vault5431.routes;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import spark.ModelAndView;
+import vault5431.Password;
+import vault5431.auth.AuthenticationHandler;
+import vault5431.auth.Token;
+import vault5431.io.Base64String;
 import vault5431.users.Settings;
+import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -71,6 +79,37 @@ public class SettingsRoutes extends Routes {
                 }
             }
             return success;
+        });
+
+        authenticatedPost("/changepassword", (req, res, token) -> {
+            System.out.println(req.queryParams().toString());
+            String oldPassword = req.queryParams("oldPassword");
+            String newPassword1 = req.queryParams("newPassword1");
+            String newPassword2 = req.queryParams("newPassword2");
+            String reEncryptedPasswords = req.queryParams("reEncryptedPasswords");
+            if (!provided(oldPassword, newPassword1, newPassword2, reEncryptedPasswords)) {
+                return allFieldsRequired;
+            }
+            if (!newPassword1.equals(newPassword2)) {
+                return String.format(invalidRequestWithError, "New passwords must be equal.");
+            }
+            try {
+                Password[] newPasswords = Password.fromJSON(new JSONArray(reEncryptedPasswords));
+                Token newToken = token.getUser().changeMasterPassword(
+                        Base64String.fromBase64(oldPassword),
+                        Base64String.fromBase64(newPassword1),
+                        newPasswords,
+                        token
+                );
+                if (newToken == null) {
+                    return String.format(invalidRequestWithError, "Provided password is not the master password. This activity has been flagged.");
+                } else {
+                    res.cookie("token", newToken.toCookie());
+                    return success;
+                }
+            } catch (IllegalArgumentException err) {
+                return String.format(invalidRequestWithError, err.getMessage());
+            }
         });
 
     }

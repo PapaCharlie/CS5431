@@ -40,8 +40,11 @@ public class AuthenticationHandler {
         }
     }
 
-    public static void logout(User user, Token token) {
-
+    public static void logout(Token token) {
+        synchronized (tokenCache) {
+            tokenCache.get(token.getUser()).remove(token.getId());
+            TwoFactorAuthHandler.removeUser(token.getUser());
+        }
     }
 
     public static void send2FACode(User user) throws CouldNotLoadPhoneNumberException, IOException, TwilioRestException {
@@ -107,6 +110,7 @@ public class AuthenticationHandler {
             if (tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
                 try {
                     if (TwoFactorAuthHandler.verifyAuthMessage(token.getUser(), twoFACode)) {
+                        TwoFactorAuthHandler.removeUser(token.getUser());
                         return token.verify();
                     } else {
                         return null;

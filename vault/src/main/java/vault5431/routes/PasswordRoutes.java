@@ -36,67 +36,61 @@ class PasswordRoutes extends Routes {
 
         authenticatedDelete("/passwords/:id", (req, res, token) -> {
             String id = req.params(":id");
-            if (id != null && id.length() > 0) {
-                UUID uuid;
-                try {
-                    uuid = UUID.fromString(id);
-                } catch (IllegalArgumentException err) {
-                    return invalidRequest;
-                }
-                token.getUser().deletePassword(uuid, token);
-                return success;
-            } else {
+            if (!provided(id)) {
                 return allFieldsRequired;
             }
+            UUID uuid;
+            try {
+                uuid = UUID.fromString(id);
+            } catch (IllegalArgumentException err) {
+                return invalidRequest;
+            }
+            token.getUser().deletePassword(uuid, token);
+            return success;
         });
 
         authenticatedPut("/passwords/:id", (req, res, token) -> {
             UUID uuid;
             String id = req.params(":id");
+            String changedPassword = req.queryParams("changedPassword");
+            if (!provided(id, changedPassword)) {
+                return allFieldsRequired;
+            }
             try {
-                if (id != null && id.length() > 0) {
-                    uuid = UUID.fromString(id);
-                } else {
-                    return allFieldsRequired;
-                }
+                uuid = UUID.fromString(id);
             } catch (IllegalArgumentException err) {
                 return invalidRequest;
             }
-            String changedPassword = req.queryParams("changedPassword");
-            if (changedPassword != null && changedPassword.length() > 0) {
-                try {
-                    JSONObject pass = new JSONObject(changedPassword);
-                    pass.put("id", uuid.toString());
-                    token.getUser().changePassword(Password.fromJSON(pass), token);
-                    return success;
-                } catch (JSONException err) {
-                    return invalidRequest;
-                }
-            } else {
-                return allFieldsRequired;
+            try {
+                JSONObject pass = new JSONObject(changedPassword);
+                pass.put("id", uuid.toString());
+                token.getUser().changePassword(Password.fromJSON(pass), token);
+                return success;
+            } catch (JSONException err) {
+                return invalidRequest;
             }
         });
 
         authenticatedPost("/passwords", (req, res, token) -> {
             String password = req.queryParams("newPassword");
-            if (password != null && password.length() > 0) {
-                JSONObject pass;
-                try {
-                    pass = new JSONObject(password);
-                    pass.put("id", UUID.randomUUID().toString());
-                    Password newPassword = Password.fromJSON(pass);
-                    token.getUser().addPasswordToVault(newPassword, token);
-                } catch (JSONException err) {
-                    err.printStackTrace();
-                    return invalidRequest;
-                } catch (IllegalArgumentException err) {
-                    return String.format(invalidRequestWithError, err.getMessage());
-                }
-                return success;
-            } else {
+            if (!provided(password)) {
                 return allFieldsRequired;
             }
+            JSONObject pass;
+            try {
+                pass = new JSONObject(password);
+                pass.put("id", UUID.randomUUID().toString());
+                Password newPassword = Password.fromJSON(pass);
+                token.getUser().addPasswordToVault(newPassword, token);
+            } catch (JSONException err) {
+                err.printStackTrace();
+                return invalidRequest;
+            } catch (IllegalArgumentException err) {
+                return String.format(invalidRequestWithError, err.getMessage());
+            }
+            return success;
         });
+
     }
 
 }
