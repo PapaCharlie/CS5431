@@ -28,9 +28,10 @@
             </form>
         </div>
         <div class="tab-pane" style="padding: 5px;" id="master">
+            <h4>Change Your Master Password</h4>
             <form action="/changepassword" method="post" id="changePasswordForm">
                 <div class="form-group">
-                    <label for="oldPassword" class="control-label">Old password: </label>
+                    <label for="oldPassword" class="control-label">Current password: </label>
                     <input style="width:50%" type="password" name="oldPassword" id="oldPassword" class="form-control" required>
                 </div>
                 <div class="form-group">
