@@ -35,6 +35,32 @@
         <div class="panel-body generated-password" id="generatedPassword">
         </div>
     </div>
+    <button class="btn btn-primary" data-toggle="modal" data-target="#newPass">Create New Password</button>
+    <div id="newPass" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Create New Password</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-signin" id="newPasswordForm">
+                        <input type="text" name="name" class="form-control" placeholder="Website Name" required>
+                        <input type="url" name="url" class="form-control" placeholder="URL" required>
+                        <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
+                        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
     <script>
         $(function () {
             $('[data-toggle="tooltip"]').tooltip();
