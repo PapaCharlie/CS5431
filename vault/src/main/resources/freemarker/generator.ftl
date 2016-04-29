@@ -35,7 +35,8 @@
         <div class="panel-body generated-password" id="generatedPassword">
         </div>
     </div>
-    <button class="btn btn-primary" data-toggle="modal" data-target="#newPass">Create New Password</button>
+    <#--<button class="btn btn-primary" data-toggle="modal" data-target="#newPass">Create New Password</button>-->
+    <span class="addicon glyphicon glyphicon-plus" data-toggle="modal" data-target="#newPass" aria-hidden="true"></span>
     <div id="newPass" class="modal fade" role="dialog">
         <div class="modal-dialog">
 
@@ -51,7 +52,8 @@
                         <input type="url" name="url" class="form-control" placeholder="URL" required>
                         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
                         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
+                        <textarea form="newPasswordForm" name="notes" class="form-control" placeholder="Secure Notes (Optional)"></textarea>
+                        <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
                     </form>
                 </div>
                 <div class="modal-footer">

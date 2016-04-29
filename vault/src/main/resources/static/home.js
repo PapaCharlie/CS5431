@@ -32,6 +32,15 @@ function getAccordions(passwords) {
                 'aria-hidden': 'true',
                 'text': 'Delete'
             }).appendTo(title);
+            var editsmall = $('<button/>', {
+                'class': 'edit btn btn-warning btn-xs',
+                'style': 'float: right; margin-right: 2px',
+                'aria-hidden': 'true',
+                'text': 'Edit',
+                'type': 'button',
+                'data-toggle': 'modal',
+                'data-target': '#' + entry.id + 'modal'
+            }).appendTo(title);
 
             var pc = $('<div/>', {
                 'id': entry.id,
@@ -81,18 +90,18 @@ function getAccordions(passwords) {
                 'id': entry.id + 'reveal',
                 'text': 'Reveal'
             }).appendTo(passdiv);
-            var editbtn = $('<button/>', {
-                'type': 'button',
-                'class': 'btn btn-warning',
-                'data-toggle': 'modal',
-                'data-target': '#' + entry.id + 'modal',
-                'text': 'Edit Account Info'
-            }).appendTo(row2);
+            //var editbtn = $('<button/>', {
+            //    'type': 'button',
+            //    'class': 'btn btn-warning',
+            //    'data-toggle': 'modal',
+            //    'data-target': '#' + entry.id + 'modal',
+            //    'text': 'Edit Account Info'
+            //}).appendTo(row2);
             var modalstart = $('<div/>', {
                 'id': entry.id + 'modal',
                 'class': 'modal fade',
                 'role': 'dialog'
-            }).appendTo(row2);
+            }).appendTo(title); //row2
 
             var md = $("<div class='modal-dialog'></div>").appendTo(modalstart);
 
@@ -150,6 +159,24 @@ function getAccordions(passwords) {
             var modalfooter = $("<div class='modal-footer'>" +
                 "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
                 "</div>").appendTo(mc);
+
+
+            var row3 = $('<div/>', {
+                'class': 'row'
+            }).appendTo(pb);
+            var notescontainer = $('<div/>', {
+                'class': 'col-sm-4 col-md-4'
+            }).appendTo(row3);
+            var label = $('<label/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Notes',
+                'for': 'notes'
+            }).appendTo(notescontainer);
+            var notes = $('<div/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'id': 'notes',
+                'text': 'a lot of text here for secure notes'
+            }).appendTo(notescontainer);
 
             $('#accordion').append(pd);
 

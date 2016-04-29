@@ -1,18 +1,23 @@
 <#include "vault.ftl">
 
 <#macro page_body>
-<div class="col-sm-9 col-md-10 newpass">
-    <form method="post" action="/savepassword" class="form-signin" id="newPasswordForm">
-        <h4 class="form-signin-heading">New Password</h4>
+<div class="col-sm-9 col-md-10">
+
+    <span class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newPasswordForm" aria-hidden="true"></span>
+
+    <form class="form-signin collapse newpass" id="newPasswordForm">
+        <h4  class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
         <input type="url" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Save</button>
+        <textarea form="newPasswordForm" name="notes" class="form-control" placeholder="Secure Notes (Optional)"></textarea>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
     </form>
 </div>
 
-<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">
+<#--<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">-->
+<div class="col-sm-9 col-md-10">
     <h4 class="storedpasswords-heading">Stored Accounts</h4>
     <div class="panel-group" id="accordion">
     </div>
