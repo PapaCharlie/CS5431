@@ -49,26 +49,47 @@ function getAccordions(passwords) {
             var pb = $('<div/>', {
                 'class': 'panel-body'
             }).appendTo(pc);
-            var row1 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
+            //var row1 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
             var url = $('<div/>', {
                 //'id': entry.id,
-                'class': 'col-sm-4 col-md-4',
-                'text': 'URL: ' + entry.url
-            }).appendTo(row1);
-            var row2 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'URL: '// + entry.url
+            }).appendTo(pb); //row1
+            var boldurl = $('<b/>', {
+                'text': 'URL: '
+            }).appendTo(url);
+            var urllink = $('<a/>', {
+                'href': entry.url,
+                'target': '_blank',
+                'text': entry.url
+            }).appendTo(url);
+            //var row2 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
             var username = $('<div/>', {
-                'class': 'col-sm-4 col-md-4',
-                'text': 'Username: ' + entry.username
-            }).appendTo(row2);
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField',
+                'text': entry.username
+            }).appendTo(pb); //row2
+            var boldusername = $('<b/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Username: '
+            }).prependTo(username); //row2
+
             var passdiv = $('<div/>', {
                 //'id': entry.name,
-                'class': 'col-sm-4 col-md-4',
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'Password: '
+            }).appendTo(pb); //row2
+            var boldpass = $('<b/>', {
+                //'id': entry.name,
+                //'class': 'col-sm-4 col-md-4',
                 'text': 'Password: '
-            }).appendTo(row2);
+            }).prependTo(passdiv); //row2
             var passinput = $('<input/>', {
                 'id': entry.id + 'copy',
                 'type': 'password',
