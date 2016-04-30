@@ -10,7 +10,7 @@
     <script type="text/javascript">
         var wordlist = [];
     </script>
-    <script type="text/javascript" src="/wordlist.js"></script>
+    <script type="text/javascript" src="/10k.js"></script>
 
 <body>
 <div class="login" id="login">
