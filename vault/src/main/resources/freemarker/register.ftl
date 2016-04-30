@@ -16,31 +16,33 @@
 <div class="login" id="login">
     <div class="login-triangle"></div>
     <h2 class="login-header">Sign up </h2>
-    <form action="/register" method="post" id="signupForm" class="login-container">
-        <label for="usernamesignup" class="uname" data-icon="u">Your Username</label>
-        <p><input type="text" name="username" placeholder="Username" required></p>
-        <label for="passwordsignup">Your Password </label>
-        <p><input type="password" name="password" id="password" placeholder="Password" required></p>
-        <div class= "strength" id="length" style="color:#FF0000;display:none"> Password is not strong! Short passwords are easy to guess. Try one with at least 8 characters. </div>
-        <div class="strength" id="uppercase" style="color:#FF0000;display:none"> Password is not strong! Try including an uppercase letter.  </div>
-        <div class= "strength" id="lowercase" style="color:#FF0000;display:none"> Password is not strong!Try including a lowercase letter.  </div>
-        <div class="strength" id="wordlist" style="color:#FF0000;display:none"> Password is not strong! Try one without common words or passwords. </div>
-        <div class="strength" id="digit" style="color:#FF0000;display:none"> Password is not strong! Try including a number. </div>
-        <div class="strength" id="symbol" style="color:#FF0000;display:none"> Password is not strong! Try including a non-alphanumeric character. </div>
-        <div class="strength" id="empty" style="color:#FF0000;display:none"> You can't leave this field empty. </div>
-        <label for="paswordsignup">Your Password (confirm) </label>
-        <p><input type="password" id="confirm" name="confirm" class= "form-error" placeholder="Password" required></p>
-        <div id="alert" style="color:#FF0000;display:none" role="alert"> These passwords don't match </div>
-        <label for="phonesignup">Your Phone Number (of form: 123-456-7890) </label>
-        <p><input type="tel" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
-        <p><input type="submit" id="submit" value="Sign Up"></p>
+    <div class="login-container">
+        <form action="/register" method="post" id="signupForm">
+            <label for="usernamesignup" class="uname" data-icon="u">Your Username</label>
+            <p><input type="text" name="username" placeholder="Username" required></p>
+            <label for="passwordsignup">Your Password </label>
+            <p><input type="password" name="password" id="password" placeholder="Password" required></p>
+            <div class= "strength" id="length" style="color:#FF0000;display:none"> Password is not strong! Short passwords are easy to guess. Try one with at least 8 characters. </div>
+            <div class="strength" id="uppercase" style="color:#FF0000;display:none"> Password is not strong! Try including an uppercase letter.  </div>
+            <div class= "strength" id="lowercase" style="color:#FF0000;display:none"> Password is not strong!Try including a lowercase letter.  </div>
+            <div class="strength" id="wordlist" style="color:#FF0000;display:none"> Password is not strong! Try one without common words or passwords. </div>
+            <div class="strength" id="digit" style="color:#FF0000;display:none"> Password is not strong! Try including a number. </div>
+            <div class="strength" id="symbol" style="color:#FF0000;display:none"> Password is not strong! Try including a non-alphanumeric character. </div>
+            <div class="strength" id="empty" style="color:#FF0000;display:none"> You can't leave this field empty. </div>
+            <label for="paswordsignup">Your Password (confirm) </label>
+            <p><input type="password" id="confirm" name="confirm" class= "form-error" placeholder="Password" required></p>
+            <div id="alert" style="color:#FF0000;display:none" role="alert"> These passwords don't match </div>
+            <label for="phonesignup">Your Phone Number (of form: 123-456-7890) </label>
+            <p><input type="tel" name="phoneNumber" placeholder="Phone Number" pattern="^\d{3}-\d{3}-\d{4}$" required></p>
+            <p><input type="submit" id="submit" value="Sign Up"></p>
+        </form>
         <p>
             Already a Member? <a href="/" class="to_register">Log In!</a>
         </p>
-    <#if error??>
-        <p class="has-error">${error}</p>
-    </#if>
-    </form>
+        <#if error??>
+            <p class="has-error">${error}</p>
+        </#if>
+    </div>
 </div>
 <script>
     $(document).ready(function () {
