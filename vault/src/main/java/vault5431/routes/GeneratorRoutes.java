@@ -11,10 +11,18 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Contains the routes for "/generator".
+ *
+ * @author papacharlie
  */
-class GeneratorRoutes extends Routes {
+final class GeneratorRoutes extends Routes {
 
+    /**
+     * Returns true if a given checkbox was ticked.
+     *
+     * @param formField checkbox id to parse
+     * @return true iff the field was given and exactly equals "true"
+     */
     private static boolean parseCheckbox(String formField) {
         return formField != null && formField.trim().toLowerCase().equals("true");
     }
@@ -36,24 +44,24 @@ class GeneratorRoutes extends Routes {
             boolean symbols = parseCheckbox(req.queryParams("symbols"));
             boolean pronounceable = parseCheckbox(req.queryParams("pronounceable"));
             if (!(lower || upper || numbers || symbols)) {
-                return "{\"success\":false, \"error\":\"Need at least one set of letters!\"}";
+                return unSuccessful().put("error", "Need at least one set of letters!");
             }
             if (length != null) {
                 try {
                     int chars = Integer.parseInt(length);
                     if (6 <= chars && chars <= 100) {
                         String pass = PasswordGenerator.generatePassword(chars, lower, upper, numbers, symbols, pronounceable);
-                        return String.format("{\"success\":true, \"password\":\"%s\"}", pass);
+                        return success().put("password", pass);
                     } else {
-                        return "{\"success\":false, \"error\":\"Number must be between 6 and 100.\"}";
+                        return unSuccessful().put("error", "Number must be between 6 and 100.");
                     }
                 } catch (NumberFormatException err) {
-                    return invalidRequest;
+                    return invalidRequest();
                 } catch (IllegalArgumentException err) {
-                    return String.format(invalidRequestWithError, err.getMessage());
+                    return unSuccessful().put("error", err.getMessage());
                 }
             } else {
-                return "{\"success\":false, \"error\":\"Length field is required!\"}";
+                return unSuccessful().put("error", "Length field is required!");
             }
         });
 

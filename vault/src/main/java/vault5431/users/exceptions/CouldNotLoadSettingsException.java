@@ -1,7 +1,9 @@
 package vault5431.users.exceptions;
 
 /**
- * Created by papacharlie on 2016-04-26.
+ * Thrown when Settings cannot be loaded from disk, decrypted and deserialized into a {@link vault5431.users.Settings} instance.
+ *
+ * @author papacharlie
  */
 public class CouldNotLoadSettingsException extends Exception {
 

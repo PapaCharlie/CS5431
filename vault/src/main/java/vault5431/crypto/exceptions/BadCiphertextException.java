@@ -1,7 +1,9 @@
 package vault5431.crypto.exceptions;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Thrown when data cannot be decrypted/encrypted by the throwing method.
+ *
+ * @author papacharlie
  */
 public class BadCiphertextException extends Exception {
 

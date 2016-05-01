@@ -16,9 +16,11 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Contains the routes like "/" and "/twofactor", that a user must go through to acquire a token.
+ *
+ * @author papacharlie
  */
-class AuthenticationRoutes extends Routes {
+final class AuthenticationRoutes extends Routes {
 
     protected void routes() {
 
@@ -76,7 +78,7 @@ class AuthenticationRoutes extends Routes {
             if (token != null) {
                 if (!token.isVerified()) {
                     try {
-                        AuthenticationHandler.send2FACode(token.getUser());
+                        AuthenticationHandler.send2FACode(token);
                     } catch (TwilioRestException err) {
                         err.printStackTrace();
                         attributes.put("error", "The number you gave in at registration was invalid.");
@@ -108,7 +110,7 @@ class AuthenticationRoutes extends Routes {
                         int code = Integer.parseInt(authCode);
                         Token verifiedToken = AuthenticationHandler.acquireVerifiedToken(token, code);
                         if (verifiedToken != null) {
-                            Sys.debug("Two factor auth succesful!", verifiedToken.getUser(), verifiedToken.getIp());
+                            Sys.debug("Two factor auth succesful!", verifiedToken);
                             verifiedToken.getUser().info("Succesful login.", verifiedToken.getIp());
                             res.cookie(
                                     "token",
@@ -149,18 +151,27 @@ class AuthenticationRoutes extends Routes {
             Map<String, Object> attributes = new HashMap<>();
             String username = req.queryParams("username");
             String password = req.queryParams("password");
-            String phoneNumnber = req.queryParams("phoneNumber");
-            if (!provided(username, password, phoneNumnber)) {
+            String confirm = req.queryParams("confirm");
+            String pubCryptoKey = req.queryParams("pubCryptoKey");
+            String privCryptoKey = req.queryParams("privCryptoKey");
+            String pubSigningKey = req.queryParams("pubSigningKey");
+            String privSigningKey = req.queryParams("privSigningKey");
+            String phoneNumber = req.queryParams("phoneNumber");
+            if (!provided(username, password, phoneNumber, confirm, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
             }
-            if (!Base64String.isValidBase64Data(password)) {
-                attributes.put("erro", "Invalid password");
+            if (!Base64String.isValidBase64Data(password) || !Base64String.isValidBase64Data(confirm)) {
+                attributes.put("error", "Invalid password");
                 return new ModelAndView(attributes, "login.ftl");
+            }
+            if (!password.equals(confirm)) {
+                attributes.put("error", "Passwords are not equal!");
+                return new ModelAndView(attributes, "register.ftl");
             }
             if (!UserManager.userExists(username)) {
                 try {
-                    UserManager.create(username, Base64String.fromBase64(password), phoneNumnber);
+                    UserManager.create(username, Base64String.fromBase64(password), phoneNumber, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey);
                 } catch (IllegalArgumentException err) {
                     err.printStackTrace();
                     attributes.put("error", "Invalid password!");
