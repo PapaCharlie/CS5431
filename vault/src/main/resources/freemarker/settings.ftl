@@ -74,7 +74,7 @@
                 var passwords;
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                    key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
+                    key = deriveMasterKey(data.salt, sessionStorage.getItem("password"));
                     passwords = decryptPasswords(key, data.passwords);
 
                     console.log(passwords);
@@ -83,8 +83,8 @@
                     $newPassword1 = $("#newPassword1");
                     $newPassword2 = $("#newPassword2");
 
-                    var newHashedPassword = fromBits(hash(toBits($newPassword1.val())));
-                    var newKey = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(newHashedPassword)));
+                    var newHashedPassword = toB64(hash($newPassword1.val()));
+                    var newKey = deriveMasterKey(data.saltnewHashedPassword);
 
                     var reEncryptedPasswords;
                     if (passwords.length > 0) {
@@ -101,12 +101,10 @@
                         reEncryptedPasswords = [];
                     }
 
-                    console.log(reEncryptedPasswords);
-
                     $.post("/changepassword", {
-                        oldPassword: fromBits(hash("auth" + $oldPassword.val())),
-                        newPassword1: fromBits(hash("auth" + $newPassword1.val())),
-                        newPassword2: fromBits(hash("auth" + $newPassword2.val())),
+                        oldPassword: toB64(hash("auth" + $oldPassword.val())),
+                        newPassword1: toB64(hash("auth" + $newPassword1.val())),
+                        newPassword2: toB64(hash("auth" + $newPassword2.val())),
                         reEncryptedPasswords: JSON.stringify(reEncryptedPasswords)
                     }, function (data) {
                         var response = JSON.parse(data);

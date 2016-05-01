@@ -43,6 +43,10 @@ public final class User {
     public final File phoneNumberFile;
     public final File settingsFile;
     public final File passwordHashFile;
+    public final File pubCryptoKeyFile;
+    public final File privCryptoKeyFile;
+    public final File pubSigningKeyFile;
+    public final File privSigningKeyFile;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -56,6 +60,10 @@ public final class User {
         passwordHashFile = new File(getHome(), "password.hash");
         settingsFile = new File(getHome(), "settings");
         phoneNumberFile = new File(getHome(), "phone.number");
+        pubCryptoKeyFile = new File(getHome(), "crypto.pub");
+        privCryptoKeyFile = new File(getHome(), "crypto.priv");
+        pubSigningKeyFile = new File(getHome(), "signing.pub");
+        privSigningKeyFile = new File(getHome(), "signing.priv");
     }
 
     public int hashCode() {
@@ -63,26 +71,66 @@ public final class User {
     }
 
     public String getShortHash() {
-        return hash.getB64String().substring(0, Integer.min(hash.length(), 10));
+        return hash.getB64String().substring(0, Integer.min(hash.size(), 10));
     }
 
     public File getHome() {
         return new File(home, hash.getB64String());
     }
 
-    public String getPhoneNumber() throws IOException, CouldNotLoadPhoneNumberException {
+    public String getPhoneNumber() throws IOException, CouldNotDecryptPhoneNumberException {
         synchronized (phoneNumberFile) {
             Sys.debug("Loading phone number.", this);
             try {
                 return new String(SymmetricUtils.decrypt(Base64String.loadFromFile(phoneNumberFile)[0], getAdminEncryptionKey()));
             } catch (BadCiphertextException err) {
                 err.printStackTrace();
-                throw new CouldNotLoadPhoneNumberException();
+                throw new CouldNotDecryptPhoneNumberException();
             }
         }
     }
 
-    public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, Token token)
+    public String loadPublicEncryptionKey() throws IOException {
+        synchronized (pubCryptoKeyFile) {
+            return FileUtils.read(pubCryptoKeyFile)[0].decodeString();
+        }
+    }
+
+    public String loadPrivateEncryptionKey(Token token) throws IOException {
+        synchronized (privCryptoKeyFile) {
+            Sys.debug("Loading private encryption key.", token);
+            return FileUtils.read(privCryptoKeyFile)[0].decodeString();
+        }
+    }
+
+    public String loadPublicSigningKey() throws IOException {
+        synchronized (pubSigningKeyFile) {
+            return FileUtils.read(pubSigningKeyFile)[0].decodeString();
+        }
+    }
+
+    public String loadPrivateSigningKey(Token token) throws IOException {
+        synchronized (privSigningKeyFile) {
+            Sys.debug("Loading private signing key.", token);
+            return FileUtils.read(privSigningKeyFile)[0].decodeString();
+        }
+    }
+
+    private void changePrivateEncryptionKey(String newKey, Token token) throws IOException {
+        synchronized (privCryptoKeyFile) {
+            Sys.debug("Changing private encryption key", token);
+            FileUtils.write(privCryptoKeyFile, new Base64String(newKey));
+        }
+    }
+
+    private void changePrivateSigningKey(String newKey, Token token) throws IOException {
+        synchronized (privSigningKeyFile) {
+            Sys.debug("Changing private signing key", token);
+            FileUtils.write(privSigningKeyFile, new Base64String(newKey));
+        }
+    }
+
+    public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, String newPrivateEncryptionKey, String newPrivateSigningKey, Token token)
             throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
@@ -92,6 +140,8 @@ public final class User {
                 PasswordUtils.savePassword(passwordHashFile, newPassword);
                 warning("Saving newly encrypted vault!", token.getIp());
                 savePasswords(new LinkedList<>(Arrays.asList(reEncryptedPasswords)));
+                changePrivateEncryptionKey(newPrivateEncryptionKey, token);
+                changePrivateSigningKey(newPrivateSigningKey, token);
                 info("Master password change succesful.", token.getIp());
             }
             return successToken;
@@ -255,10 +305,9 @@ public final class User {
 
     public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
         synchronized (logFile) {
-            Sys.debug("Loading log.", this, token.getIp());
+            Sys.debug("Loading log.", token);
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-//            PrivateKey privKey = loadPrivateCryptoKey(token);
             for (int i = 0; i < encryptedEntries.length; i++) {
                 try {
                     String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));

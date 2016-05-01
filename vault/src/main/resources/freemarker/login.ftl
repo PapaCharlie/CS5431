@@ -32,9 +32,9 @@
         sessionStorage.removeItem("password");
         $("#loginForm").submit(function (event) {
             $passwordField = $('#password');
-            var hashedPassword = hash(toBits($passwordField.val()));
-            sessionStorage.setItem("password", fromBits(hashedPassword));
-            $passwordField.val(fromBits(hash("auth" + $passwordField.val())));
+            var hashedPassword = hashPassword($passwordField.val());
+            sessionStorage.setItem("password", toB64(hashedPassword));
+            $passwordField.val(toB64(hash("auth" + $passwordField.val())));
         });
     });
 </script>

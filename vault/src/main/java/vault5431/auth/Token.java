@@ -22,7 +22,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 /**
  * Token class. A token is required for all authorization with respect to the Vault
  */
-public class Token {
+public final class Token {
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -54,7 +54,7 @@ public class Token {
     }
 
     /**
-     * Private constructor used for {@link #parseCookie(String)}
+     * Private constructor used for {@link #parseCookie(String)}.
      *
      * @throws InvalidTokenException thrown when parsed token is not valid
      */

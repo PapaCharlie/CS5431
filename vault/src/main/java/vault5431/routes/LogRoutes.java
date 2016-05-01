@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class LogRoutes extends Routes {
+final class LogRoutes extends Routes {
 
     protected void routes() {
 

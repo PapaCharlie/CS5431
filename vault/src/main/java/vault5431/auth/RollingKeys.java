@@ -84,7 +84,7 @@ public class RollingKeys {
     }
 
     /**
-     * Encrypt some arbitrary content using the current rolling key
+     * Encrypt some arbitrary content using the current rolling key.
      *
      * @param content content to encrypt
      * @return encrypted content (first 16 bytes are iv)

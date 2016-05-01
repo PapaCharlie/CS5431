@@ -1,7 +1,9 @@
 package vault5431.users.exceptions;
 
 /**
- * Created by papacharlie on 4/7/16.
+ * Thrown if a Password in the Vault cannot be deserialized.
+ *
+ * @author papacharlie
  */
 public class CorruptedVaultException extends Exception {
 

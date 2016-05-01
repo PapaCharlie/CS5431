@@ -31,7 +31,7 @@
             $.get("/passwords", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                    key = hash(sjcl.bitArray.concat(fromB64(data.salt), fromB64(sessionStorage.getItem("password"))));
+                    key = deriveMasterKey(data.salt, sessionStorage.getItem("password"));
                     passwords = decryptPasswords(key, data.passwords);
                     getAccordions(passwords);
 

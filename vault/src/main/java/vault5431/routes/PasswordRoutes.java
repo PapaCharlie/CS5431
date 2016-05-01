@@ -30,22 +30,24 @@ class PasswordRoutes extends Routes {
             vault.put("salt", user.loadVaultSalt().toString());
             LinkedList<Password> passwords = user.loadPasswords(token);
             vault.put("passwords", passwords.stream().map(Password::toJSONObject).collect(Collectors.toList()));
-            return vault.toString();
+            vault.put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token));
+            vault.put("privateSigningKey", token.getUser().loadPrivateSigningKey(token));
+            return vault;
         });
 
         authenticatedDelete("/passwords/:id", (req, res, token) -> {
             String id = req.params(":id");
             if (!provided(id)) {
-                return allFieldsRequired;
+                return allFieldsRequired();
             }
             UUID uuid;
             try {
                 uuid = UUID.fromString(id);
             } catch (IllegalArgumentException err) {
-                return invalidRequest;
+                return invalidRequest();
             }
             token.getUser().deletePassword(uuid, token);
-            return success;
+            return success();
         });
 
         authenticatedPut("/passwords/:id", (req, res, token) -> {
@@ -53,27 +55,27 @@ class PasswordRoutes extends Routes {
             String id = req.params(":id");
             String changedPassword = req.queryParams("changedPassword");
             if (!provided(id, changedPassword)) {
-                return allFieldsRequired;
+                return allFieldsRequired();
             }
             try {
                 uuid = UUID.fromString(id);
             } catch (IllegalArgumentException err) {
-                return invalidRequest;
+                return invalidRequest();
             }
             try {
                 JSONObject pass = new JSONObject(changedPassword);
                 pass.put("id", uuid.toString());
                 token.getUser().changePassword(Password.fromJSON(pass), token);
-                return success;
+                return success();
             } catch (JSONException err) {
-                return invalidRequest;
+                return invalidRequest();
             }
         });
 
         authenticatedPost("/passwords", (req, res, token) -> {
             String password = req.queryParams("newPassword");
             if (!provided(password)) {
-                return allFieldsRequired;
+                return allFieldsRequired();
             }
             JSONObject pass;
             try {
@@ -83,11 +85,11 @@ class PasswordRoutes extends Routes {
                 token.getUser().addPasswordToVault(newPassword, token);
             } catch (JSONException err) {
                 err.printStackTrace();
-                return invalidRequest;
+                return invalidRequest();
             } catch (IllegalArgumentException err) {
-                return String.format(invalidRequestWithError, err.getMessage());
+                return unSuccessful().put("error", err.getMessage());
             }
-            return success;
+            return success();
         });
 
     }

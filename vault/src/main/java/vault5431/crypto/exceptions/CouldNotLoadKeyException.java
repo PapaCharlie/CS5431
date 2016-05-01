@@ -1,7 +1,9 @@
 package vault5431.crypto.exceptions;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Thrown when key cannot be loaded from disk and decrypted.
+ *
+ * @author papacharlie
  */
 public class CouldNotLoadKeyException extends Exception {
 
