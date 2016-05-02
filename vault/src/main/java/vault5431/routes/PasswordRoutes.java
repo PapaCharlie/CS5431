@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.users.Password;
 import vault5431.users.User;
+import vault5431.users.UserManager;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -87,7 +88,7 @@ class PasswordRoutes extends Routes {
                 err.printStackTrace();
                 return invalidRequest();
             } catch (IllegalArgumentException err) {
-                return unSuccessful().put("error", err.getMessage());
+                return failure().put("error", err.getMessage());
             }
             return success();
         });

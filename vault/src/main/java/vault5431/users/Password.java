@@ -78,7 +78,7 @@ public class Password {
     }
 
     /**
-     * Parses a JSON object ideally created by #toJSONObject, otherwise simply requires all fields be present in the object.
+     * Parses a JSON object ideally created by {@link #toJSONObject}, otherwise simply requires all fields be present in the object.
      *
      * @param json JSONObject representing the Password
      * @return Password instance parsed from JSON.

@@ -66,7 +66,6 @@
     $(document).ready(function () {
         sessionStorage.removeItem("password");
         $("#signupForm").submit(function (event) {
-
             var passwordField = $(this).find("#password");
             var confirmField = $(this).find("#confirm");
 
@@ -79,25 +78,24 @@
                 confirmField.css('border-color', 'red');
                 $('#alert').show();
                 return false;
-            }
-            else {
+            } else {
                 var key = hash(passwordField.val());
 
                 passwordField.val(toB64(hash("auth" + passwordField.val())));
                 confirmField.val(toB64(hash("auth" + confirmField.val())));
 
                 var cryptoPair = generateElGamalKeys();
-                var pubCryptoKey = serializePublicKey(cryptoPair.pub.get());
-                var privCryptoKey = serializePrivateKey(key, cryptoPair.sec.get());
+                var pubCryptoKey = serializePublicKey(cryptoPair.pub);
+                var privCryptoKey = serializePrivateKey(key, cryptoPair.sec);
 
                 var signingPair = generateECDSAKeys();
-                var pubSigningKey = serializePublicKey(signingPair.pub.get());
-                var privSigningKey = serializePrivateKey(key, signingPair.sec.get());
+                var pubSigningKey = serializePublicKey(signingPair.pub);
+                var privSigningKey = serializePrivateKey(key, signingPair.sec);
 
-                console.log(pubCryptoKey);
-                console.log(privCryptoKey);
-                console.log(pubSigningKey);
-                console.log(privSigningKey);
+//                console.log(pubCryptoKey);
+//                console.log(privCryptoKey);
+//                console.log(pubSigningKey);
+//                console.log(privSigningKey);
 
                 var pubCryptoKeyField = $(this).find("#pubCryptoKey");
                 var privCryptoKeyField = $(this).find("#privCryptoKey");

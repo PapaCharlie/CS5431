@@ -41,6 +41,15 @@ function getAccordions(passwords) {
                 'data-toggle': 'modal',
                 'data-target': '#' + entry.id + 'modal'
             }).appendTo(title);
+            var sharesmall = $('<button/>', {
+                'class': 'share btn btn-primary btn-xs',
+                'style': 'float: right; margin-right: 2px',
+                'aria-hidden': 'true',
+                'text': 'Share',
+                'type': 'button',
+                'data-toggle': 'modal',
+                'data-target': '#' + entry.id + 'sharemodal'
+            }).appendTo(title);
 
             var pc = $('<div/>', {
                 'id': entry.id,
@@ -186,6 +195,79 @@ function getAccordions(passwords) {
                 "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
                 "</div>").appendTo(mc);
 
+            var sharemodalstart = $('<div/>', {
+                'id': entry.id + 'sharemodal',
+                'class': 'modal fade',
+                'role': 'dialog'
+            }).appendTo(title); //row2
+
+            var sharemd = $("<div class='modal-dialog'></div>").appendTo(sharemodalstart);
+
+            var sharemc = $("<div class='modal-content'></div>").appendTo(sharemd);
+
+            var sharemodalheader = $("<div class='modal-header'>" +
+                "<button type='button' class='close' data-dismiss='modal'>&times;</button>" +
+                "<h4 class='modal-title'>Share Password</h4>" +
+                "</div>").appendTo(sharemc);
+
+            var sharemb = $("<div class='modal-body'></div>").appendTo(sharemc);
+
+            $("<h5>Please enter the username of the user you want to send this password to:</h5>").appendTo(sharemb);
+
+            var shareform = $("<form class='sharePasswordForm'></form>").appendTo(sharemb);
+
+            var shareinput1 = $('<input/>', {
+                'type': 'hidden',
+                'name': 'id',
+                'class': 'form-control',
+                'value': entry.id
+            }).appendTo(shareform);
+            var sharetarget = $('<input/>', {
+                'type': 'text',
+                'name': 'target',
+                'id': 'target',
+                'class': 'form-control',
+                'placeholder': 'Username',
+                'value': '',
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangename = $('<input/>', {
+                'type': 'hidden',
+                'name': 'name',
+                'class': 'form-control',
+                'value': entry.name,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeurl = $('<input/>', {
+                'type': 'hidden',
+                'name': 'url',
+                'class': 'form-control',
+                'value': entry.url,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeusername = $('<input/>', {
+                'type': 'hidden',
+                'name': 'username',
+                'class': 'form-control',
+                'value': entry.username,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangepass = $('<input/>', {
+                'type': 'hidden',
+                'name': 'password',
+                'class': 'form-control',
+                'value': entry.password,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeform = $('<button/>', {
+                'class': 'btn btn-primary',
+                'type': 'submit',
+                'text': 'Share'
+            }).appendTo(shareform);
+
+            var sharemodalfooter = $("<div class='modal-footer'>" +
+                "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
+                "</div>").appendTo(sharemc);
 
             var row3 = $('<div/>', {
                 'class': 'row'
@@ -201,7 +283,7 @@ function getAccordions(passwords) {
             var notes = $('<div/>', {
                 //'class': 'col-sm-4 col-md-4',
                 'id': 'notes',
-                'text': 'a lot of text here for secure notes'
+                'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 
             $('#accordion').append(pd);

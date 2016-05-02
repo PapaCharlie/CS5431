@@ -15,50 +15,63 @@ function fromB64(data) {
 }
 
 function generateElGamalKeys() {
-    return sjcl.ecc.elGamal.generateKeys(sjcl.ecc.curves.c521);
+    return sjcl.ecc.elGamal.generateKeys(sjcl.ecc.curves.c384);
 }
 
 function generateECDSAKeys() {
-    return sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.c521);
+    return sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.c384);
 }
 
 function serializePrivateKey(encryptionKey, privKey) {
-    return JSON.stringify(encrypt(encryptionKey, toB64(privKey)));
+    return JSON.stringify(encrypt(encryptionKey, toB64(privKey.get())));
 }
 
 function serializePublicKey(pubKey) {
-    return toB64(pubKey.x.concat(pubKey.y));
+    return toB64(pubKey.get().x.concat(pubKey.get().y));
 }
 
 function parseElGamalPublicKey(pubKey) {
     return new sjcl.ecc.elGamal.publicKey(
-        sjcl.ecc.curves.c521,
+        sjcl.ecc.curves.c384,
         fromB64(pubKey)
     );
 }
 
+function sign(privKey, content) {
+    return toB64(privKey.sign(hash(content)));
+}
+
+function verifySignature(pubKey, content, signature) {
+    try {
+        return pubKey.verify(hash(content), fromB64(signature));
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
 function parseECDSAPublicKey(pubKey) {
     return new sjcl.ecc.ecdsa.publicKey(
-        sjcl.ecc.curves.c521,
+        sjcl.ecc.curves.c384,
         fromB64(pubKey)
     );
 }
 
 function parseElGamalPrivateKey(encryptionKey, privKey) {
-    new sjcl.ecc.elGamal.secretKey(
-        sjcl.ecc.curves.c521,
-        sjcl.ecc.curves.c521.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
+    return new sjcl.ecc.elGamal.secretKey(
+        sjcl.ecc.curves.c384,
+        sjcl.ecc.curves.c384.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
     )
 }
 
 function deriveMasterKey(salt, password) {
-    return hash(fromB64(salt).concat(fromB64(password)));
+    return hash(fromB64(salt).concat(password));
 }
 
 function parseECDSAPrivateKey(encryptionKey, privKey) {
-    new sjcl.ecc.ecdsa.secretKey(
-        sjcl.ecc.curves.c521,
-        sjcl.ecc.curves.c521.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
+    return new sjcl.ecc.ecdsa.secretKey(
+        sjcl.ecc.curves.c384,
+        sjcl.ecc.curves.c384.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
     )
 }
 

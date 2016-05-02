@@ -47,7 +47,7 @@ final class AuthenticationRoutes extends Routes {
                 return new ModelAndView(attributes, "login.ftl");
             }
             if (!Base64String.isValidBase64Data(password)) {
-                attributes.put("erro", "Invalid password");
+                attributes.put("error", "Invalid password.");
                 return new ModelAndView(attributes, "login.ftl");
             }
             if (UserManager.userExists(username)) {
@@ -61,6 +61,7 @@ final class AuthenticationRoutes extends Routes {
                             true
                     );
                     res.redirect("/twofactor");
+                    user.info("Successful password login.", token.getIp());
                     return emptyPage;
                 } else {
                     user.warning("Failed password verification attempt.", req.ip());
@@ -157,6 +158,7 @@ final class AuthenticationRoutes extends Routes {
             String pubSigningKey = req.queryParams("pubSigningKey");
             String privSigningKey = req.queryParams("privSigningKey");
             String phoneNumber = req.queryParams("phoneNumber");
+            System.out.println(req.queryParams());
             if (!provided(username, password, phoneNumber, confirm, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
