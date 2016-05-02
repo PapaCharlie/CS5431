@@ -74,14 +74,17 @@
         event.preventDefault();
         if (sessionStorage.getItem("password")) {
             $.get("/passwords", function (payload) {
-                var key;
+                var masterKey;
                 var passwords;
                 var data = JSON.parse(payload);
-                if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                    key = deriveMasterKey(data.salt, fromB64(sessionStorage.getItem("password")));
-                    passwords = decryptPasswords(key, data.passwords);
-
-                    console.log(passwords);
+                if (data
+                        && data.hasOwnProperty("passwords")
+                        && data.hasOwnProperty("salt")
+                        && data.hasOwnProperty("privateEncryptionKey")
+                        && data.hasOwnProperty("privateSigningKey")) {
+                    var masterPassword = fromB64(sessionStorage.getItem("password"));
+                    masterKey = deriveMasterKey(data.salt, masterPassword);
+                    passwords = decryptPasswords(masterKey, data.passwords);
 
                     $oldPassword = $("#oldPassword");
                     $newPassword1 = $("#newPassword1");
@@ -105,11 +108,16 @@
                         reEncryptedPasswords = [];
                     }
 
+                    var newPrivateEncryptionKey = serializePrivateKey(newHashedPassword, parseElGamalPrivateKey(masterPassword, data.privateEncryptionKey));
+                    var newPrivateSigningKey = serializePrivateKey(newHashedPassword, parseECDSAPrivateKey(masterPassword, data.privateSigningKey));
+
                     $.post("/changepassword", {
                         oldPassword: toB64(hash("auth" + $oldPassword.val())),
                         newPassword1: toB64(hash("auth" + $newPassword1.val())),
                         newPassword2: toB64(hash("auth" + $newPassword2.val())),
-                        reEncryptedPasswords: JSON.stringify(reEncryptedPasswords)
+                        reEncryptedPasswords: JSON.stringify(reEncryptedPasswords),
+                        newPrivateEncryptionKey: newPrivateEncryptionKey,
+                        newPrivateSigningKey: newPrivateSigningKey
                     }, function (data) {
                         var response = JSON.parse(data);
                         if (response.success) {

@@ -3,6 +3,139 @@
  */
 
 
+function getSharedAccordions(sharedPasswords) {
+    if (sharedPasswords.length > 0) {
+        var p =
+            sharedPasswords.sort(function(a,b){
+                return a.name.localeCompare(b.name);
+            });
+        p.forEach(function (entry) {
+            var pd = $('<div/>', {
+                'class': 'panel panel-default'
+            });
+            var ph = $('<div/>', {
+                'class': 'panel-heading'
+            }).appendTo(pd);
+            var title = $('<h4/>', {
+                'class': 'panel-title'
+            }).appendTo(ph);
+            var link = $('<a/>', {
+                'href': '#' + entry.id,
+                'data-toggle': 'collapse',
+                'data-parent': '#accordion',
+                'text': entry.name
+            }).appendTo(title);
+            var delbtn = $('<button/>', {
+                'class': 'Reject btn btn-danger btn-xs',
+                'data-id': entry.id,
+                'style': 'float: right',
+                'aria-hidden': 'true',
+                'text': 'Reject'
+            }).appendTo(title);
+            var savebtn = $('<button/>', {
+                'class': 'save btn btn-success btn-xs',
+                'style': 'float: right; margin-right: 2px',
+                'data-id': entry.id,
+                'aria-hidden': 'true',
+                'text': 'Save',
+                'type': 'button'
+            }).appendTo(title);
+
+            var pc = $('<div/>', {
+                'id': entry.id,
+                'class': 'panel-collapse collapse'
+            }).appendTo(pd);
+            var pb = $('<div/>', {
+                'class': 'panel-body'
+            }).appendTo(pc);
+            //var row1 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
+            var url = $('<div/>', {
+                //'id': entry.id,
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'URL: '// + entry.url
+            }).appendTo(pb); //row1
+            var boldurl = $('<b/>', {
+                'text': 'URL: '
+            }).appendTo(url);
+            var urllink = $('<a/>', {
+                'href': entry.url,
+                'target': '_blank',
+                'text': entry.url
+            }).appendTo(url);
+            //var row2 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
+            var username = $('<div/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField',
+                'text': entry.username
+            }).appendTo(pb); //row2
+            var boldusername = $('<b/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Username: '
+            }).prependTo(username); //row2
+
+            var passdiv = $('<div/>', {
+                //'id': entry.name,
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'Password: '
+            }).appendTo(pb); //row2
+            var boldpass = $('<b/>', {
+                //'id': entry.name,
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Password: '
+            }).prependTo(passdiv); //row2
+            var passinput = $('<input/>', {
+                'id': entry.id + 'copy',
+                'type': 'password',
+                'readonly': '',
+                'value': entry.password
+            }).appendTo(passdiv);
+            var copybtn = $('<button/>', {
+                'class': 'copy btn btn-default btn-sm',
+                'data-toggle': 'tooltip',
+                'title': 'Copied!',
+                'data-placement': 'bottom',
+                'data-trigger': 'click',
+                'data-clipboard-action': 'copy',
+                'data-clipboard-target': '#' + entry.id + 'copy',
+                'text': 'Copy'
+            }).appendTo(passdiv);
+            var revealbtn = $('<button/>', {
+                'class': 'reveal btn btn-default btn-sm',
+                'id': entry.id + 'reveal',
+                'text': 'Reveal'
+            }).appendTo(passdiv);
+
+            var row3 = $('<div/>', {
+                'class': 'row'
+            }).appendTo(pb);
+            var notescontainer = $('<div/>', {
+                'class': 'col-sm-4 col-md-4'
+            }).appendTo(row3);
+            var label = $('<label/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Notes',
+                'for': 'notes'
+            }).appendTo(notescontainer);
+            var notes = $('<div/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'id': 'notes',
+                'text': entry.notes ? entry.notes : ""
+            }).appendTo(notescontainer);
+
+            $('#accordion').append(pd);
+
+        });
+    } else {
+        $('#accordion').text("No shared passwords!");
+    }
+}
+
 function getAccordions(passwords) {
     if (passwords.length > 0) {
         var p =
@@ -294,10 +427,10 @@ function getAccordions(passwords) {
     }
 }
 
-function defaultErrorHandler(data) {
+function defaultErrorHandler(data, location) {
     var response = JSON.parse(data);
     if (response.success) {
-        window.location = "/home";
+        window.location.reload();
     } else {
         alert(response.error);
     }

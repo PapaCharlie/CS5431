@@ -65,6 +65,7 @@
 <script>
     $(document).ready(function () {
         sessionStorage.removeItem("password");
+        sessionStorage.removeItem("username");
         $("#signupForm").submit(function (event) {
             var passwordField = $(this).find("#password");
             var confirmField = $(this).find("#confirm");

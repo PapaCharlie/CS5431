@@ -27,21 +27,20 @@
 
 <script>
     $(function () {
+        var username;
         var masterKey;
         var passwords;
         var privateSigningKey;
-        var privateEncryptionKey;
-        if (sessionStorage.getItem("password")) {
+        if (sessionStorage.getItem("password") && sessionStorage.getItem("username")) {
+            username = sessionStorage.getItem("username");
             $.get("/passwords", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords")
                         && data.hasOwnProperty("salt")
-                        && data.hasOwnProperty("privateSigningKey")
-                        && data.hasOwnProperty("privateEncryptionKey")) {
+                        && data.hasOwnProperty("privateSigningKey")) {
                     var masterPassword = fromB64(sessionStorage.getItem("password"));
                     masterKey = deriveMasterKey(data.salt, masterPassword);
                     passwords = decryptPasswords(masterKey, data.passwords);
-                    privateEncryptionKey = parseElGamalPrivateKey(masterPassword, data.privateEncryptionKey);
                     privateSigningKey = parseECDSAPrivateKey(masterPassword, data.privateSigningKey);
                     getAccordions(passwords);
 
@@ -92,7 +91,6 @@
                             type: "PUT",
                             url: "/passwords/" + id,
                             data: {
-                                id: id,
                                 changedPassword: JSON.stringify(values)
                             }
                         }).done(defaultErrorHandler);
@@ -101,7 +99,6 @@
                     $(".sharePasswordForm").on('submit', function (event) {
                         event.preventDefault();
                         var inputs = $(this).find(':input');
-                        var id;
                         var values = {};
                         var target = $(this).find('#target').val();
                         $.get("/publicEncryptionKey/" + target, {}, function (data) {
@@ -115,11 +112,10 @@
                                         }
                                     }
                                 });
-                                var signature = sign(privateSigningKey, JSON.stringify(values));
-                                console.log(signature);
-                                $.post("/sharepassword/" + target, {
-                                    sharedPassword: JSON.stringify(values),
-                                    signature: signature
+                                values["sharer"] = username;
+                                values["signature"] = sign(privateSigningKey, values);
+                                $.post("/shared/" + target, {
+                                    sharedPassword: JSON.stringify(values)
                                 }, defaultErrorHandler);
                             } else {
                                 alert(response.error);
@@ -170,12 +166,10 @@
     $(document).on("click", ".delete", function () {
         var r = confirm("Are you sure you want to delete this Account?");
         if (r == true) {
-//            $(this).closest("div.panel-default").remove();
             var id = $(this).attr("data-id");
             $.ajax({
                 type: "DELETE",
-                url: "/passwords/" + id,
-                data: {id: id}
+                url: "/passwords/" + id
             }).done(defaultErrorHandler);
         }
     });

@@ -17,8 +17,6 @@ import java.util.HashMap;
  */
 final class SettingsRoutes extends Routes {
 
-    private static final String successWithData = "{\"\":true,\"%s\":\"%s\"}";
-
     private Integer parseNumberField(String formField) {
         if (formField != null && formField.length() > 0) {
             try {
@@ -53,10 +51,10 @@ final class SettingsRoutes extends Routes {
                             token.getUser().info("Changed maximum number of concurrent users.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
-                        return failure().put("error", err.getMessage());
+                        return failure(err.getMessage());
                     }
                 } else {
-                    return failure().put("error", "concurrentSessions must be an integer!");
+                    return failure("concurrentSessions must be an integer!");
                 }
             }
             String sessionLength = req.queryParams("sessionLength");
@@ -70,10 +68,10 @@ final class SettingsRoutes extends Routes {
                             token.getUser().info("Changed maximum session length.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
-                        return failure().put("error", err.getMessage());
+                        return failure(err);
                     }
                 } else {
-                    return failure().put("error", "sessionLength must be an integer!");
+                    return failure("sessionLength must be an integer!");
                 }
             }
             return success();
@@ -94,7 +92,7 @@ final class SettingsRoutes extends Routes {
                 return invalidRequest();
             }
             if (!newPassword1.equals(newPassword2)) {
-                return failure().put("error", "New passwords must be equal.");
+                return failure("New passwords must be equal.");
             }
             try {
                 Password[] newPasswords = Password.fromJSON(new JSONArray(reEncryptedPasswords));
@@ -107,13 +105,13 @@ final class SettingsRoutes extends Routes {
                         token
                 );
                 if (newToken == null) {
-                    return failure().put("error", "Provided password is not the master password. This activity has been flagged.");
+                    return failure("Provided password is not the master password. This activity has been flagged.");
                 } else {
                     res.cookie("token", newToken.toCookie());
                     return success();
                 }
             } catch (IllegalArgumentException err) {
-                return failure().put("error", err.getMessage());
+                return failure(err);
             }
         });
 

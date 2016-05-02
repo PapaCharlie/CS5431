@@ -3,7 +3,28 @@
  */
 
 function hash(data) {
-    return sjcl.hash.sha256.hash(data);
+    if ((typeof data !== "string" || !(data instanceof String)) && (typeof data === "object" || data instanceof Object)) {
+        var h = new sjcl.hash.sha256();
+        var keys = [];
+        for (var prop in data) {
+            if (data.hasOwnProperty(prop)) {
+                keys.push(prop);
+            }
+        }
+        keys.sort();
+        for (var key in keys) {
+            if (data.hasOwnProperty(key)) {
+                if (typeof data[key] !== "string" || !(data[key] instanceof String)) {
+                    h.update(toB64(hash(data[key])));
+                } else {
+                    h.update(data[key]);
+                }
+            }
+        }
+        return h.finalize();
+    } else {
+        return sjcl.hash.sha256.hash(data);
+    }
 }
 
 function toB64(data) {

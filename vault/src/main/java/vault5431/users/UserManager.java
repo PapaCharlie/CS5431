@@ -107,6 +107,12 @@ public class UserManager {
                     } else {
                         Sys.info("Created vault file.", user);
                     }
+                    if (!user.sharedPasswordsFile.createNewFile()) {
+                        Sys.error("Could not create shared passwords file!.", user);
+                        return null;
+                    } else {
+                        Sys.info("Created vault file.", user);
+                    }
                     PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
                     SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumberFile);
                     new Settings().saveToFile(user.settingsFile);

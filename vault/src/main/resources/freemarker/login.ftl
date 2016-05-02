@@ -29,10 +29,11 @@
 </div>
 <script>
     $(document).ready(function () {
-        if (sessionStorage.removeItem("password")) {
+        if (sessionStorage.removeItem("password") && sessionStorage.removeItem("username")) {
             window.location.href = "/home";
         }
         $("#loginForm").submit(function (event) {
+            sessionStorage.setItem("username", $(this).find("#username").val());
             var passwordField = $(this).find("#password");
             var hashedPassword = hash(passwordField.val());
             sessionStorage.setItem("password", toB64(hashedPassword));

@@ -2,6 +2,7 @@ package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
+import org.json.JSONObject;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
@@ -40,6 +41,7 @@ public final class User {
     public final File logFile;
     public final File vaultFile;
     public final File vaultSaltFile;
+    public final File sharedPasswordsFile;
     public final File phoneNumberFile;
     public final File settingsFile;
     public final File passwordHashFile;
@@ -57,6 +59,7 @@ public final class User {
         logFile = new File(getHome(), "log");
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
+        sharedPasswordsFile = new File(getHome(), "shared");
         passwordHashFile = new File(getHome(), "password.hash");
         settingsFile = new File(getHome(), "settings");
         phoneNumberFile = new File(getHome(), "phone.number");
@@ -87,6 +90,74 @@ public final class User {
                 err.printStackTrace();
                 throw new CouldNotDecryptPhoneNumberException();
             }
+        }
+    }
+
+    private void saveSharedPasswords(LinkedList<SharedPassword> sharedPasswords) throws IOException {
+        synchronized (sharedPasswordsFile) {
+            FileUtils.empty(sharedPasswordsFile);
+            for (SharedPassword password : sharedPasswords) {
+                FileUtils.append(sharedPasswordsFile, new Base64String(password.toJSON()));
+            }
+        }
+    }
+
+    public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
+        synchronized (sharedPasswordsFile) {
+            LinkedList<SharedPassword> passwords = loadSharedPasswords(token);
+            LinkedList<SharedPassword> filteredPasswords = new LinkedList<>();
+            SharedPassword deleted = null;
+            for (SharedPassword sharedPassword : passwords) {
+                if (sharedPassword.getID().equals(uuid)) {
+                    deleted = sharedPassword;
+                } else {
+                    filteredPasswords.push(sharedPassword);
+                }
+            }
+            if (deleted != null) {
+                saveSharedPasswords(filteredPasswords);
+                info("Deleted shared password.", token.getIp());
+            }
+            return deleted;
+        }
+    }
+
+    public LinkedList<SharedPassword> loadSharedPasswords(Token token) throws IOException, CorruptedVaultException, VaultNotFoundException {
+        synchronized (sharedPasswordsFile) {
+            info("Loading shared passwords.", token.getIp());
+            if (!sharedPasswordsFile.exists()) {
+                Sys.error("User's shared passwords file could not be found.", this, token.getIp());
+                throw new VaultNotFoundException();
+            }
+            LinkedList<SharedPassword> sharedPasswords = new LinkedList<>();
+            try {
+                for (Base64String base64String : Base64String.loadFromFile(sharedPasswordsFile)) {
+                    try {
+                        sharedPasswords.add(SharedPassword.fromJSON(base64String));
+                    } catch (IllegalArgumentException | JSONException err) {
+                        err.printStackTrace();
+                        error("Shared password was corrupted! Loading remaining passwords.", token.getIp());
+                    }
+                }
+            } catch (IOException err) {
+                err.printStackTrace();
+                error("Could not find vault!", token.getIp());
+                throw new VaultNotFoundException();
+            }
+            return sharedPasswords;
+
+        }
+    }
+
+    public int numSharedPasswords(Token token) throws IOException {
+        synchronized (sharedPasswordsFile) {
+            return FileUtils.read(sharedPasswordsFile).length;
+        }
+    }
+
+    public void addSharedPassword(SharedPassword sharedPassword) throws IOException {
+        synchronized (sharedPasswordsFile) {
+            FileUtils.append(sharedPasswordsFile, new Base64String(sharedPassword.toJSONObject().toString()));
         }
     }
 
