@@ -16,11 +16,13 @@ import java.security.spec.X509EncodedKeySpec;
 
 /**
  * Asymmetric encryption utils.
+ *
+ * @author papacharlie
  */
 public class AsymmetricUtils {
 
     /**
-     * Asymmetric key size
+     * Asymmetric key size.
      */
     public static final int KEY_SIZE = 4096;
 
@@ -45,21 +47,27 @@ public class AsymmetricUtils {
      * Acquire RSA keypair.
      * WARNING: expensive function. Call at your own risk.
      *
-     * @return Generated pair of KEY_SIZE bits
+     * @return Generated pair of {@link #KEY_SIZE} bits
      */
     public static KeyPair getNewKeyPair() {
-        KeyPair keyPair = null;
         try {
             KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA", "BC");
             gen.initialize(KEY_SIZE, new SecureRandom());
-            keyPair = gen.generateKeyPair();
+            return gen.generateKeyPair();
         } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         }
-        return keyPair;
     }
 
+    /**
+     * Encrypt the content using the provided key.
+     *
+     * @param content   content to be encrypted
+     * @param publicKey public key with which to encrypt
+     * @return Encrypted string as a {@link Base64String}.
+     * @throws BadCiphertextException If the #content cannot be encrypted.
+     */
     public static Base64String encrypt(byte[] content, PublicKey publicKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
@@ -74,6 +82,15 @@ public class AsymmetricUtils {
         }
     }
 
+    /**
+     * Returns the decrypted data encrypted by {@link #encrypt}.
+     *
+     * @param encryptedContent encrypted content
+     * @param privateKey       private key of pair used to encrypt
+     * @return Decrypted content.
+     * @throws BadCiphertextException If the content cannot be decrypted/is corrupted. Should not be thrown if the
+     *                                parameter has truly been returned by {@link #encrypt}.
+     */
     public static byte[] decrypt(Base64String encryptedContent, PrivateKey privateKey) throws BadCiphertextException {
         try {
             Cipher cipher = getCipher();
@@ -88,15 +105,31 @@ public class AsymmetricUtils {
         }
     }
 
-    public static void savePublicKey(File keyfile, PublicKey key) throws IOException {
+    /**
+     * Save public key to disk.
+     *
+     * @param keyFile file in which to write the key
+     * @param key     key to save
+     * @throws IOException If the file cannot be written to.
+     */
+    public static void savePublicKey(File keyFile, PublicKey key) throws IOException {
         Base64String key64 = new Base64String(key.getEncoded());
-        key64.saveToFile(keyfile);
+        key64.saveToFile(keyFile);
     }
 
-    public static PublicKey loadPublicKey(File keyfile) throws IOException, CouldNotLoadKeyException {
+    /**
+     * Returns the public key saved by {@link #savePublicKey(File, PublicKey)}.
+     *
+     * @param keyFile file from which to read the key
+     * @return The loaded public key.
+     * @throws IOException              If the file cannot be read.
+     * @throws CouldNotLoadKeyException If the saved key was invalid. Should not be thrown if the key was truly saved by
+     *                                  {@link #savePublicKey(File, PublicKey)}.
+     */
+    public static PublicKey loadPublicKey(File keyFile) throws IOException, CouldNotLoadKeyException {
         PublicKey publicKey = null;
         try {
-            byte[] key64 = Base64String.loadFromFile(keyfile)[0].decodeBytes();
+            byte[] key64 = Base64String.loadFromFile(keyFile)[0].decodeBytes();
             publicKey = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(key64));
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
@@ -108,29 +141,46 @@ public class AsymmetricUtils {
         return publicKey;
     }
 
-    public static void savePrivateKey(File keyfile, PrivateKey privateKey, SecretKey key) throws IOException, CouldNotSaveKeyException {
+    /**
+     * Save the private key to a file, encrypted under a secret key.
+     *
+     * @param keyFile    file to write the key to
+     * @param privateKey private key to encrypt and save
+     * @param key        secret key under which to encrypt the private key
+     * @throws IOException              If the file cannot be written to.
+     * @throws CouldNotSaveKeyException If the private key could not be encrypted.
+     */
+    public static void savePrivateKey(File keyFile, PrivateKey privateKey, SecretKey key) throws IOException, CouldNotSaveKeyException {
         try {
             Base64String encryptedKey = SymmetricUtils.encrypt(privateKey.getEncoded(), key);
-            encryptedKey.saveToFile(keyfile);
+            encryptedKey.saveToFile(keyFile);
         } catch (BadCiphertextException err) {
             err.printStackTrace();
             throw new CouldNotSaveKeyException();
         }
     }
 
-    public static PrivateKey loadPrivateKey(File keyfile, SecretKey key) throws IOException, CouldNotLoadKeyException {
-        PrivateKey privateKey = null;
+    /**
+     * Returns the private key loaded from disk, presumably encrypted and saved by {@link #savePrivateKey(File, PrivateKey, SecretKey)}.
+     * WARNING: Likely not to throw an error if the given {@link SecretKey} was not the one the private key was encrypted under.
+     *
+     * @param keyFile file in which the private key is stored
+     * @param key     secret key under which the key was encrypted
+     * @return The decrypted and loaded key.
+     * @throws IOException              If the file cannot be read.
+     * @throws CouldNotLoadKeyException If the private key could not be decrypted, or decrypted to an invalid {@link PrivateKey}.
+     */
+    public static PrivateKey loadPrivateKey(File keyFile, SecretKey key) throws IOException, CouldNotLoadKeyException {
         try {
-            Base64String encryptedKey = Base64String.loadFromFile(keyfile)[0];
+            Base64String encryptedKey = Base64String.loadFromFile(keyFile)[0];
             byte[] decryptedPrivateKeyBytes = SymmetricUtils.decrypt(encryptedKey, key);
-            privateKey = KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
+            return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decryptedPrivateKeyBytes));
         } catch (NoSuchAlgorithmException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         } catch (BadCiphertextException | InvalidKeySpecException err) {
             throw new CouldNotLoadKeyException();
         }
-        return privateKey;
     }
 
 }

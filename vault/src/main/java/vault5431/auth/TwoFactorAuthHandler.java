@@ -9,7 +9,7 @@ import vault5431.Sys;
 import static vault5431.Vault.test;
 import vault5431.auth.exceptions.TooMany2FAAttemptsException;
 import vault5431.users.User;
-import vault5431.users.exceptions.CouldNotLoadPhoneNumberException;
+import vault5431.users.exceptions.CouldNotDecryptPhoneNumberException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ class TwoFactorAuthHandler {
     private static final String AUTH_TOKEN = "a8113b81179e3832fc3b780590a29b4e";
     private static final String ADMIN_PHONE_NUMBER = "+16072755431";
 
-    public static int sendAuthMessage(User user) throws IOException, CouldNotLoadPhoneNumberException, TwilioRestException {
+    public static int sendAuthMessage(User user) throws IOException, CouldNotDecryptPhoneNumberException, TwilioRestException {
         if (!isWaiting(user)) {
             TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
             AuthMessage auth = new AuthMessage();

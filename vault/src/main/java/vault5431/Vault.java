@@ -21,27 +21,24 @@ public class Vault {
 
     private static final File adminSaltFile = new File(home, "admin.salt");
 
-    /**
-     * Prompts SysAdmin at startup to enter the admin password. It then derives the admin signing and encryption.
-     *
-     * @return The set of AdminKeys
-     */
-    private static AdminKeys readAdminKeys() {
+    private static boolean initialized = false;
+    private static final SecretKey adminEncryptionKey;
+    private static final SecretKey adminSigningKey;
+
+    static {
         initialize();
-        AdminKeys keys = null;
+        byte[] adminSalt;
+        // This line changed at deploy time to prompt SysAdmin for admin password
+        String adminPassword = "debug";
         try {
-            byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
-            // This line changed at deploy time to prompt SysAdmin for admin password
-            String adminPassword = "debug";
-            SecretKey adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
-            SecretKey adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
-            keys = new AdminKeys(adminEncryptionKey, adminSigningKey);
+            adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
         } catch (IOException err) {
             err.printStackTrace();
-            System.err.println("Could not load admin salt from file, or could not derive keys from admin password!");
-            System.exit(1);
+            System.err.println("Could not load admin salt from file!");
+            throw new RuntimeException(err);
         }
-        return keys;
+        adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
+        adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
     }
     private static boolean initialized = false;
 
@@ -91,22 +88,20 @@ public class Vault {
                 System.exit(1);
             }
         }
-
-        UserManager.initialize();
     }
 
     /**
      * Returns the admin signing key derived from the SysAdmin password.
      */
     public static SecretKey getAdminEncryptionKey() {
-        return adminKeys.encryptionKey;
+        return adminEncryptionKey;
     }
 
     /**
      * Returns the admin encryption key derived from the SysAdmin password.
      */
     public static SecretKey getAdminSigningKey() {
-        return adminKeys.signingKey;
+        return adminSigningKey;
     }
 
     public static void main(String[] args) throws Exception {
@@ -119,16 +114,6 @@ public class Vault {
         awaitInitialization();
 
         System.out.println("Hosting at: https://localhost:5431");
-    }
-
-    private static final class AdminKeys {
-        protected final SecretKey encryptionKey;
-        protected final SecretKey signingKey;
-
-        protected AdminKeys(SecretKey encryptionKey, SecretKey signingKey) {
-            this.encryptionKey = encryptionKey;
-            this.signingKey = signingKey;
-        }
     }
 
 }

@@ -1,6 +1,7 @@
 package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
+import vault5431.auth.Token;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
@@ -41,6 +42,10 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.ERROR, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
+    public static void error(String message, Token token) {
+        appendToLog(new SystemLogEntry(LogType.ERROR, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+    }
+
     public static void error(String message, User affectedUser) {
         appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -62,6 +67,10 @@ public class Sys {
 
     public static void warning(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.WARNING, ip, SYS, LocalDateTime.now(), message, ""));
+    }
+
+    public static void warning(String message, Token token) {
+        appendToLog(new SystemLogEntry(LogType.WARNING, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
     }
 
     public static void warning(String message, User affectedUser) {
@@ -87,6 +96,10 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.INFO, ip, SYS, LocalDateTime.now(), message, ""));
     }
 
+    public static void info(String message, Token token) {
+        appendToLog(new SystemLogEntry(LogType.INFO, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+    }
+
     public static void info(String message, User affectedUser) {
         appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
     }
@@ -108,6 +121,10 @@ public class Sys {
 
     public static void debug(String message, String ip) {
         appendToLog(new SystemLogEntry(LogType.DEBUG, ip, SYS, LocalDateTime.now(), message, ""));
+    }
+
+    public static void debug(String message, Token token) {
+        appendToLog(new SystemLogEntry(LogType.DEBUG, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
     }
 
     public static void debug(String message, User affectedUser) {
@@ -148,7 +165,6 @@ public class Sys {
      * Load system log from disk, only for demonstration purposes. System should be decryptable by anyone but sys admins
      *
      * @return Set of LogEntries loaded from disk.
-     * @throws IOException
      */
     public static SystemLogEntry[] loadLog() {
         synchronized (logFile) {

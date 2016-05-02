@@ -12,7 +12,9 @@ import java.util.UUID;
  */
 public class Password {
 
-    // Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
+    /**
+     * Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
+     */
     protected static final int MAX_ENCRYPTED_LENGTH = 750;
 
     private JSONObject name;
@@ -76,7 +78,7 @@ public class Password {
     }
 
     /**
-     * Parses a JSON object ideally created by #toJSONObject, otherwise simply requires all fields be present in the object.
+     * Parses a JSON object ideally created by {@link #toJSONObject}, otherwise simply requires all fields be present in the object.
      *
      * @param json JSONObject representing the Password
      * @return Password instance parsed from JSON.

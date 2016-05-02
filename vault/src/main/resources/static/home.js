@@ -32,6 +32,24 @@ function getAccordions(passwords) {
                 'aria-hidden': 'true',
                 'text': 'Delete'
             }).appendTo(title);
+            var editsmall = $('<button/>', {
+                'class': 'edit btn btn-warning btn-xs',
+                'style': 'float: right; margin-right: 2px',
+                'aria-hidden': 'true',
+                'text': 'Edit',
+                'type': 'button',
+                'data-toggle': 'modal',
+                'data-target': '#' + entry.id + 'modal'
+            }).appendTo(title);
+            var sharesmall = $('<button/>', {
+                'class': 'share btn btn-primary btn-xs',
+                'style': 'float: right; margin-right: 2px',
+                'aria-hidden': 'true',
+                'text': 'Share',
+                'type': 'button',
+                'data-toggle': 'modal',
+                'data-target': '#' + entry.id + 'sharemodal'
+            }).appendTo(title);
 
             var pc = $('<div/>', {
                 'id': entry.id,
@@ -40,26 +58,47 @@ function getAccordions(passwords) {
             var pb = $('<div/>', {
                 'class': 'panel-body'
             }).appendTo(pc);
-            var row1 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
+            //var row1 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
             var url = $('<div/>', {
                 //'id': entry.id,
-                'class': 'col-sm-4 col-md-4',
-                'text': 'URL: ' + entry.url
-            }).appendTo(row1);
-            var row2 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'URL: '// + entry.url
+            }).appendTo(pb); //row1
+            var boldurl = $('<b/>', {
+                'text': 'URL: '
+            }).appendTo(url);
+            var urllink = $('<a/>', {
+                'href': entry.url,
+                'target': '_blank',
+                'text': entry.url
+            }).appendTo(url);
+            //var row2 = $('<div/>', {
+            //    'class': 'row'
+            //}).appendTo(pb);
             var username = $('<div/>', {
-                'class': 'col-sm-4 col-md-4',
-                'text': 'Username: ' + entry.username
-            }).appendTo(row2);
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField',
+                'text': entry.username
+            }).appendTo(pb); //row2
+            var boldusername = $('<b/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Username: '
+            }).prependTo(username); //row2
+
             var passdiv = $('<div/>', {
                 //'id': entry.name,
-                'class': 'col-sm-4 col-md-4',
+                //'class': 'col-sm-4 col-md-4',
+                'class': 'accordionField'
+                //'text': 'Password: '
+            }).appendTo(pb); //row2
+            var boldpass = $('<b/>', {
+                //'id': entry.name,
+                //'class': 'col-sm-4 col-md-4',
                 'text': 'Password: '
-            }).appendTo(row2);
+            }).prependTo(passdiv); //row2
             var passinput = $('<input/>', {
                 'id': entry.id + 'copy',
                 'type': 'password',
@@ -81,18 +120,18 @@ function getAccordions(passwords) {
                 'id': entry.id + 'reveal',
                 'text': 'Reveal'
             }).appendTo(passdiv);
-            var editbtn = $('<button/>', {
-                'type': 'button',
-                'class': 'btn btn-warning',
-                'data-toggle': 'modal',
-                'data-target': '#' + entry.id + 'modal',
-                'text': 'Edit Account Info'
-            }).appendTo(row2);
+            //var editbtn = $('<button/>', {
+            //    'type': 'button',
+            //    'class': 'btn btn-warning',
+            //    'data-toggle': 'modal',
+            //    'data-target': '#' + entry.id + 'modal',
+            //    'text': 'Edit Account Info'
+            //}).appendTo(row2);
             var modalstart = $('<div/>', {
                 'id': entry.id + 'modal',
                 'class': 'modal fade',
                 'role': 'dialog'
-            }).appendTo(row2);
+            }).appendTo(title); //row2
 
             var md = $("<div class='modal-dialog'></div>").appendTo(modalstart);
 
@@ -141,6 +180,11 @@ function getAccordions(passwords) {
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(form);
+            var changenotes = $('<textarea/>', {
+                'name': 'notes',
+                'class': 'form-control',
+                'text': 'put current secure notes here'
+            }).appendTo(form);
             var changeform = $('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'submit',
@@ -150,6 +194,97 @@ function getAccordions(passwords) {
             var modalfooter = $("<div class='modal-footer'>" +
                 "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
                 "</div>").appendTo(mc);
+
+            var sharemodalstart = $('<div/>', {
+                'id': entry.id + 'sharemodal',
+                'class': 'modal fade',
+                'role': 'dialog'
+            }).appendTo(title); //row2
+
+            var sharemd = $("<div class='modal-dialog'></div>").appendTo(sharemodalstart);
+
+            var sharemc = $("<div class='modal-content'></div>").appendTo(sharemd);
+
+            var sharemodalheader = $("<div class='modal-header'>" +
+                "<button type='button' class='close' data-dismiss='modal'>&times;</button>" +
+                "<h4 class='modal-title'>Share Password</h4>" +
+                "</div>").appendTo(sharemc);
+
+            var sharemb = $("<div class='modal-body'></div>").appendTo(sharemc);
+
+            $("<h5>Please enter the username of the user you want to send this password to:</h5>").appendTo(sharemb);
+
+            var shareform = $("<form class='sharePasswordForm'></form>").appendTo(sharemb);
+
+            var shareinput1 = $('<input/>', {
+                'type': 'hidden',
+                'name': 'id',
+                'class': 'form-control',
+                'value': entry.id
+            }).appendTo(shareform);
+            var sharetarget = $('<input/>', {
+                'type': 'text',
+                'name': 'target',
+                'id': 'target',
+                'class': 'form-control',
+                'placeholder': 'Username',
+                'value': '',
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangename = $('<input/>', {
+                'type': 'hidden',
+                'name': 'name',
+                'class': 'form-control',
+                'value': entry.name,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeurl = $('<input/>', {
+                'type': 'hidden',
+                'name': 'url',
+                'class': 'form-control',
+                'value': entry.url,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeusername = $('<input/>', {
+                'type': 'hidden',
+                'name': 'username',
+                'class': 'form-control',
+                'value': entry.username,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangepass = $('<input/>', {
+                'type': 'hidden',
+                'name': 'password',
+                'class': 'form-control',
+                'value': entry.password,
+                'required': 'true'
+            }).appendTo(shareform);
+            var sharechangeform = $('<button/>', {
+                'class': 'btn btn-primary',
+                'type': 'submit',
+                'text': 'Share'
+            }).appendTo(shareform);
+
+            var sharemodalfooter = $("<div class='modal-footer'>" +
+                "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
+                "</div>").appendTo(sharemc);
+
+            var row3 = $('<div/>', {
+                'class': 'row'
+            }).appendTo(pb);
+            var notescontainer = $('<div/>', {
+                'class': 'col-sm-4 col-md-4'
+            }).appendTo(row3);
+            var label = $('<label/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Notes',
+                'for': 'notes'
+            }).appendTo(notescontainer);
+            var notes = $('<div/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'id': 'notes',
+                'text': entry.notes ? entry.notes : ""
+            }).appendTo(notescontainer);
 
             $('#accordion').append(pd);
 

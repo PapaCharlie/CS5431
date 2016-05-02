@@ -6,12 +6,73 @@ function hash(data) {
     return sjcl.hash.sha256.hash(data);
 }
 
-function toBits(data) {
-    return sjcl.codec.utf8String.toBits(data);
+function toB64(data) {
+    return sjcl.codec.base64url.fromBits(data);
 }
 
-function fromBits(data) {
-    return sjcl.codec.base64url.fromBits(data);
+function fromB64(data) {
+    return sjcl.codec.base64url.toBits(data);
+}
+
+function generateElGamalKeys() {
+    return sjcl.ecc.elGamal.generateKeys(sjcl.ecc.curves.c384);
+}
+
+function generateECDSAKeys() {
+    return sjcl.ecc.ecdsa.generateKeys(sjcl.ecc.curves.c384);
+}
+
+function serializePrivateKey(encryptionKey, privKey) {
+    return JSON.stringify(encrypt(encryptionKey, toB64(privKey.get())));
+}
+
+function serializePublicKey(pubKey) {
+    return toB64(pubKey.get().x.concat(pubKey.get().y));
+}
+
+function parseElGamalPublicKey(pubKey) {
+    return new sjcl.ecc.elGamal.publicKey(
+        sjcl.ecc.curves.c384,
+        fromB64(pubKey)
+    );
+}
+
+function sign(privKey, content) {
+    return toB64(privKey.sign(hash(content)));
+}
+
+function verifySignature(pubKey, content, signature) {
+    try {
+        return pubKey.verify(hash(content), fromB64(signature));
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+function parseECDSAPublicKey(pubKey) {
+    return new sjcl.ecc.ecdsa.publicKey(
+        sjcl.ecc.curves.c384,
+        fromB64(pubKey)
+    );
+}
+
+function parseElGamalPrivateKey(encryptionKey, privKey) {
+    return new sjcl.ecc.elGamal.secretKey(
+        sjcl.ecc.curves.c384,
+        sjcl.ecc.curves.c384.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
+    )
+}
+
+function deriveMasterKey(salt, password) {
+    return hash(fromB64(salt).concat(password));
+}
+
+function parseECDSAPrivateKey(encryptionKey, privKey) {
+    return new sjcl.ecc.ecdsa.secretKey(
+        sjcl.ecc.curves.c384,
+        sjcl.ecc.curves.c384.field.fromBits(fromB64(decrypt(encryptionKey, privKey)))
+    )
 }
 
 function encrypt(key, data) {
@@ -67,8 +128,4 @@ function decryptPasswords(key, encryptedPasswords) {
         decryptedPassword.id = encryptedPassword.id;
         return decryptedPassword;
     });
-}
-
-function fromB64(data) {
-    return sjcl.codec.base64url.toBits(data);
 }

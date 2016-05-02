@@ -42,7 +42,7 @@ public class VaultTest {
         while (UserManager.userExists(username)) {
             username = PasswordGenerator.generatePassword(10);
         }
-        User user = UserManager.create(username, PasswordUtils.hashPassword("auth" + HashUtils.hash256(password.getBytes()).decodeString()), "");
+        User user = UserManager.create(username, PasswordUtils.hashPassword("auth" + HashUtils.hash256(password.getBytes()).decodeString()), "", "", "", "", "");
         createdUsers.push(username);
         return user;
     }

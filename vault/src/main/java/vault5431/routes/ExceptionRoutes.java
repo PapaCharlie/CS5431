@@ -11,14 +11,21 @@ import java.util.Map;
 import static spark.Spark.exception;
 
 /**
- * Created by papacharlie on 2016-04-26.
+ * Catches and renders commonly thrown errors.
+ *
+ * @author papacharlie
  */
-public class ExceptionRoutes extends Routes {
+final class ExceptionRoutes extends Routes {
 
-    private void renderFatalError(String message, Response res) {
+    /**
+     * Render the login screen with the error in red text.
+     * @param errorMessage message to render on the login screen
+     * @param res response on which to render the error
+     */
+    private void renderFatalError(String errorMessage, Response res) {
         res.removeCookie("token");
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("error", message);
+        attributes.put("error", errorMessage);
         ModelAndView model = new ModelAndView(attributes, "login.ftl");
         res.body(freeMarkerEngine.render(model));
     }

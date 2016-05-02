@@ -22,7 +22,7 @@ public class PasswordUtils {
     public static final int SALT_SIZE = KEY_SIZE / 8;
 
     private static final SecureRandom random = new SecureRandom();
-    private static String HASH_ALG = "PBKDF2WithHmacSHA512";
+    private static final String HASH_ALG = "PBKDF2WithHmacSHA512";
 
     public static byte[] generateSalt() {
         byte[] salt = new byte[SALT_SIZE];
@@ -47,7 +47,7 @@ public class PasswordUtils {
         return HashUtils.hash256(password.getBytes(), 2);
     }
 
-    public static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
+    private static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
         byte[] decoded = hashedPassword.decodeBytes();
         byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
         byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);

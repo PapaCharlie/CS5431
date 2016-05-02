@@ -27,23 +27,18 @@ public class UserManager {
 
     private static final Map<Base64String, User> users = new HashMap<>();
     private static final ReentrantReadWriteLock userMapLock = new ReentrantReadWriteLock();
-    private static boolean initialized = false;
-
-    public static void initialize() {
-        if (!initialized) {
-            initialized = true;
-            userMapLock.writeLock().lock();
-            try {
-                addUser(new User(Sys.SYS));
-                for (String dirname : home.list((dir, name) ->
-                        new File(dir, name).isDirectory())) {
-                    Base64String hash = Base64String.fromBase64(dirname);
-                    User user = new User(hash);
-                    addUser(user);
-                }
-            } finally {
-                userMapLock.writeLock().unlock();
+    static {
+        userMapLock.writeLock().lock();
+        try {
+            addUser(new User(Sys.SYS));
+            for (String dirname : home.list((dir, name) ->
+                    new File(dir, name).isDirectory())) {
+                Base64String hash = Base64String.fromBase64(dirname);
+                User user = new User(hash);
+                addUser(user);
             }
+        } finally {
+            userMapLock.writeLock().unlock();
         }
     }
 
@@ -86,7 +81,7 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber)
+    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber, String pubCryptoKey, String privCryptoKey, String pubSigningKey, String privSigningKey)
             throws IOException, CouldNotSaveKeyException, BadCiphertextException {
         User user;
         userMapLock.readLock().lock();
@@ -115,6 +110,11 @@ public class UserManager {
                     PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
                     SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumberFile);
                     new Settings().saveToFile(user.settingsFile);
+
+                    new Base64String(pubCryptoKey).saveToFile(user.pubCryptoKeyFile);
+                    new Base64String(privCryptoKey).saveToFile(user.privCryptoKeyFile);
+                    new Base64String(pubSigningKey).saveToFile(user.pubSigningKeyFile);
+                    new Base64String(privSigningKey).saveToFile(user.privSigningKeyFile);
 
                     byte[] salt = PasswordUtils.generateSalt();
                     SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);

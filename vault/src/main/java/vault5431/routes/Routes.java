@@ -1,6 +1,7 @@
 package vault5431.routes;
 
 import freemarker.template.Configuration;
+import org.json.JSONObject;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
@@ -24,10 +25,27 @@ import static spark.Spark.*;
 public abstract class Routes {
 
     protected static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
-    protected static final String invalidRequest = "{\"success\":false, \"error\": \"Invalid request!\"}";
-    protected static final String invalidRequestWithError = "{\"success\":false, \"error\": \"%s\"}";
-    protected static final String allFieldsRequired = "{\"success\":false, \"error\": \"All fields are required!\"}";
-    protected static final String success = "{\"success\":true, \"error\": \"\"}";
+
+    protected static JSONObject failure() {
+        return new JSONObject().put("success", false);
+    }
+
+    protected static JSONObject userDoesNotExist() {
+        return new JSONObject().put("success", false).put("error", "This user does not exist!");
+    }
+
+    protected static JSONObject invalidRequest() {
+        return new JSONObject().put("success", false).put("error", "Invalid request!");
+    }
+
+    protected static JSONObject allFieldsRequired() {
+        return new JSONObject().put("success", false).put("error", "All fields are required!");
+    }
+
+    protected static JSONObject success() {
+        return new JSONObject().put("success", true).put("error", "");
+    }
+
     protected static final String vault = "/vault";
     private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
     protected static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
@@ -86,6 +104,7 @@ public abstract class Routes {
         new AuthenticationRoutes().routes();
         new ExceptionRoutes().routes();
         new SettingsRoutes().routes();
+        new PasswordSharingRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();
@@ -99,10 +118,12 @@ public abstract class Routes {
         default Object handle(Request request, Response response) throws Exception {
             Token token = validateToken(request);
             if (token != null) {
-                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token.getUser(), token.getIp());
+                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token);
                 Object res = authenticatedHandle(request, response, token);
                 if (res instanceof ModelAndView) {
                     return freeMarkerEngine.render((ModelAndView) res);
+                } else if (res instanceof JSONObject) {
+                    return res.toString();
                 } else {
                     return res;
                 }
