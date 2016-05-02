@@ -22,6 +22,9 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Created by cyj on 4/9/16.
+ * The two-factor authentication handler. Responsible for maintaining user, authentication code pairs currently in use.
+ * Two-factor authentication is necessary for a client to recieve a verified token, and thus acces their vault.
+ * In short, the client must pass through this handler at least once to become authorized to do anything.
  */
 class TwoFactorAuthHandler {
 
@@ -36,6 +39,15 @@ class TwoFactorAuthHandler {
     private static final String AUTH_TOKEN = "a8113b81179e3832fc3b780590a29b4e";
     private static final String ADMIN_PHONE_NUMBER = "+16072755431";
 
+    /*TODO: remove the test code*/
+    /**
+     *
+     * @param user  user to which authentication code will be sent
+     * @return the authentication code sent to the user
+     * @throws IOException
+     * @throws CouldNotDecryptPhoneNumberException
+     * @throws TwilioRestException
+     */
     public static int sendAuthMessage(User user) throws IOException, CouldNotDecryptPhoneNumberException, TwilioRestException {
         if (!isWaiting(user)) {
             TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
@@ -63,6 +75,10 @@ class TwoFactorAuthHandler {
         }
     }
 
+    /**
+     * Completely remove user from the two-factor authentication handler.
+     * @param user user to be removed
+     */
     protected static void removeUser(User user) {
         synchronized (authCodeMap) {
             authCodeMap.remove(user);
@@ -70,6 +86,11 @@ class TwoFactorAuthHandler {
         }
     }
 
+    /**
+     * Add the user to the authentication handler, pending 2FA authorization.
+     * @param user user to be added to authentication handler
+     * @param m    authentication message sent to user
+     */
     private static void addToManager(User user, AuthMessage m) {
         synchronized (authCodeMap) {
             authCodeMap.putIfAbsent(user, m);
@@ -84,6 +105,14 @@ class TwoFactorAuthHandler {
         }
     }
 
+    /**
+     * Verify the user inputted code with with the authentication handler. If too many failed attempts are
+     * done, an exception will be thrown.
+     * @param user user to be authorized
+     * @param code inputted user code to be verified
+     * @return true if the code matches code in map. false otherwise.
+     * @throws TooMany2FAAttemptsException
+     */
     public static boolean verifyAuthMessage(User user, int code) throws TooMany2FAAttemptsException {
         synchronized (authCodeMap) {
             if (isWaiting(user)) {
@@ -106,6 +135,11 @@ class TwoFactorAuthHandler {
         }
     }
 
+    /**
+     * Checks to see if the system is waiting for an user inputted code.
+     * @param user
+     * @return true if still waiting. false otherwise.
+     */
     public static boolean isWaiting(User user) {
         synchronized (authCodeMap) {
             return authCodeMap.containsKey(user);

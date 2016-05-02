@@ -118,19 +118,4 @@ public class UserLogEntry extends LogEntry {
             return false;
         }
     }
-
-    /**
-     * @return a Map representation of a SystemLogEntry
-     */
-    public Map<String, String> toMap() {
-        Map<String, String> hash = new HashMap<>();
-        hash.put("logType", logType.toString());
-        hash.put("ip", ip);
-        hash.put("affectedUser", affectedUser);
-        hash.put("timestamp", timestamp.toString());
-        hash.put("message", message);
-        hash.put("signature", signature);
-        return hash;
-    }
-
 }
