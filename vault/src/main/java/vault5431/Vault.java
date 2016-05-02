@@ -17,7 +17,7 @@ import static spark.Spark.*;
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
-    public static final boolean test = false;
+    public static final boolean test = true;
 
     private static final File adminSaltFile = new File(home, "admin.salt");
 
