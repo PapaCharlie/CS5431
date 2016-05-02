@@ -17,10 +17,9 @@ import static spark.Spark.*;
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
+    public static final boolean test = true;
+
     private static final File adminSaltFile = new File(home, "admin.salt");
-    private static boolean initialized = false;
-    private static final SecretKey adminEncryptionKey;
-    private static final SecretKey adminSigningKey;
 
     static {
         initialize();
@@ -37,6 +36,9 @@ public class Vault {
         adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
         adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
     }
+    private static boolean initialized = false;
+
+    private static final AdminKeys adminKeys = readAdminKeys();
 
     /**
      * Creates ~/.vault5431 directory and starts the user manager.

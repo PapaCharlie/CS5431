@@ -6,6 +6,7 @@ import com.twilio.sdk.resource.factory.MessageFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import vault5431.Sys;
+import static vault5431.Vault.test;
 import vault5431.auth.exceptions.TooMany2FAAttemptsException;
 import vault5431.users.User;
 import vault5431.users.exceptions.CouldNotDecryptPhoneNumberException;
@@ -46,8 +47,8 @@ class TwoFactorAuthHandler {
             params.add(new BasicNameValuePair("Body", auth.toString()));
 
             MessageFactory msgFactory = client.getAccount().getMessageFactory();
-
-            if (false) { // set to false for testing
+            Sys.debug("Sending 2FA code.", user);
+            if (!test) {
                 msgFactory.create(params);
                 addToManager(user, auth);
             } else {

@@ -29,7 +29,9 @@
 </div>
 <script>
     $(document).ready(function () {
-        sessionStorage.removeItem("password");
+        if (sessionStorage.removeItem("password")) {
+            window.location.href = "/home";
+        }
         $("#loginForm").submit(function (event) {
             var passwordField = $(this).find("#password");
             var hashedPassword = hash(passwordField.val());
