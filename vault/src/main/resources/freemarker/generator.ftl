@@ -48,11 +48,11 @@
                 </div>
                 <div class="modal-body">
                     <form class="form-signin" id="newPasswordForm">
-                        <input type="text" name="name" class="form-control" placeholder="Website Name" required>
-                        <input type="url" name="url" class="form-control" placeholder="URL" required>
-                        <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
-                        <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
-                        <textarea form="newPasswordForm" name="notes" class="form-control" placeholder="Secure Notes (Optional)"></textarea>
+                        <input type="text" name="name" class="form-control" maxlength="500" placeholder="Website Name" required>
+                        <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
+                        <input type="text" name="username" id="username" maxlength="500" class="form-control" placeholder="Account username" required>
+                        <input type="password" name="password" id="inputPassword" maxlength="500" class="form-control" placeholder="Password" required>
+                        <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000" placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
                         <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
                     </form>
                 </div>
