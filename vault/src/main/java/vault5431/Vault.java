@@ -17,12 +17,9 @@ import static spark.Spark.*;
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
+    public static final boolean test = true;
+
     private static final File adminSaltFile = new File(home, "admin.salt");
-    private static final String demoUsername = "demoUser";
-    private static final String demoPassword = "password";
-    private static final String demoPhonenumber = "+16109455656";
-    private static boolean initialized = false;
-    private static final AdminKeys adminKeys = readAdminKeys();
 
     /**
      * Prompts SysAdmin at startup to enter the admin password. It then derives the admin signing and encryption.
@@ -46,6 +43,9 @@ public class Vault {
         }
         return keys;
     }
+    private static boolean initialized = false;
+
+    private static final AdminKeys adminKeys = readAdminKeys();
 
     /**
      * Creates ~/.vault5431 directory and starts the user manager.

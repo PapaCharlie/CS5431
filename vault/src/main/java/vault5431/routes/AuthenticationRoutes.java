@@ -24,9 +24,14 @@ class AuthenticationRoutes extends Routes {
 
         get("/", (req, res) -> {
             Token token = validateToken(req);
-            if (token != null && token.isVerified()) {
-                res.redirect("/home");
-                return emptyPage;
+            if (token != null) {
+                if (token.isVerified()) {
+                    res.redirect("/home");
+                    return emptyPage;
+                } else {
+                    res.redirect("/twofactor");
+                    return emptyPage;
+                }
             } else {
                 res.removeCookie("token");
                 Sys.debug("Received GET to /.", req.ip());
