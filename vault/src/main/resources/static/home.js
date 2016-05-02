@@ -180,6 +180,11 @@ function getAccordions(passwords) {
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(form);
+            var changenotes = $('<textarea/>', {
+                'name': 'notes',
+                'class': 'form-control',
+                'text': 'put current secure notes here'
+            }).appendTo(form);
             var changeform = $('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'submit',
