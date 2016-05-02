@@ -289,6 +289,7 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'name',
                 'class': 'form-control',
+                'maxlength': '500',
                 'value': entry.name,
                 'required': 'true'
             }).appendTo(form);
@@ -296,6 +297,7 @@ function getAccordions(passwords) {
                 'type': 'url',
                 'name': 'url',
                 'class': 'form-control',
+                'maxlength': '500',
                 'value': entry.url,
                 'required': 'true'
             }).appendTo(form);
@@ -303,6 +305,7 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'username',
                 'class': 'form-control',
+                'maxlength': '500',
                 'value': entry.username,
                 'required': 'true'
             }).appendTo(form);
@@ -310,12 +313,14 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'password',
                 'class': 'form-control',
+                'maxlength': '500',
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(form);
             var changenotes = $('<textarea/>', {
                 'name': 'notes',
                 'class': 'form-control',
+                'maxlength': '1000',
                 'text': 'put current secure notes here'
             }).appendTo(form);
             var changeform = $('<button/>', {
