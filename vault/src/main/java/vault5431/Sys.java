@@ -162,7 +162,7 @@ public class Sys {
     }
 
     /**
-     * Load system log from disk, only for demonstration purposes. System should be decryptable by anyone but sys admins
+     * Load system log from disk, only for demonstration purposes. System should not be decryptable by anyone but sys admins
      *
      * @return Set of LogEntries loaded from disk.
      */

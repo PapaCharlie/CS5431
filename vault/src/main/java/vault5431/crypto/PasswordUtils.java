@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 /**
- * Password hashing and verification utilities
+ * Password hashing and verification utilities. Hashing is done with PBKDF2 with HMAC and SHA512.
  */
 public class PasswordUtils {
 
