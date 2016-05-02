@@ -26,8 +26,12 @@ public abstract class Routes {
 
     protected static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
 
-    protected static JSONObject failure() {
-        return new JSONObject().put("success", false);
+    protected static JSONObject failure(String error) {
+        return new JSONObject().put("success", false).put("error", error);
+    }
+
+    protected static JSONObject failure(Exception error) {
+        return new JSONObject().put("success", false).put("error", error.getMessage());
     }
 
     protected static JSONObject userDoesNotExist() {

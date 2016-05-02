@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Created by papacharlie on 3/25/16.
  */
-class PasswordRoutes extends Routes {
+final class PasswordRoutes extends Routes {
 
     protected void routes() {
 
@@ -61,7 +61,7 @@ class PasswordRoutes extends Routes {
             try {
                 uuid = UUID.fromString(id);
             } catch (IllegalArgumentException err) {
-                return invalidRequest();
+                return failure(err);
             }
             try {
                 JSONObject pass = new JSONObject(changedPassword);
@@ -69,7 +69,7 @@ class PasswordRoutes extends Routes {
                 token.getUser().changePassword(Password.fromJSON(pass), token);
                 return success();
             } catch (JSONException err) {
-                return invalidRequest();
+                return failure(err);
             }
         });
 
@@ -78,17 +78,15 @@ class PasswordRoutes extends Routes {
             if (!provided(password)) {
                 return allFieldsRequired();
             }
-            JSONObject pass;
             try {
-                pass = new JSONObject(password);
+                JSONObject pass = new JSONObject(password);
                 pass.put("id", UUID.randomUUID().toString());
                 Password newPassword = Password.fromJSON(pass);
                 token.getUser().addPasswordToVault(newPassword, token);
             } catch (JSONException err) {
-                err.printStackTrace();
-                return invalidRequest();
+                return failure(err);
             } catch (IllegalArgumentException err) {
-                return failure().put("error", err.getMessage());
+                return failure(err);
             }
             return success();
         });
