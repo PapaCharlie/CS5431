@@ -2,6 +2,8 @@ package vault5431.logging;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An abstract class containing the basic fields all logs in our system will have.
@@ -24,4 +26,17 @@ public abstract class LogEntry {
 
     public abstract String[] asArray();
 
+    /**
+     * @return a Map representation of a SystemLogEntry
+     */
+    public Map<String, String> toMap() {
+        Map<String, String> hash = new HashMap<>();
+        hash.put("gilogType", logType.toString());
+        hash.put("ip", ip);
+        hash.put("affectedUser", affectedUser);
+        hash.put("timestamp", timestamp.toString());
+        hash.put("message", message);
+        hash.put("signature", signature);
+        return hash;
+    }
 }
