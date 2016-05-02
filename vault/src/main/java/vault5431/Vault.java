@@ -36,9 +36,6 @@ public class Vault {
         adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
         adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
     }
-    private static boolean initialized = false;
-
-    private static final AdminKeys adminKeys = readAdminKeys();
 
     /**
      * Creates ~/.vault5431 directory and starts the user manager.
