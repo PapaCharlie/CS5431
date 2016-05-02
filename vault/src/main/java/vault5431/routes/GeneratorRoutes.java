@@ -44,7 +44,7 @@ final class GeneratorRoutes extends Routes {
             boolean symbols = parseCheckbox(req.queryParams("symbols"));
             boolean pronounceable = parseCheckbox(req.queryParams("pronounceable"));
             if (!(lower || upper || numbers || symbols)) {
-                return unSuccessful().put("error", "Need at least one set of letters!");
+                return failure().put("error", "Need at least one set of letters!");
             }
             if (length != null) {
                 try {
@@ -53,15 +53,15 @@ final class GeneratorRoutes extends Routes {
                         String pass = PasswordGenerator.generatePassword(chars, lower, upper, numbers, symbols, pronounceable);
                         return success().put("password", pass);
                     } else {
-                        return unSuccessful().put("error", "Number must be between 6 and 100.");
+                        return failure().put("error", "Number must be between 6 and 100.");
                     }
                 } catch (NumberFormatException err) {
                     return invalidRequest();
                 } catch (IllegalArgumentException err) {
-                    return unSuccessful().put("error", err.getMessage());
+                    return failure().put("error", err.getMessage());
                 }
             } else {
-                return unSuccessful().put("error", "Length field is required!");
+                return failure().put("error", "Length field is required!");
             }
         });
 

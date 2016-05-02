@@ -15,7 +15,7 @@ import java.util.HashMap;
 /**
  * Created by papacharlie on 2016-04-27.
  */
-class SettingsRoutes extends Routes {
+final class SettingsRoutes extends Routes {
 
     private static final String successWithData = "{\"\":true,\"%s\":\"%s\"}";
 
@@ -53,10 +53,10 @@ class SettingsRoutes extends Routes {
                             token.getUser().info("Changed maximum number of concurrent users.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
-                        return unSuccessful().put("error", err.getMessage());
+                        return failure().put("error", err.getMessage());
                     }
                 } else {
-                    return unSuccessful().put("error", "concurrentSessions must be an integer!");
+                    return failure().put("error", "concurrentSessions must be an integer!");
                 }
             }
             String sessionLength = req.queryParams("sessionLength");
@@ -70,10 +70,10 @@ class SettingsRoutes extends Routes {
                             token.getUser().info("Changed maximum session length.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
-                        return unSuccessful().put("error", err.getMessage());
+                        return failure().put("error", err.getMessage());
                     }
                 } else {
-                    return unSuccessful().put("error", "sessionLength must be an integer!");
+                    return failure().put("error", "sessionLength must be an integer!");
                 }
             }
             return success();
@@ -94,7 +94,7 @@ class SettingsRoutes extends Routes {
                 return invalidRequest();
             }
             if (!newPassword1.equals(newPassword2)) {
-                return unSuccessful().put("error", "New passwords must be equal.");
+                return failure().put("error", "New passwords must be equal.");
             }
             try {
                 Password[] newPasswords = Password.fromJSON(new JSONArray(reEncryptedPasswords));
@@ -107,48 +107,14 @@ class SettingsRoutes extends Routes {
                         token
                 );
                 if (newToken == null) {
-                    return unSuccessful().put("error", "Provided password is not the master password. This activity has been flagged.");
+                    return failure().put("error", "Provided password is not the master password. This activity has been flagged.");
                 } else {
                     res.cookie("token", newToken.toCookie());
                     return success();
                 }
             } catch (IllegalArgumentException err) {
-                return unSuccessful().put("error", err.getMessage());
+                return failure().put("error", err.getMessage());
             }
-        });
-
-        authenticatedGet("/privateEncryptionKey", (req, res, token) ->
-                success().put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token))
-        );
-
-        authenticatedGet("/privateSigningKey", (req, res, token) ->
-                success().put("privateSigningKey", token.getUser().loadPrivateSigningKey(token))
-        );
-
-        authenticatedGet("/publicEncryptionKey/:username", (req, res, token) -> {
-            String username = req.params("username");
-            if (!provided(username)) {
-                return unSuccessful().put("error", "Username must be provided!");
-            }
-            if (!UserManager.userExists(username)) {
-                return unSuccessful().put("error", "No such username!");
-            }
-            User user = UserManager.getUser(username);
-            Sys.debug(String.format("Loading %s's public encryption key.", user.getShortHash()), token);
-            return success().put("publicEncryptionKey", user.loadPublicEncryptionKey());
-        });
-
-        authenticatedGet("/publicSigningKey/:username", (req, res, token) -> {
-            String username = req.params("username");
-            if (!provided(username)) {
-                return unSuccessful().put("error", "Username must be provided!");
-            }
-            if (!UserManager.userExists(username)) {
-                return unSuccessful().put("error", "No such username!");
-            }
-            User user = UserManager.getUser(username);
-            Sys.debug(String.format("Loading %s's public signing key.", user.getShortHash()), token);
-            return success().put("publicSigningKey", user.loadPublicSigningKey());
         });
 
     }

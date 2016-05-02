@@ -26,8 +26,12 @@ public abstract class Routes {
 
     protected static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
 
-    protected static JSONObject unSuccessful() {
+    protected static JSONObject failure() {
         return new JSONObject().put("success", false);
+    }
+
+    protected static JSONObject userDoesNotExist() {
+        return new JSONObject().put("success", false).put("error", "This user does not exist!");
     }
 
     protected static JSONObject invalidRequest() {
@@ -100,6 +104,7 @@ public abstract class Routes {
         new AuthenticationRoutes().routes();
         new ExceptionRoutes().routes();
         new SettingsRoutes().routes();
+        new PasswordSharingRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();

@@ -31,10 +31,10 @@
     $(document).ready(function () {
         sessionStorage.removeItem("password");
         $("#loginForm").submit(function (event) {
-            $passwordField = $('#password');
-            var hashedPassword = hashPassword($passwordField.val());
+            var passwordField = $(this).find("#password");
+            var hashedPassword = hash(passwordField.val());
             sessionStorage.setItem("password", toB64(hashedPassword));
-            $passwordField.val(toB64(hash("auth" + $passwordField.val())));
+            passwordField.val(toB64(hash("auth" + passwordField.val())));
         });
     });
 </script>

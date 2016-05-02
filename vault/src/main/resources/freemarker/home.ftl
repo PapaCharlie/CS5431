@@ -3,15 +3,17 @@
 <#macro page_body>
 <div class="col-sm-9 col-md-10">
 
-    <span class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newPasswordForm" aria-hidden="true"></span>
+    <span class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newPasswordForm"
+          aria-hidden="true"></span>
 
     <form class="form-signin collapse newpass" id="newPasswordForm">
-        <h4  class="form-signin-heading">New Password</h4>
+        <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" placeholder="Website Name" required>
         <input type="url" name="url" class="form-control" placeholder="URL" required>
         <input type="text" name="username" id="username" class="form-control" placeholder="Account username" required>
         <input type="password" name="password" id="inputPassword" class="form-control" placeholder="Password" required>
-        <textarea form="newPasswordForm" name="notes" class="form-control" placeholder="Secure Notes (Optional)"></textarea>
+        <textarea form="newPasswordForm" name="notes" class="form-control"
+                  placeholder="Secure Notes (Optional)"></textarea>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
     </form>
 </div>
@@ -25,14 +27,22 @@
 
 <script>
     $(function () {
-        var key;
+        var masterKey;
         var passwords;
+        var privateSigningKey;
+        var privateEncryptionKey;
         if (sessionStorage.getItem("password")) {
             $.get("/passwords", function (payload) {
                 var data = JSON.parse(payload);
-                if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                    key = deriveMasterKey(data.salt, sessionStorage.getItem("password"));
-                    passwords = decryptPasswords(key, data.passwords);
+                if (data && data.hasOwnProperty("passwords")
+                        && data.hasOwnProperty("salt")
+                        && data.hasOwnProperty("privateSigningKey")
+                        && data.hasOwnProperty("privateEncryptionKey")) {
+                    var masterPassword = fromB64(sessionStorage.getItem("password"));
+                    masterKey = deriveMasterKey(data.salt, masterPassword);
+                    passwords = decryptPasswords(masterKey, data.passwords);
+                    privateEncryptionKey = parseElGamalPrivateKey(masterPassword, data.privateEncryptionKey);
+                    privateSigningKey = parseECDSAPrivateKey(masterPassword, data.privateSigningKey);
                     getAccordions(passwords);
 
                     $('[data-toggle="tooltip"]').tooltip();
@@ -66,14 +76,13 @@
 
                     $(".changePasswordForm").on('submit', function (event) {
                         event.preventDefault();
-                        console.log("hmm?{");
                         var inputs = $(this).find(':input');
                         var id;
                         var values = {};
                         inputs.each(function () {
                             if (this.name) {
                                 if (this.name !== "id") {
-                                    values[this.name] = encrypt(key, this.value);
+                                    values[this.name] = encrypt(masterKey, this.value);
                                 } else {
                                     id = this.value;
                                 }
@@ -87,6 +96,35 @@
                                 changedPassword: JSON.stringify(values)
                             }
                         }).done(defaultErrorHandler);
+                    });
+
+                    $(".sharePasswordForm").on('submit', function (event) {
+                        event.preventDefault();
+                        var inputs = $(this).find(':input');
+                        var id;
+                        var values = {};
+                        var target = $(this).find('#target').val();
+                        $.get("/publicEncryptionKey/" + target, {}, function (data) {
+                            var response = JSON.parse(data);
+                            if (response.success && response.publicEncryptionKey) {
+                                var targetPubkey = parseElGamalPublicKey(response.publicEncryptionKey);
+                                inputs.each(function () {
+                                    if (this.name) {
+                                        if (["name", "username", "url", "password"].indexOf(this.name) !== -1) {
+                                            values[this.name] = encrypt(targetPubkey, this.value);
+                                        }
+                                    }
+                                });
+                                var signature = sign(privateSigningKey, JSON.stringify(values));
+                                console.log(signature);
+                                $.post("/sharepassword/" + target, {
+                                    sharedPassword: JSON.stringify(values),
+                                    signature: signature
+                                }, defaultErrorHandler);
+                            } else {
+                                alert(response.error);
+                            }
+                        });
                     });
 
                 } else {
@@ -115,7 +153,7 @@
             var values = {};
             inputs.each(function () {
                 if (this.name) {
-                    values[this.name] = encrypt(key, this.value);
+                    values[this.name] = encrypt(masterKey, this.value);
                 }
             });
             $.ajax({
@@ -124,7 +162,6 @@
                 data: {newPassword: JSON.stringify(values)}
             }).done(defaultErrorHandler);
         });
-
 
 
     });

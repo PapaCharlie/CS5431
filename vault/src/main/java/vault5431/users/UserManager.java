@@ -110,10 +110,11 @@ public class UserManager {
                     PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
                     SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumberFile);
                     new Settings().saveToFile(user.settingsFile);
-                    SymmetricUtils.encrypt(pubCryptoKey.getBytes(), getAdminEncryptionKey()).saveToFile(user.pubCryptoKeyFile);
-                    SymmetricUtils.encrypt(privCryptoKey.getBytes(), getAdminEncryptionKey()).saveToFile(user.privCryptoKeyFile);
-                    SymmetricUtils.encrypt(pubSigningKey.getBytes(), getAdminEncryptionKey()).saveToFile(user.pubSigningKeyFile);
-                    SymmetricUtils.encrypt(privSigningKey.getBytes(), getAdminEncryptionKey()).saveToFile(user.privSigningKeyFile);
+
+                    new Base64String(pubCryptoKey).saveToFile(user.pubCryptoKeyFile);
+                    new Base64String(privCryptoKey).saveToFile(user.privCryptoKeyFile);
+                    new Base64String(pubSigningKey).saveToFile(user.pubSigningKeyFile);
+                    new Base64String(privSigningKey).saveToFile(user.privSigningKeyFile);
 
                     byte[] salt = PasswordUtils.generateSalt();
                     SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);

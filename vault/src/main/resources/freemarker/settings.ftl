@@ -21,7 +21,8 @@
                 </div>
                 <div class="form-group">
                     <label for="sessionLength" class="control-label">Maximum session length: </label>
-                    <input style="width: 100px;" type="number" min="2" max="1440" name="sessionLength" id="sessionLength"
+                    <input style="width: 100px;" type="number" min="2" max="1440" name="sessionLength"
+                           id="sessionLength"
                            class="form-control" required value="${sessionLength!60}">
                 </div>
                 <button class="btn btn-success" type="submit">Save</button>
@@ -32,15 +33,18 @@
             <form action="/changepassword" method="post" id="changePasswordForm">
                 <div class="form-group">
                     <label for="oldPassword" class="control-label">Current password: </label>
-                    <input style="width:50%" type="password" name="oldPassword" id="oldPassword" class="form-control" required>
+                    <input style="width:50%" type="password" name="oldPassword" id="oldPassword" class="form-control"
+                           required>
                 </div>
                 <div class="form-group">
                     <label for="newPassword1" class="control-label">New password: </label>
-                    <input style="width:50%" type="password" name="newPassword1" id="newPassword1" class="form-control" required>
+                    <input style="width:50%" type="password" name="newPassword1" id="newPassword1" class="form-control"
+                           required>
                 </div>
                 <div class="form-group">
                     <label for="newPassword2" class="control-label">Confirm new password: </label>
-                    <input style="width:50%" type="password" name="newPassword2" id="newPassword2" class="form-control" required>
+                    <input style="width:50%" type="password" name="newPassword2" id="newPassword2" class="form-control"
+                           required>
                 </div>
                 <button class="btn btn-success" type="submit">Save</button>
             </form>
@@ -74,7 +78,7 @@
                 var passwords;
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords") && data.hasOwnProperty("salt")) {
-                    key = deriveMasterKey(data.salt, sessionStorage.getItem("password"));
+                    key = deriveMasterKey(data.salt, fromB64(sessionStorage.getItem("password")));
                     passwords = decryptPasswords(key, data.passwords);
 
                     console.log(passwords);
@@ -83,8 +87,8 @@
                     $newPassword1 = $("#newPassword1");
                     $newPassword2 = $("#newPassword2");
 
-                    var newHashedPassword = toB64(hash($newPassword1.val()));
-                    var newKey = deriveMasterKey(data.saltnewHashedPassword);
+                    var newHashedPassword = hash($newPassword1.val());
+                    var newKey = deriveMasterKey(data.salt, newHashedPassword);
 
                     var reEncryptedPasswords;
                     if (passwords.length > 0) {
@@ -109,7 +113,7 @@
                     }, function (data) {
                         var response = JSON.parse(data);
                         if (response.success) {
-                            sessionStorage.setItem("password", newHashedPassword);
+                            sessionStorage.setItem("password", toB64(newHashedPassword));
                             $oldPassword.val("");
                             $newPassword1.val("");
                             $newPassword2.val("");
