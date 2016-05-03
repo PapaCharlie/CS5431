@@ -5,7 +5,7 @@ CERTS := /etc/letsencrypt/live/vault5431.com
 .PHONY: run
 
 run:
-	java -server -d64 -Xms1024m -Xmx15360m -jar vault5431-assembly-0.3.jar
+	java -server -d64 -Xms1024m -Xmx15360m -jar vault5431-assembly-1.0.0.jar
 
 certs:
 	./letsencrypt/letsencrypt-auto certonly --standalone --email paul.chesnais@gmail.com -d vault5431.com -d vault5431.com

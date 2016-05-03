@@ -1,6 +1,6 @@
 name := "vault5431"
 
-version := "0.3"
+version := "1.0.0"
 
 isSnapshot := true
 
