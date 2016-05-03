@@ -1,6 +1,7 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
@@ -24,6 +25,8 @@ public class Vault {
     private static boolean initialized = false;
     private static final SecretKey adminEncryptionKey;
     private static final SecretKey adminSigningKey;
+    private static final SecretKey adminLoggingKey;
+//    private static final byte[] adminSalt;
 
     static {
         initialize();
@@ -39,6 +42,7 @@ public class Vault {
         }
         adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
         adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
+        adminLoggingKey = PasswordUtils.deriveKey(adminPassword + "logging", adminSalt);
     }
 
     /**
@@ -99,6 +103,24 @@ public class Vault {
      */
     public static SecretKey getAdminSigningKey() {
         return adminSigningKey;
+    }
+
+    /**
+     * Returns the admin logging key derived from the SysAdmin password and iterated i times.
+     */
+    public static SecretKey getAdminLoggingKey(int i) {
+        byte[] adminSalt ="".getBytes();
+        if (i == 0) {
+            return adminLoggingKey;
+        } else {
+            String newKey = adminLoggingKey.getFormat() + "iterate";
+            return  PasswordUtils.deriveKey(HashUtils.hash512(newKey.getBytes(), i).toString(), adminSalt);
+        }
+
+    }
+
+    public static SecretKey getAdminLoggingKey() {
+        return adminLoggingKey;
     }
 
     public static void main(String[] args) throws Exception {
