@@ -8,6 +8,7 @@ import vault5431.auth.Token;
 import vault5431.auth.exceptions.TooManyConcurrentSessionsException;
 import vault5431.auth.exceptions.TooManyFailedLogins;
 import vault5431.crypto.PasswordUtils;
+import vault5431.crypto.SigningUtils;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
@@ -16,6 +17,7 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
+
 import vault5431.users.exceptions.*;
 
 import java.io.File;
@@ -26,8 +28,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import static vault5431.Sys.NO_IP;
-import static vault5431.Vault.getAdminEncryptionKey;
-import static vault5431.Vault.home;
+import static vault5431.Vault.*;
 
 /**
  * User class.
@@ -38,6 +39,7 @@ public final class User {
 
     public final Base64String hash;
     public final File logFile;
+    public final File logVerifyFile;
     public final File vaultFile;
     public final File vaultSaltFile;
     public final File sharedPasswordsFile;
@@ -56,6 +58,7 @@ public final class User {
     protected User(Base64String hash) {
         this.hash = hash;
         logFile = new File(getHome(), "log");
+        logVerifyFile = new File(getHome(), "log.verify");
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
         sharedPasswordsFile = new File(getHome(), "shared");
@@ -340,7 +343,7 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey()));
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminLoggingKey()));
                 System.out.println("[" + getShortHash() + "] " + entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -350,6 +353,42 @@ public final class User {
                 err.printStackTrace();
                 Sys.error("Serialization of log entry was too long, or unencryptable.", this);
             }
+        }
+        synchronized (logVerifyFile) {
+            try {
+                FileUtils.append(logVerifyFile, SigningUtils.getSignature(entry.toCSV().getBytes(), getAdminSigningKey()));
+            } catch (IOException err) {
+                err.printStackTrace();
+                warning("Failed to write to log.verify for user! Continuing", this);
+            }
+        }
+    }
+
+    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
+        Base64String[] signedEntries = null;
+        synchronized (logVerifyFile) {
+            Sys.debug("Load log.verify", token);
+            signedEntries = FileUtils.read(logVerifyFile);
+        }
+        synchronized (logFile) {
+            Sys.debug("Loading log.", token);
+            Base64String[] encryptedEntries = FileUtils.read(logFile);
+            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+            for (int i = 0; i < encryptedEntries.length; i++) {
+                try {
+                    byte[] decrypted = SymmetricUtils.decrypt(encryptedEntries[i], getAdminLoggingKey());
+                    boolean valid = SigningUtils.verifySignature(decrypted, signedEntries[i], getAdminSigningKey());
+                    System.out.println(valid);
+                    String decryptedEntry = (valid) ? new String(decrypted) : (new UserLogEntry(LogType.ERROR, NO_IP,
+                            "USER", LocalDateTime.now(), "THIS LOG ENTRY IS INVALID", "DOESNTMATTER")).toCSV();
+                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
+                    System.out.println(decryptedEntry);
+                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
+                } catch (BadCiphertextException err) {
+                    throw new CorruptedLogException();
+                }
+            }
+            return decryptedEntries;
         }
     }
 
@@ -399,23 +438,5 @@ public final class User {
 
     public void info(String message) {
         appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
-    }
-
-    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
-        synchronized (logFile) {
-            Sys.debug("Loading log.", token);
-            Base64String[] encryptedEntries = FileUtils.read(logFile);
-            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-            for (int i = 0; i < encryptedEntries.length; i++) {
-                try {
-                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));
-                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
-                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
-                } catch (BadCiphertextException err) {
-                    throw new CorruptedLogException();
-                }
-            }
-            return decryptedEntries;
-        }
     }
 }
