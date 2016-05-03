@@ -146,6 +146,7 @@ function decryptPasswords(key, encryptedPasswords) {
         decryptedPassword.url = decrypt(key, encryptedPassword.url);
         decryptedPassword.username = decrypt(key, encryptedPassword.username);
         decryptedPassword.password = decrypt(key, encryptedPassword.password);
+        decryptedPassword.notes = decrypt(key, encryptedPassword.notes);
         decryptedPassword.id = encryptedPassword.id;
         return decryptedPassword;
     });

@@ -128,7 +128,7 @@ public class AuthenticationHandler {
                     Sys.debug("Banning user because too many failed logins.", user, ip);
                     throw new TooManyFailedLogins();
                 }
-                if (user.verifyPassword(password)) {
+                if (user.verifyMasterPassword(password)) {
                     Settings settings = user.loadSettings();
                     if (!tokenCache.containsKey(user)) {
                         tokenCache.put(user, new HashSet<>());

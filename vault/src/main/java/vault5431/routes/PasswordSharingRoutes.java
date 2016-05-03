@@ -10,10 +10,7 @@ import vault5431.users.SharedPassword;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Created by papacharlie on 2016-05-01.
@@ -66,7 +63,7 @@ final class PasswordSharingRoutes extends Routes {
         });
 
         authenticatedGet("/shared", (req, res, token) -> {
-            LinkedList<SharedPassword> sharedPasswords = token.getUser().loadSharedPasswords(token);
+            Set<SharedPassword> sharedPasswords = token.getUser().loadSharedPasswords();
             JSONObject response = success();
             response.put("salt", token.getUser().loadVaultSalt().toString());
             if (sharedPasswords.size() > 0) {

@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import vault5431.io.Base64String;
 
+import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -12,17 +13,41 @@ import java.util.UUID;
  *
  * @author papacharlie
  */
-public class Password {
+public final class Password {
 
-    /**
-     * Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
-     */
-    protected static final int MAX_ENCRYPTED_LENGTH = 750;
 
-    private JSONObject name;
-    private JSONObject url;
-    private JSONObject username;
-    private JSONObject password;
+    private static final class SJCLObject extends JSONObject {
+
+        SJCLObject(String field, int maxLength) throws JSONException {
+            super(field);
+            if (!has("iv") || !has("ct")) {
+                throw new IllegalArgumentException("All SJCL fields are required.");
+            }
+            for (String key : new HashSet<>(keySet())) {
+                if (!(key.equals("iv") || key.equals("ct"))) {
+                    remove(key);
+                }
+            }
+            int iv = new Base64String(getString("iv")).decodeBytes().length;
+            if (iv != 24) {
+                throw new IllegalArgumentException("iv is not 24 bytes long.");
+            }
+            int ct = new Base64String(getString("ct")).decodeBytes().length;
+            if (ct % 4 != 0) {
+                throw new IllegalArgumentException("Invalid encrypted text.");
+            }
+            if (ct > maxLength) {
+                throw new IllegalArgumentException("Encrypted text is too long!");
+            }
+        }
+
+    }
+
+    private SJCLObject name;
+    private SJCLObject url;
+    private SJCLObject username;
+    private SJCLObject password;
+    private SJCLObject notes;
     private UUID id;
 
     /**
@@ -36,47 +61,19 @@ public class Password {
      * @param id       Unique id for indexing server/client side
      * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
      */
-    private Password(String name, String url, String username, String password, UUID id) throws IllegalArgumentException {
+    private Password(String name, String url, String username, String password, String notes, UUID id) throws IllegalArgumentException {
         try {
-            if (0 < name.length() && name.length() < MAX_ENCRYPTED_LENGTH) {
-                this.name = new JSONObject(name);
-            } else {
-                throw new IllegalArgumentException("Website name is too long.");
-            }
-            if (0 < url.length() && url.length() < MAX_ENCRYPTED_LENGTH) {
-                this.url = new JSONObject(url);
-            } else {
-                throw new IllegalArgumentException("Website URL is too long.");
-            }
-            if (0 < username.length() && username.length() < MAX_ENCRYPTED_LENGTH) {
-                this.username = new JSONObject(username);
-            } else {
-                throw new IllegalArgumentException("Username is too long.");
-            }
-            if (0 < password.length() && password.length() < MAX_ENCRYPTED_LENGTH) {
-                this.password = new JSONObject(password);
-            } else {
-                throw new IllegalArgumentException("Password is too long.");
-            }
+            this.name = new SJCLObject(name, 150); // 100 char limit
+            this.url = new SJCLObject(url, 512);
+            this.username = new SJCLObject(username, 150);
+            this.password = new SJCLObject(password, 150);
+            this.notes = new SJCLObject(notes, 1350); // 1000 char limit
             this.id = id;
         } catch (JSONException err) {
             throw new IllegalArgumentException("All fields must be valid JSON");
         } catch (NullPointerException err) {
             throw new IllegalArgumentException("All fields required");
         }
-    }
-
-    /**
-     * To be used when creating a new password instance that will be saved to disk. Generates a new unique id.s
-     *
-     * @param name     Website's name
-     * @param url      Website's url
-     * @param username Website's username
-     * @param password Website's password
-     * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
-     */
-    public Password(String name, String url, String username, String password) throws IllegalArgumentException {
-        this(name, url, username, password, UUID.randomUUID());
     }
 
     /**
@@ -88,12 +85,13 @@ public class Password {
      *                                  fields.
      */
     public static Password fromJSON(JSONObject json) throws IllegalArgumentException {
-        if (json.has("name") && json.has("url") && json.has("username") && json.has("password") && json.has("id")) {
+        if (json.has("name") && json.has("url") && json.has("username") && json.has("password") && json.has("id") && json.has("notes")) {
             return new Password(
                     json.get("name").toString(),
                     json.get("url").toString(),
                     json.get("username").toString(),
                     json.get("password").toString(),
+                    json.get("notes").toString(),
                     UUID.fromString(json.getString("id"))
             );
         } else {
@@ -134,6 +132,7 @@ public class Password {
         json.put("url", url);
         json.put("username", username);
         json.put("password", password);
+        json.put("notes", notes);
         json.put("id", id.toString());
         return json;
     }
@@ -149,18 +148,18 @@ public class Password {
         return id;
     }
 
+    protected void newUUID() {
+        id = UUID.randomUUID();
+    }
+
     public int hashCode() {
         return id.hashCode();
     }
 
-    public boolean equals(Object object) {
-        if (object instanceof Password) {
-            Password other = (Password) object;
-            return name.equals(other.name)
-                    && url.equals(other.url)
-                    && username.equals(other.username)
-                    && password.equals(other.password)
-                    && id.equals(other.id);
+    public boolean equals(Object obj) {
+        if (obj instanceof Password) {
+            Password other = (Password) obj;
+            return id.equals(other.id);
         } else {
             return false;
         }

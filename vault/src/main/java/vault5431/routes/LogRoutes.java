@@ -4,10 +4,7 @@ package vault5431.routes;
 import spark.ModelAndView;
 import vault5431.logging.UserLogEntry;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by papacharlie on 3/25/16.
@@ -18,7 +15,7 @@ final class LogRoutes extends Routes {
 
         authenticatedGet("/userlog", (req, res, token) -> {
             Map<String, Object> attributes = new HashMap<>();
-            List<Map<String, String>> loglst = new ArrayList<>();
+            LinkedList<Map<String, String>> loglst = new LinkedList<>();
             for (UserLogEntry u : token.getUser().loadLog(token)) {
                 loglst.add(u.toMap());
             }

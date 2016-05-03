@@ -7,10 +7,7 @@ import vault5431.users.Password;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -29,7 +26,7 @@ final class PasswordRoutes extends Routes {
             User user = token.getUser();
             JSONObject vault = new JSONObject();
             vault.put("salt", user.loadVaultSalt().toString());
-            LinkedList<Password> passwords = user.loadPasswords(token);
+            Set<Password> passwords = user.loadPasswords(token);
             vault.put("passwords", passwords.stream().map(Password::toJSONObject).collect(Collectors.toList()));
             vault.put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token));
             vault.put("privateSigningKey", token.getUser().loadPrivateSigningKey(token));

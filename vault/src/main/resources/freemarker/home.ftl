@@ -8,10 +8,10 @@
 
     <form class="form-signin collapse newpass" id="newPasswordForm">
         <h4 class="form-signin-heading">New Password</h4>
-        <input type="text" name="name" class="form-control" maxlength="500" placeholder="Website Name" required>
+        <input type="text" name="name" class="form-control" maxlength="100" placeholder="Website Name" required>
         <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
-        <input type="text" name="username" id="username" class="form-control" maxlength="500" placeholder="Account username" required>
-        <input type="password" name="password" id="inputPassword" class="form-control" maxlength="500" placeholder="Password" required>
+        <input type="text" name="username" id="username" class="form-control" maxlength="100" placeholder="Account username" required>
+        <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100" placeholder="Password" required>
         <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
                   placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
@@ -87,6 +87,8 @@
                                 }
                             }
                         });
+                        var notes = $(this).find('[name=notes]');
+                        values.notes = encrypt(masterKey, notes.val().length > 0 ? notes.val() : null);
                         $.ajax({
                             type: "PUT",
                             url: "/passwords/" + id,
@@ -107,7 +109,7 @@
                                 var targetPubkey = parseElGamalPublicKey(response.publicEncryptionKey);
                                 inputs.each(function () {
                                     if (this.name) {
-                                        if (["name", "username", "url", "password"].indexOf(this.name) !== -1) {
+                                        if (["name", "username", "url", "password", "notes"].indexOf(this.name) !== -1) {
                                             values[this.name] = encrypt(targetPubkey, this.value);
                                         }
                                     }
@@ -152,6 +154,8 @@
                     values[this.name] = encrypt(masterKey, this.value);
                 }
             });
+            var notes = $(this).find('[name=notes]');
+            values.notes = encrypt(masterKey, notes.val().length > 0 ? notes.val() : null);
             $.ajax({
                 type: "POST",
                 url: "/passwords",

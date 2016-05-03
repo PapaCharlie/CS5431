@@ -5,7 +5,6 @@
 
 </div>
 
-<#--<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">-->
 <div class="col-sm-9 col-md-10">
     <h4 class="storedpasswords-heading">Shared Passwords</h4>
     <div class="panel-group" id="accordion">
@@ -39,7 +38,7 @@
                                 var signedPassword = {};
                                 for (var prop in password) {
                                     if (password.hasOwnProperty(prop)) {
-                                        if (["name", "username", "url", "password"].indexOf(prop) !== -1) {
+                                        if (["name", "username", "url", "password", "notes"].indexOf(prop) !== -1) {
                                             signedPassword[prop] = decrypt(privateEncryptionKey, password[prop]);
                                         } else {
                                             signedPassword[prop] = password[prop];
@@ -116,7 +115,7 @@
                     var password = filtered[0];
                     var values = {};
                     for (var prop in password) {
-                        if (password.hasOwnProperty(prop) && ["name", "username", "url", "password"].indexOf(prop) !== -1) {
+                        if (password.hasOwnProperty(prop) && ["name", "username", "url", "password", "notes"].indexOf(prop) !== -1) {
                             values[prop] = encrypt(masterKey, password[prop]);
                         }
                     }
