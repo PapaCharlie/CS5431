@@ -2,13 +2,11 @@ package vault5431.routes;
 
 import org.json.JSONArray;
 import spark.ModelAndView;
-import vault5431.Sys;
 import vault5431.auth.Token;
+import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.Password;
 import vault5431.users.Settings;
-import vault5431.users.User;
-import vault5431.users.UserManager;
 
 import java.util.HashMap;
 
@@ -34,6 +32,7 @@ final class SettingsRoutes extends Routes {
         authenticatedGet("/settings", (req, res, token) -> {
             HashMap<String, Object> attributes = new HashMap<>();
             Settings settings = token.getUser().loadSettings();
+            attributes.put("phoneNumber", settings.getPhoneNumber());
             attributes.put("concurrentSessions", settings.getConcurrentSessions());
             attributes.put("sessionLength", settings.getSessionLength());
             return new ModelAndView(attributes, "settings.ftl");
@@ -41,7 +40,7 @@ final class SettingsRoutes extends Routes {
 
         authenticatedPost("/settings", (req, res, token) -> {
             String concurrentSessions = req.queryParams("concurrentSessions");
-            if (concurrentSessions != null && concurrentSessions.length() > 0) {
+            if (provided(concurrentSessions)) {
                 Integer cS = parseNumberField(concurrentSessions);
                 if (cS != null) {
                     try {
@@ -58,7 +57,7 @@ final class SettingsRoutes extends Routes {
                 }
             }
             String sessionLength = req.queryParams("sessionLength");
-            if (sessionLength != null && sessionLength.length() > 0) {
+            if (provided(sessionLength)) {
                 Integer sL = parseNumberField(sessionLength);
                 if (sL != null) {
                     try {
@@ -72,6 +71,18 @@ final class SettingsRoutes extends Routes {
                     }
                 } else {
                     return failure("sessionLength must be an integer!");
+                }
+            }
+            String phoneNumber = req.queryParams("phoneNumber");
+            if (provided(phoneNumber)) {
+                Settings settings = token.getUser().loadSettings();
+                if (!settings.getPhoneNumber().equals(phoneNumber)) {
+                    try {
+                        token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber));
+                        token.getUser().info("Changed maximum session length.", token.getIp());
+                    } catch (IllegalArgumentException err) {
+                        return failure(err);
+                    }
                 }
             }
             return success();
@@ -100,8 +111,8 @@ final class SettingsRoutes extends Routes {
                         Base64String.fromBase64(oldPassword),
                         Base64String.fromBase64(newPassword1),
                         newPasswords,
-                        newPrivateEncryptionKey,
-                        newPrivateSigningKey,
+                        new SJCLSymmetricField(newPrivateEncryptionKey, 100),
+                        new SJCLSymmetricField(newPrivateSigningKey, 100),
                         token
                 );
                 if (newToken == null) {

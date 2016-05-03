@@ -29,7 +29,7 @@ function getSharedAccordions(sharedPasswords) {
                 'text': entry.name
             }).appendTo(title);
             var delbtn = $('<button/>', {
-                'class': 'Reject btn btn-danger btn-xs',
+                'class': 'delete btn btn-danger btn-xs',
                 'data-id': entry.id,
                 'style': 'float: right',
                 'aria-hidden': 'true',
