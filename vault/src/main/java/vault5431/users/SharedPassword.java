@@ -2,6 +2,8 @@ package vault5431.users;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import vault5431.crypto.exceptions.InvalidPublicKeySignature;
+import vault5431.crypto.sjcl.SJCLAsymmetricField;
 import vault5431.io.Base64String;
 
 import java.io.IOException;
@@ -15,43 +17,12 @@ import java.util.UUID;
  */
 public final class SharedPassword {
 
-    private static final class SJCLObject extends JSONObject {
-
-        SJCLObject(String field, int maxlength) throws JSONException {
-            super(field);
-            if (!has("iv") || !has("ct") || !has("kemtag")) {
-                throw new IllegalArgumentException("All SJCL fields are required.");
-            }
-            for (String key : new HashSet<>(keySet())) {
-                if (!(key.equals("iv") || key.equals("ct") || key.equals("kemtag"))) {
-                    remove(key);
-                }
-            }
-            int kemtag = new Base64String(getString("kemtag")).decodeBytes().length;
-            if (kemtag != 128) {
-                throw new IllegalArgumentException("kemtag is not 128 bytes long.");
-            }
-            int iv = new Base64String(getString("iv")).decodeBytes().length;
-            if (iv != 24) {
-                throw new IllegalArgumentException("iv is not 24 bytes long.");
-            }
-            int ct = new Base64String(getString("ct")).decodeBytes().length;
-            if (ct % 4 != 0) {
-                throw new IllegalArgumentException("Invalid encrypted text.");
-            }
-            if (ct > maxlength) {
-                throw new IllegalArgumentException("Encrypted text is too long!");
-            }
-        }
-
-    }
-
     private String sharer;
-    private SJCLObject name;
-    private SJCLObject url;
-    private SJCLObject username;
-    private SJCLObject password;
-    private SJCLObject notes;
+    private SJCLAsymmetricField name;
+    private SJCLAsymmetricField url;
+    private SJCLAsymmetricField username;
+    private SJCLAsymmetricField password;
+    private SJCLAsymmetricField notes;
     private Base64String signature;
     private UUID id;
 
@@ -75,11 +46,11 @@ public final class SharedPassword {
             } else {
                 throw new IllegalArgumentException("Sharer does not exist!");
             }
-            this.name = new SJCLObject(name, 150); // 100 char limit
-            this.url = new SJCLObject(url, 512);
-            this.username = new SJCLObject(username, 150);
-            this.password = new SJCLObject(password, 150);
-            this.notes = new SJCLObject(notes, 1350); // 1000 char limit
+            this.name = new SJCLAsymmetricField(name, 150); // 100 char limit
+            this.url = new SJCLAsymmetricField(url, 512);
+            this.username = new SJCLAsymmetricField(username, 150);
+            this.password = new SJCLAsymmetricField(password, 150);
+            this.notes = new SJCLAsymmetricField(notes, 1350); // 1000 char limit
             if (signature.size() == 128) {
                 this.signature = signature;
             } else {
@@ -171,8 +142,8 @@ public final class SharedPassword {
         return sharer;
     }
 
-    public String getSharerPublicSigningKey() throws IOException {
-        return UserManager.getUser(sharer).loadPublicSigningKey();
+    public String getSharerPublicSigningKey() throws IOException, InvalidPublicKeySignature {
+        return UserManager.getUser(sharer).loadAndVerifyPublicSigningKey();
     }
 
     public String toJSON() {

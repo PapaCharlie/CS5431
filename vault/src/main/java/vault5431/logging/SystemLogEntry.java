@@ -14,7 +14,7 @@ import java.util.Map;
  * Represents a system log entry for use by the system admins to check
  * for suspicious activity.
  */
-public class SystemLogEntry extends LogEntry {
+public  class SystemLogEntry extends LogEntry {
 
     public SystemLogEntry(LogType logType, String ip, String affectedUser,
                           LocalDateTime timestamp, String message, String signature) {

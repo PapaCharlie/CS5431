@@ -5,6 +5,7 @@ import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
+import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.User;
 import vault5431.users.UserManager;
@@ -57,7 +58,7 @@ final class AuthenticationRoutes extends Routes {
             }
             if (UserManager.userExists(username)) {
                 User user = UserManager.getUser(username);
-                Token token = AuthenticationHandler.acquireUnverifiedToken(user, Base64String.fromBase64(password), req.ip());
+                Token token = AuthenticationHandler.acquireUnverifiedToken(username, Base64String.fromBase64(password), req.ip());
                 if (token != null) {
                     res.cookie(
                             "token",
@@ -163,30 +164,41 @@ final class AuthenticationRoutes extends Routes {
             String pubSigningKey = req.queryParams("pubSigningKey");
             String privSigningKey = req.queryParams("privSigningKey");
             String phoneNumber = req.queryParams("phoneNumber");
-            System.out.println(req.queryParams());
             if (!provided(username, password, phoneNumber, confirm, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey)) {
                 attributes.put("error", "All fields are required!");
                 return new ModelAndView(attributes, "register.ftl");
             }
-            if (!Base64String.isValidBase64Data(password) || !Base64String.isValidBase64Data(confirm)) {
-                attributes.put("error", "Invalid password");
+            if (!(Base64String.isValidBase64Data(password)
+                    && Base64String.isValidBase64Data(confirm)
+                    && Base64String.isValidBase64Data(pubCryptoKey)
+                    && Base64String.isValidBase64Data(pubSigningKey))) {
+                attributes.put("error", "All fields are not of valid format. Please use the proper means.");
                 return new ModelAndView(attributes, "login.ftl");
             }
             if (!password.equals(confirm)) {
                 attributes.put("error", "Passwords are not equal!");
                 return new ModelAndView(attributes, "register.ftl");
             }
+            if (!UserManager.isValidUsername(username)) {
+                attributes.put("error", "A username may only contain letters, numbers and underscores (_).");
+                return new ModelAndView(attributes, "register.ftl");
+            }
             if (!UserManager.userExists(username)) {
                 try {
-                    UserManager.create(username, Base64String.fromBase64(password), phoneNumber, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey);
+                    UserManager.create(username,
+                            Base64String.fromBase64(password),
+                            phoneNumber,
+                            Base64String.fromBase64(pubCryptoKey),
+                            new SJCLSymmetricField(privCryptoKey, 100),
+                            Base64String.fromBase64(pubSigningKey),
+                            new SJCLSymmetricField(privSigningKey, 100));
                 } catch (IllegalArgumentException err) {
                     err.printStackTrace();
                     attributes.put("error", "Invalid password!");
                     return new ModelAndView(attributes, "register.ftl");
                 } catch (Exception err) {
-                    err.printStackTrace();
                     System.err.println("Could not create user!");
-                    System.exit(1);
+                    throw new RuntimeException(err);
                 }
                 res.redirect("/");
                 return emptyPage;
@@ -194,7 +206,6 @@ final class AuthenticationRoutes extends Routes {
                 attributes.put("error", "This username is already taken!");
                 return new ModelAndView(attributes, "register.ftl");
             }
-
         }, freeMarkerEngine);
 
         authenticatedGet("/logout", (req, res, token) -> {

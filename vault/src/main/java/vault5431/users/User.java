@@ -5,6 +5,7 @@ import org.json.JSONException;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
+import vault5431.auth.exceptions.NoSuchUserException;
 import vault5431.auth.exceptions.TooManyConcurrentSessionsException;
 import vault5431.auth.exceptions.TooManyFailedLogins;
 import vault5431.crypto.PasswordUtils;
@@ -12,13 +13,16 @@ import vault5431.crypto.SigningUtils;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
+import vault5431.crypto.exceptions.InvalidPublicKeySignature;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
 
-import vault5431.users.exceptions.*;
+import vault5431.users.exceptions.CorruptedLogException;
+import vault5431.users.exceptions.CouldNotLoadSettingsException;
+import vault5431.users.exceptions.VaultNotFoundException;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +47,6 @@ public final class User {
     public final File vaultFile;
     public final File vaultSaltFile;
     public final File sharedPasswordsFile;
-    public final File phoneNumberFile;
     public final File settingsFile;
     public final File passwordHashFile;
     public final File pubCryptoKeyFile;
@@ -66,7 +69,6 @@ public final class User {
         sharedPasswordsFile = new File(getHome(), "shared");
         passwordHashFile = new File(getHome(), "password.hash");
         settingsFile = new File(getHome(), "settings");
-        phoneNumberFile = new File(getHome(), "phone.number");
         pubCryptoKeyFile = new File(getHome(), "crypto.pub");
         privCryptoKeyFile = new File(getHome(), "crypto.priv");
         pubSigningKeyFile = new File(getHome(), "signing.pub");
@@ -85,21 +87,42 @@ public final class User {
         return new File(home, hash.getB64String());
     }
 
-    public String getPhoneNumber() throws IOException, CouldNotDecryptPhoneNumberException {
-        synchronized (phoneNumberFile) {
-            Sys.debug("Loading phone number.", this);
-            try {
-                return new String(SymmetricUtils.decrypt(Base64String.loadFromFile(phoneNumberFile)[0], getAdminEncryptionKey()));
-            } catch (BadCiphertextException err) {
-                err.printStackTrace();
-                throw new CouldNotDecryptPhoneNumberException();
-            }
+    private void saveAndSignPublicKey(File file, Base64String pubKey) throws IOException {
+        FileUtils.empty(file);
+        FileUtils.append(file, pubKey);
+        FileUtils.append(file, SigningUtils.getSignature(pubKey.decodeBytes(), getAdminSigningKey()));
+    }
+
+    private String loadAndVerifyPublicKey(File file) throws IOException, InvalidPublicKeySignature {
+        Base64String[] data = FileUtils.read(file);
+        if (SigningUtils.verifySignature(data[0].decodeBytes(), data[1], getAdminSigningKey())) {
+            return data[0].getB64String();
+        } else {
+            throw new InvalidPublicKeySignature();
         }
     }
 
-    public String loadPublicEncryptionKey() throws IOException {
+    public void saveAndSignPublicEncryptionKey(Base64String pubCryptoKey) throws IOException {
         synchronized (pubCryptoKeyFile) {
-            return FileUtils.read(pubCryptoKeyFile)[0].decodeString();
+            saveAndSignPublicKey(pubCryptoKeyFile, pubCryptoKey);
+        }
+    }
+
+    public void saveAndSignPublicSigningKey(Base64String pubCryptoKey) throws IOException {
+        synchronized (pubSigningKeyFile) {
+            saveAndSignPublicKey(pubSigningKeyFile, pubCryptoKey);
+        }
+    }
+
+    public String loadAndVerifyPublicEncryptionKey() throws InvalidPublicKeySignature, IOException {
+        synchronized (pubCryptoKeyFile) {
+            return loadAndVerifyPublicKey(pubCryptoKeyFile);
+        }
+    }
+
+    public String loadAndVerifyPublicSigningKey() throws InvalidPublicKeySignature, IOException {
+        synchronized (pubSigningKeyFile) {
+            return loadAndVerifyPublicKey(pubSigningKeyFile);
         }
     }
 
@@ -107,12 +130,6 @@ public final class User {
         synchronized (privCryptoKeyFile) {
             Sys.debug("Loading private encryption key.", token);
             return FileUtils.read(privCryptoKeyFile)[0].decodeString();
-        }
-    }
-
-    public String loadPublicSigningKey() throws IOException {
-        synchronized (pubSigningKeyFile) {
-            return FileUtils.read(pubSigningKeyFile)[0].decodeString();
         }
     }
 
@@ -138,10 +155,10 @@ public final class User {
     }
 
     public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, String newPrivateEncryptionKey, String newPrivateSigningKey, Token token)
-            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException {
+            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
-            Token successToken = AuthenticationHandler.acquireUnverifiedToken(this, oldPassword, token.getIp());
+            Token successToken = AuthenticationHandler.acquireUnverifiedToken(token.getUsername(), oldPassword, token.getIp());
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
                 PasswordUtils.savePassword(passwordHashFile, newPassword);

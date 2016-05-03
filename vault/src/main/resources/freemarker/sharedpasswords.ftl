@@ -13,12 +13,10 @@
 
 <script>
     $(function () {
-        var username;
         var masterKey;
         var sharedPasswords = [];
         var privateEncryptionKey;
-        if (sessionStorage.getItem("password") && sessionStorage.getItem("username")) {
-            username = sessionStorage.getItem("username");
+        if (sessionStorage.getItem("password")) {
             $.get("/shared", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("sharedPasswords")

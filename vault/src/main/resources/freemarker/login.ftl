@@ -29,11 +29,13 @@
 </div>
 <script>
     $(document).ready(function () {
-        if (sessionStorage.removeItem("password") && sessionStorage.removeItem("username")) {
+        if (sessionStorage.getItem("redirected")) {
+            sessionStorage.clear();
+        } else if (sessionStorage.getItem("password")) {
+            sessionStorage.setItem("redirected", true);
             window.location.href = "/home";
         }
         $("#loginForm").submit(function (event) {
-            sessionStorage.setItem("username", $(this).find("#username").val());
             var passwordField = $(this).find("#password");
             var hashedPassword = hash(passwordField.val());
             sessionStorage.setItem("password", toB64(hashedPassword));

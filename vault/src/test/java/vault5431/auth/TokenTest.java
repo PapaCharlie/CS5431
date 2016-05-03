@@ -15,17 +15,17 @@ public class TokenTest extends VaultTest {
 
     @Test(expected = InvalidTokenException.class)
     public void testTokenSerialization() throws Exception {
-        User user = getTempUser("test");
-        Token token = new Token(user, false);
+        User user = getTempUser("test", "test");
+        Token token = new Token("test", false);
         System.out.println(token.toCookie());
         Thread.sleep(100);
         Token parsedToken = Token.parseCookie(token.toCookie());
-        assertTrue(token.equals(parsedToken));
+        assertTrue(token.deepEquals(parsedToken));
 
-        token = new Token(user, true);
+        token = new Token("test", true);
         Thread.sleep(100);
         parsedToken = Token.parseCookie(token.toCookie());
-        assertTrue(token.equals(parsedToken));
+        assertTrue(token.deepEquals(parsedToken));
 
         Token.parseCookie(token.toCookie().replace("true", "false"));
     }
