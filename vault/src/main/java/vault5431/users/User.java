@@ -14,6 +14,7 @@ import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
+import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
@@ -136,21 +137,21 @@ public final class User {
         }
     }
 
-    private void changePrivateEncryptionKey(String newKey, Token token) throws IOException {
+    private void changePrivateEncryptionKey(SJCLSymmetricField newKey, Token token) throws IOException {
         synchronized (privCryptoKeyFile) {
             Sys.debug("Changing private encryption key", token);
-            FileUtils.write(privCryptoKeyFile, new Base64String(newKey));
+            FileUtils.write(privCryptoKeyFile, new Base64String(newKey.toString()));
         }
     }
 
-    private void changePrivateSigningKey(String newKey, Token token) throws IOException {
+    private void changePrivateSigningKey(SJCLSymmetricField newKey, Token token) throws IOException {
         synchronized (privSigningKeyFile) {
             Sys.debug("Changing private signing key", token);
-            FileUtils.write(privSigningKeyFile, new Base64String(newKey));
+            FileUtils.write(privSigningKeyFile, new Base64String(newKey.toString()));
         }
     }
 
-    public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, String newPrivateEncryptionKey, String newPrivateSigningKey, Token token)
+    public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword, Password[] reEncryptedPasswords, SJCLSymmetricField newPrivateEncryptionKey, SJCLSymmetricField newPrivateSigningKey, Token token)
             throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.

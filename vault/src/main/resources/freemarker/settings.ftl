@@ -14,6 +14,12 @@
         <div class="tab-pane active in" style="padding: 5px;" id="sessions">
             <form action="/settings" method="post" id="settingsForm">
                 <div class="form-group">
+                    <label for="phoneNumber" class="control-label">Phone number: </label>
+                    <input style="width: 200px;" type="tel" min="1" max="20" name="phoneNumber"
+                           id="phoneNumber" pattern="^\d{3}-\d{3}-\d{4}$"
+                           class="form-control" required value="${phoneNumber!5}">
+                </div>
+                <div class="form-group">
                     <label for="concurrentSessions" class="control-label">Maximum number of concurrent users: </label>
                     <input style="width: 100px;" type="number" min="1" max="20" name="concurrentSessions"
                            id="concurrentSessions"
