@@ -17,7 +17,7 @@ function getSharedAccordions(sharedPasswords) {
                 'class': 'panel-heading'
             }).appendTo(pd);
             var title = $('<h4/>', {
-                'class': 'panel-title'
+                'class': 'panel-title accordion-title'
             }).appendTo(ph);
             var link = $('<a/>', {
                 'href': '#' + entry.id,
@@ -124,7 +124,7 @@ function getSharedAccordions(sharedPasswords) {
             }).appendTo(notescontainer);
             var notes = $('<div/>', {
                 //'class': 'col-sm-4 col-md-4',
-                'id': 'notes',
+                'id': 'notes accordionField',
                 'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 
@@ -150,7 +150,7 @@ function getAccordions(passwords) {
                 'class': 'panel-heading'
             }).appendTo(pd);
             var title = $('<h4/>', {
-                'class': 'panel-title'
+                'class': 'panel-title accordion-title'
             }).appendTo(ph);
             var link = $('<a/>', {
                 'href': '#' + entry.id,
