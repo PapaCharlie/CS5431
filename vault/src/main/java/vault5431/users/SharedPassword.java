@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import vault5431.io.Base64String;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -14,16 +15,43 @@ import java.util.UUID;
  */
 public final class SharedPassword {
 
-    /**
-     * Tested with sjcl: sjcl encrypts a 500 character string to a JSON object shorter than 750 characters.
-     */
-    protected static final int MAX_ENCRYPTED_LENGTH = 750;
+    private static final class SJCLObject extends JSONObject {
+
+        SJCLObject(String field, int maxlength) throws JSONException {
+            super(field);
+            if (!has("iv") || !has("ct") || !has("kemtag")) {
+                throw new IllegalArgumentException("All SJCL fields are required.");
+            }
+            for (String key : new HashSet<>(keySet())) {
+                if (!(key.equals("iv") || key.equals("ct") || key.equals("kemtag"))) {
+                    remove(key);
+                }
+            }
+            int kemtag = new Base64String(getString("kemtag")).decodeBytes().length;
+            if (kemtag != 128) {
+                throw new IllegalArgumentException("kemtag is not 128 bytes long.");
+            }
+            int iv = new Base64String(getString("iv")).decodeBytes().length;
+            if (iv != 24) {
+                throw new IllegalArgumentException("iv is not 24 bytes long.");
+            }
+            int ct = new Base64String(getString("ct")).decodeBytes().length;
+            if (ct % 4 != 0) {
+                throw new IllegalArgumentException("Invalid encrypted text.");
+            }
+            if (ct > maxlength) {
+                throw new IllegalArgumentException("Encrypted text is too long!");
+            }
+        }
+
+    }
 
     private String sharer;
-    private JSONObject name;
-    private JSONObject url;
-    private JSONObject username;
-    private JSONObject password;
+    private SJCLObject name;
+    private SJCLObject url;
+    private SJCLObject username;
+    private SJCLObject password;
+    private SJCLObject notes;
     private Base64String signature;
     private UUID id;
 
@@ -40,33 +68,18 @@ public final class SharedPassword {
      * @param id        unique id for indexing server/client side
      * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
      */
-    private SharedPassword(String sharer, String name, String url, String username, String password, Base64String signature, UUID id) throws IllegalArgumentException {
+    private SharedPassword(String sharer, String name, String url, String username, String password, String notes, Base64String signature, UUID id) throws IllegalArgumentException {
         try {
             if (UserManager.userExists(sharer)) {
                 this.sharer = sharer;
             } else {
                 throw new IllegalArgumentException("Sharer does not exist!");
             }
-            if (0 < name.length() && name.length() < MAX_ENCRYPTED_LENGTH) {
-                this.name = new JSONObject(name);
-            } else {
-                throw new IllegalArgumentException("Website name is too long.");
-            }
-            if (0 < url.length() && url.length() < MAX_ENCRYPTED_LENGTH) {
-                this.url = new JSONObject(url);
-            } else {
-                throw new IllegalArgumentException("Website URL is too long.");
-            }
-            if (0 < username.length() && username.length() < MAX_ENCRYPTED_LENGTH) {
-                this.username = new JSONObject(username);
-            } else {
-                throw new IllegalArgumentException("Username is too long.");
-            }
-            if (0 < password.length() && password.length() < MAX_ENCRYPTED_LENGTH) {
-                this.password = new JSONObject(password);
-            } else {
-                throw new IllegalArgumentException("Password is too long.");
-            }
+            this.name = new SJCLObject(name, 150); // 100 char limit
+            this.url = new SJCLObject(url, 512);
+            this.username = new SJCLObject(username, 150);
+            this.password = new SJCLObject(password, 150);
+            this.notes = new SJCLObject(notes, 1350); // 1000 char limit
             if (signature.size() == 128) {
                 this.signature = signature;
             } else {
@@ -74,25 +87,11 @@ public final class SharedPassword {
             }
             this.id = id;
         } catch (JSONException err) {
+            err.printStackTrace();
             throw new IllegalArgumentException("All fields must be valid JSON");
         } catch (NullPointerException err) {
             throw new IllegalArgumentException("All fields required");
         }
-    }
-
-    /**
-     * To be used when creating a new password instance that will be saved to disk. Generates a new unique id.s
-     *
-     * @param sharer    user sharing this password
-     * @param name      website's name
-     * @param url       website's url
-     * @param username  website's username
-     * @param password  website's password
-     * @param signature signature generated by sharer's private key
-     * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
-     */
-    public SharedPassword(String sharer, String name, String url, String username, String password, Base64String signature) throws IllegalArgumentException {
-        this(sharer, name, url, username, password, signature, UUID.randomUUID());
     }
 
     /**
@@ -104,13 +103,14 @@ public final class SharedPassword {
      *                                  fields.
      */
     public static SharedPassword fromJSON(JSONObject json) throws IllegalArgumentException {
-        if (json.has("sharer") && json.has("name") && json.has("url") && json.has("username") && json.has("password") && json.has("signature") && json.has("id")) {
+        if (json.has("sharer") && json.has("name") && json.has("url") && json.has("username") && json.has("password") && json.has("notes") && json.has("signature") && json.has("id")) {
             return new SharedPassword(
                     json.get("sharer").toString(),
                     json.get("name").toString(),
                     json.get("url").toString(),
                     json.get("username").toString(),
                     json.get("password").toString(),
+                    json.get("notes").toString(),
                     Base64String.fromBase64(json.get("signature").toString()),
                     UUID.fromString(json.getString("id"))
             );
@@ -141,6 +141,7 @@ public final class SharedPassword {
         json.put("url", url);
         json.put("username", username);
         json.put("password", password);
+        json.put("notes", notes);
         json.put("signature", signature.getB64String());
         json.put("id", id.toString());
         return json;
@@ -185,6 +186,10 @@ public final class SharedPassword {
         return id;
     }
 
+    protected void newUUID() {
+        id = UUID.randomUUID();
+    }
+
     public int hashCode() {
         return id.hashCode();
     }
@@ -192,13 +197,7 @@ public final class SharedPassword {
     public boolean equals(Object obj) {
         if (obj instanceof SharedPassword) {
             SharedPassword other = (SharedPassword) obj;
-            return sharer.equals(other.sharer)
-                    && name.equals(other.name)
-                    && url.equals(other.url)
-                    && username.equals(other.username)
-                    && password.equals(other.password)
-                    && signature.equals(other.signature)
-                    && id.equals(other.id);
+            return id.equals(other.id);
         } else {
             return false;
         }

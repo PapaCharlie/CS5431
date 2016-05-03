@@ -31,7 +31,7 @@ public abstract class LogEntry {
      */
     public Map<String, String> toMap() {
         Map<String, String> hash = new HashMap<>();
-        hash.put("gilogType", logType.toString());
+        hash.put("logType", logType.toString());
         hash.put("ip", ip);
         hash.put("affectedUser", affectedUser);
         hash.put("timestamp", timestamp.toString());

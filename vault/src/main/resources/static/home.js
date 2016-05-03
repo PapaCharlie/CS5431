@@ -253,6 +253,24 @@ function getAccordions(passwords) {
                 'id': entry.id + 'reveal',
                 'text': 'Reveal'
             }).appendTo(passdiv);
+
+            var row3 = $('<div/>', {
+                'class': 'row'
+            }).appendTo(pb);
+            var notescontainer = $('<div/>', {
+                'class': 'col-sm-4 col-md-4'
+            }).appendTo(row3);
+            var label = $('<label/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'text': 'Notes',
+                'for': 'notes'
+            }).appendTo(notescontainer);
+            var notes = $('<div/>', {
+                //'class': 'col-sm-4 col-md-4',
+                'id': 'notes accordionField',
+                'text': entry.notes ? entry.notes : ""
+            }).appendTo(notescontainer);
+
             //var editbtn = $('<button/>', {
             //    'type': 'button',
             //    'class': 'btn btn-warning',
@@ -289,7 +307,7 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'name',
                 'class': 'form-control',
-                'maxlength': '500',
+                'maxlength': '100',
                 'value': entry.name,
                 'required': 'true'
             }).appendTo(form);
@@ -305,7 +323,7 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'username',
                 'class': 'form-control',
-                'maxlength': '500',
+                'maxlength': '100',
                 'value': entry.username,
                 'required': 'true'
             }).appendTo(form);
@@ -313,7 +331,7 @@ function getAccordions(passwords) {
                 'type': 'text',
                 'name': 'password',
                 'class': 'form-control',
-                'maxlength': '500',
+                'maxlength': '100',
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(form);
@@ -321,7 +339,7 @@ function getAccordions(passwords) {
                 'name': 'notes',
                 'class': 'form-control',
                 'maxlength': '1000',
-                'text': 'put current secure notes here'
+                'text': entry.notes ? entry.notes : ""
             }).appendTo(form);
             var changeform = $('<button/>', {
                 'class': 'btn btn-primary',
@@ -397,6 +415,13 @@ function getAccordions(passwords) {
                 'value': entry.password,
                 'required': 'true'
             }).appendTo(shareform);
+            var sharechangenotes = $('<input/>', {
+                'type': 'hidden',
+                'name': 'notes',
+                'class': 'form-control',
+                'value': entry.notes ? entry.notes : "",
+                'required': 'true'
+            }).appendTo(shareform);
             var sharechangeform = $('<button/>', {
                 'class': 'btn btn-primary',
                 'type': 'submit',
@@ -406,23 +431,6 @@ function getAccordions(passwords) {
             var sharemodalfooter = $("<div class='modal-footer'>" +
                 "<button type='button' class='btn btn-default' data-dismiss='modal'>Close</button>" +
                 "</div>").appendTo(sharemc);
-
-            var row3 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
-            var notescontainer = $('<div/>', {
-                'class': 'col-sm-4 col-md-4'
-            }).appendTo(row3);
-            var label = $('<label/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'text': 'Notes',
-                'for': 'notes'
-            }).appendTo(notescontainer);
-            var notes = $('<div/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'id': 'notes accordionField',
-                'text': entry.notes ? entry.notes : ""
-            }).appendTo(notescontainer);
 
             $('#accordion').append(pd);
 

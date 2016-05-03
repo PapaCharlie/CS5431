@@ -2,7 +2,6 @@ package vault5431.users;
 
 import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
-import org.json.JSONObject;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.Token;
@@ -23,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.UUID;
 
 import static vault5431.Sys.NO_IP;
@@ -93,74 +92,6 @@ public final class User {
         }
     }
 
-    private void saveSharedPasswords(LinkedList<SharedPassword> sharedPasswords) throws IOException {
-        synchronized (sharedPasswordsFile) {
-            FileUtils.empty(sharedPasswordsFile);
-            for (SharedPassword password : sharedPasswords) {
-                FileUtils.append(sharedPasswordsFile, new Base64String(password.toJSON()));
-            }
-        }
-    }
-
-    public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
-        synchronized (sharedPasswordsFile) {
-            LinkedList<SharedPassword> passwords = loadSharedPasswords(token);
-            LinkedList<SharedPassword> filteredPasswords = new LinkedList<>();
-            SharedPassword deleted = null;
-            for (SharedPassword sharedPassword : passwords) {
-                if (sharedPassword.getID().equals(uuid)) {
-                    deleted = sharedPassword;
-                } else {
-                    filteredPasswords.push(sharedPassword);
-                }
-            }
-            if (deleted != null) {
-                saveSharedPasswords(filteredPasswords);
-                info("Deleted shared password.", token.getIp());
-            }
-            return deleted;
-        }
-    }
-
-    public LinkedList<SharedPassword> loadSharedPasswords(Token token) throws IOException, CorruptedVaultException, VaultNotFoundException {
-        synchronized (sharedPasswordsFile) {
-            info("Loading shared passwords.", token.getIp());
-            if (!sharedPasswordsFile.exists()) {
-                Sys.error("User's shared passwords file could not be found.", this, token.getIp());
-                throw new VaultNotFoundException();
-            }
-            LinkedList<SharedPassword> sharedPasswords = new LinkedList<>();
-            try {
-                for (Base64String base64String : Base64String.loadFromFile(sharedPasswordsFile)) {
-                    try {
-                        sharedPasswords.add(SharedPassword.fromJSON(base64String));
-                    } catch (IllegalArgumentException | JSONException err) {
-                        err.printStackTrace();
-                        error("Shared password was corrupted! Loading remaining passwords.", token.getIp());
-                    }
-                }
-            } catch (IOException err) {
-                err.printStackTrace();
-                error("Could not find vault!", token.getIp());
-                throw new VaultNotFoundException();
-            }
-            return sharedPasswords;
-
-        }
-    }
-
-    public int numSharedPasswords(Token token) throws IOException {
-        synchronized (sharedPasswordsFile) {
-            return FileUtils.read(sharedPasswordsFile).length;
-        }
-    }
-
-    public void addSharedPassword(SharedPassword sharedPassword) throws IOException {
-        synchronized (sharedPasswordsFile) {
-            FileUtils.append(sharedPasswordsFile, new Base64String(sharedPassword.toJSONObject().toString()));
-        }
-    }
-
     public String loadPublicEncryptionKey() throws IOException {
         synchronized (pubCryptoKeyFile) {
             return FileUtils.read(pubCryptoKeyFile)[0].decodeString();
@@ -210,7 +141,7 @@ public final class User {
                 warning("Changing master password!", token.getIp());
                 PasswordUtils.savePassword(passwordHashFile, newPassword);
                 warning("Saving newly encrypted vault!", token.getIp());
-                savePasswords(new LinkedList<>(Arrays.asList(reEncryptedPasswords)));
+                savePasswords(new HashSet<>(Arrays.asList(reEncryptedPasswords)));
                 changePrivateEncryptionKey(newPrivateEncryptionKey, token);
                 changePrivateSigningKey(newPrivateSigningKey, token);
                 info("Master password change succesful.", token.getIp());
@@ -235,16 +166,102 @@ public final class User {
         }
     }
 
-    public void addPasswordToVault(Password password, Token token) throws IOException {
+    private void saveSharedPasswords(HashSet<SharedPassword> sharedPasswords) throws IOException {
+        synchronized (sharedPasswordsFile) {
+            FileUtils.empty(sharedPasswordsFile);
+            for (SharedPassword password : sharedPasswords) {
+                FileUtils.append(sharedPasswordsFile, new Base64String(password.toJSON()));
+            }
+        }
+    }
+
+    public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException {
+        synchronized (sharedPasswordsFile) {
+            HashSet<SharedPassword> passwords = loadSharedPasswords();
+            HashSet<SharedPassword> filteredPasswords = new HashSet<>();
+            SharedPassword deleted = null;
+            for (SharedPassword sharedPassword : passwords) {
+                if (sharedPassword.getID().equals(uuid)) {
+                    deleted = sharedPassword;
+                } else {
+                    filteredPasswords.add(sharedPassword);
+                }
+            }
+            if (deleted != null) {
+                saveSharedPasswords(filteredPasswords);
+                info("Deleted shared password.", token.getIp());
+            }
+            return deleted;
+        }
+    }
+
+    public HashSet<SharedPassword> loadSharedPasswords() throws IOException, VaultNotFoundException {
+        synchronized (sharedPasswordsFile) {
+            info("Loading shared passwords.");
+            if (!sharedPasswordsFile.exists()) {
+                Sys.error("User's shared passwords file could not be found.", this);
+                throw new VaultNotFoundException();
+            }
+            HashSet<SharedPassword> sharedPasswords = new HashSet<>();
+            try {
+                for (Base64String base64String : Base64String.loadFromFile(sharedPasswordsFile)) {
+                    try {
+                        sharedPasswords.add(SharedPassword.fromJSON(base64String));
+                    } catch (IllegalArgumentException | JSONException err) {
+                        err.printStackTrace();
+                        error("Shared password was corrupted! Loading remaining passwords.");
+                    }
+                }
+            } catch (IOException err) {
+                err.printStackTrace();
+                error("Could not find vault!");
+                throw new VaultNotFoundException();
+            }
+            return sharedPasswords;
+
+        }
+    }
+
+    public int numSharedPasswords(Token token) throws IOException {
+        synchronized (sharedPasswordsFile) {
+            return FileUtils.read(sharedPasswordsFile).length;
+        }
+    }
+
+    public void addSharedPassword(SharedPassword sharedPassword) throws IOException, VaultNotFoundException {
+        synchronized (sharedPasswordsFile) {
+            HashSet<SharedPassword> sharedPasswords = loadSharedPasswords();
+            boolean validUUID = false;
+            while (!validUUID) {
+                if (sharedPasswords.stream().filter((other) -> other.getID().equals(sharedPassword.getID())).count() > 0) {
+                    sharedPassword.newUUID();
+                } else {
+                    validUUID = true;
+                }
+            }
+            FileUtils.append(sharedPasswordsFile, new Base64String(sharedPassword.toJSONObject().toString()));
+        }
+    }
+
+    public void addPasswordToVault(Password password, Token token) throws IOException, VaultNotFoundException {
         synchronized (vaultFile) {
             info("Added password.", token.getIp());
+            HashSet<Password> passwords = loadPasswords(token);
+            boolean validUUID = false;
+            while (!validUUID) {
+                if (passwords.stream().filter((other) -> other.getID().equals(password.getID())).count() > 0) {
+                    password.newUUID();
+                } else {
+                    validUUID = true;
+                }
+            }
             FileUtils.append(vaultFile, new Base64String(password.toJSON()));
         }
     }
 
     public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException {
         synchronized (vaultFile) {
-            LinkedList<Password> passwords = loadPasswords(token);
+            HashSet<Password> passwords = loadPasswords(token);
             if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
                 passwords.add(password);
             }
@@ -253,17 +270,27 @@ public final class User {
         }
     }
 
-    public void deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, CorruptedVaultException {
+    public Password deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException {
         synchronized (vaultFile) {
-            LinkedList<Password> passwords = loadPasswords(token);
-            if (passwords.removeIf((pass) -> pass.getID().equals(uuid))) {
-                savePasswords(passwords);
+            HashSet<Password> passwords = loadPasswords(token);
+            HashSet<Password> filteredPasswords = new HashSet<>();
+            Password deleted = null;
+            for (Password password : passwords) {
+                if (password.getID().equals(uuid)) {
+                    deleted = password;
+                } else {
+                    filteredPasswords.add(password);
+                }
+            }
+            if (deleted != null) {
+                savePasswords(filteredPasswords);
                 info("Deleted password.", token.getIp());
             }
+            return deleted;
         }
     }
 
-    private void savePasswords(LinkedList<Password> passwords) throws IOException {
+    private void savePasswords(HashSet<Password> passwords) throws IOException {
         synchronized (vaultFile) {
             FileUtils.empty(vaultFile);
             for (Password password : passwords) {
@@ -272,14 +299,14 @@ public final class User {
         }
     }
 
-    public LinkedList<Password> loadPasswords(Token token) throws VaultNotFoundException {
+    public HashSet<Password> loadPasswords(Token token) throws VaultNotFoundException {
         synchronized (vaultFile) {
             info("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {
                 Sys.error("User's vault file could not be found.", this);
                 throw new VaultNotFoundException();
             }
-            LinkedList<Password> passwords = new LinkedList<>();
+            HashSet<Password> passwords = new HashSet<>();
             try {
                 for (Base64String base64String : Base64String.loadFromFile(vaultFile)) {
                     try {
@@ -298,7 +325,7 @@ public final class User {
         }
     }
 
-    public boolean verifyPassword(Base64String hashedPassword) throws IOException {
+    public boolean verifyMasterPassword(Base64String hashedPassword) throws IOException {
         synchronized (passwordHashFile) {
             return PasswordUtils.verifyPasswordInFile(passwordHashFile, hashedPassword);
         }

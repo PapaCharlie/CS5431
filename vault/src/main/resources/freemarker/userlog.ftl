@@ -35,7 +35,7 @@
                     <td>${log.logType}</td>
                     <td>${log.ip}</td>
                     <td>${log.timestamp}</td>
-                    <td class="search">${log.message}</td>
+                    <td class="search">${log.message?html}</td>
                 </tr>
             </#list>
         </table>
