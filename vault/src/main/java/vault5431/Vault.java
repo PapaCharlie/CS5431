@@ -116,7 +116,6 @@ public class Vault {
             String newKey = adminLoggingKey.getFormat() + "iterate";
             return  PasswordUtils.deriveKey(HashUtils.hash512(newKey.getBytes(), i).toString(), adminSalt);
         }
-
     }
 
     public static SecretKey getAdminLoggingKey() {
