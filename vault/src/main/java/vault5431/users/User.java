@@ -22,8 +22,6 @@ import vault5431.users.exceptions.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.LineNumberReader;
-import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,6 +50,8 @@ public final class User {
     public final File privCryptoKeyFile;
     public final File pubSigningKeyFile;
     public final File privSigningKeyFile;
+
+    private int lineNums;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -345,9 +345,9 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-//                int n = new LineNumberReader(new FileReader(logFile)).getLineNumber();
-                int n = FileUtils.read(logFile).length;
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminLoggingKey(n)));
+                System.out.println(getAdminLoggingKey(lineNums).getFormat());
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminLoggingKey(lineNums)));
+                lineNums ++;
                 System.out.println("[" + getShortHash() + "] " + entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -366,6 +366,7 @@ public final class User {
                 warning("Failed to write to log.verify for user! Continuing", this);
             }
         }
+        System.out.println(lineNums);
     }
 
     public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
@@ -381,7 +382,6 @@ public final class User {
             for (int i = 0; i < encryptedEntries.length; i++) {
                 try {
                     byte[] decrypted = SymmetricUtils.decrypt(encryptedEntries[i], getAdminLoggingKey(i));
-                    System.out.println("DONE");
                     boolean valid = SigningUtils.verifySignature(decrypted, signedEntries[i], getAdminSigningKey());
                     System.out.println(valid);
                     String decryptedEntry = (valid) ? new String(decrypted) : (new UserLogEntry(LogType.ERROR, NO_IP,
