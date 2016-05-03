@@ -30,4 +30,9 @@ span.addicon{
 
 .accordionField{
 	margin-bottom: 5px;
+	word-break: break-all;
+}
+
+.accordion-title{
+	word-break: break-all;
 }
