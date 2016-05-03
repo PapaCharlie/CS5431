@@ -109,12 +109,21 @@ public class Vault {
      * Returns the admin logging key derived from the SysAdmin password and iterated i times.
      */
     public static SecretKey getAdminLoggingKey(int i) {
-        byte[] adminSalt ="".getBytes();
+//        System.out.println("ORIGINAL KEY : " + new String(adminLoggingKey.getEncoded()));
         if (i == 0) {
             return adminLoggingKey;
         } else {
-            String newKey = adminLoggingKey.getFormat() + "iterate";
-            return  PasswordUtils.deriveKey(HashUtils.hash512(newKey.getBytes(), i).toString(), adminSalt);
+            try {
+                String newKey = adminLoggingKey.getFormat();
+                byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
+                SecretKey datKey =  PasswordUtils.deriveKey(HashUtils.hash512(newKey.getBytes(), i).toString(), adminSalt);
+//                System.out.println("DAT KEY: " + new String(datKey.getEncoded()));
+                return datKey;
+            } catch (IOException err){
+                err.printStackTrace();
+                System.err.println("Could not load admin salt from file!");
+                throw new RuntimeException(err);
+            }
         }
     }
 
