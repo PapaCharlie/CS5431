@@ -108,7 +108,7 @@ public abstract class Routes {
         new AuthenticationRoutes().routes();
         new ExceptionRoutes().routes();
         new SettingsRoutes().routes();
-        new PasswordSharingRoutes().routes();
+        new SharedPasswordRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();

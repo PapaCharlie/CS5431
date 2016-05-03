@@ -23,7 +23,7 @@
 <body>
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
-        <li><a href="/home">Vault</a></li>
+        <li id="homeLink"></li>
         <li><a href="/generator">Password Generator</a></li>
         <li><a id="sharedpasswordsLink" href="/sharedpasswords">Shared Passwords </a></li>
         <li><a href="/settings">Settings</a></li>
@@ -40,13 +40,14 @@
 <script>
     $(function () {
 
-        $.get("/numshared", {}, function(data) {
+        $.get("/numshared", {}, function (data) {
             var response = JSON.parse(data);
             if (response.success && response.numshared > 0) {
-                var badge = $("<span class='badge'>" + response.numshared + "</span>");
-                $("#sharedpasswordsLink").append(badge);
+                $("#sharedpasswordsLink").append($("<span/>", {'class': 'badge', 'text': response.numshared}));
             }
         });
+
+        $("#homeLink").append($("<a/>", {'href': '/home', 'text': getUsernameFromCookie() + "'s Vault"}));
 
         $("#logout").click(function (e) {
             e.preventDefault();

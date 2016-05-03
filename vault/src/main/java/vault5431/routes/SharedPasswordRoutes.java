@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Created by papacharlie on 2016-05-01.
  */
-final class PasswordSharingRoutes extends Routes {
+final class SharedPasswordRoutes extends Routes {
 
     protected void routes() {
 
@@ -46,7 +46,7 @@ final class PasswordSharingRoutes extends Routes {
             }
             User user = UserManager.getUser(username);
             Sys.debug(String.format("Loading %s's public encryption key.", user.getShortHash()), token);
-            return success().put("publicEncryptionKey", user.loadPublicEncryptionKey());
+            return success().put("publicEncryptionKey", user.loadAndVerifyPublicEncryptionKey());
         });
 
         authenticatedGet("/publicSigningKey/:username", (req, res, token) -> {
@@ -59,7 +59,7 @@ final class PasswordSharingRoutes extends Routes {
             }
             User user = UserManager.getUser(username);
             Sys.debug(String.format("Loading %s's public signing key.", user.getShortHash()), token);
-            return success().put("publicSigningKey", user.loadPublicSigningKey());
+            return success().put("publicSigningKey", user.loadAndVerifyPublicSigningKey());
         });
 
         authenticatedGet("/shared", (req, res, token) -> {
@@ -80,20 +80,21 @@ final class PasswordSharingRoutes extends Routes {
             return response.put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token));
         });
 
-        authenticatedPost("/shared/:username", (req, res, token) -> {
-            String username = req.params("username");
+        authenticatedPost("/shared/:target", (req, res, token) -> {
+            String target = req.params("target");
             String sharedPassword = req.queryParams("sharedPassword");
-            if (!provided(username, sharedPassword)) {
+            if (!provided(target, sharedPassword)) {
                 return allFieldsRequired();
             }
-            if (!UserManager.userExists(username)) {
+            if (!UserManager.userExists(target)) {
                 return userDoesNotExist();
             }
             try {
                 JSONObject json = new JSONObject(sharedPassword);
                 json.put("id", UUID.randomUUID().toString());
+                json.put("sharer", token.getUsername());
                 SharedPassword password = SharedPassword.fromJSON(json);
-                User user = UserManager.getUser(username);
+                User user = UserManager.getUser(target);
                 user.addSharedPassword(password);
                 user.info(String.format("Received shared password from %s.", password.getSharer()), token.getIp());
                 return success();
@@ -115,7 +116,7 @@ final class PasswordSharingRoutes extends Routes {
                 SharedPassword sharedPassword = token.getUser().deleteSharedPassword(uuid, token);
                 if (sharedPassword != null) {
                     token.getUser().info(String.format("Accepting shared password from %s.", sharedPassword.getSharer()), token.getIp());
-                    sharedPassword.getSharerUser().info("Your shared password was accepted.");
+                    sharedPassword.getSharerUser().info(String.format("%s has accepted your shared password.", token.getUsername()));
                     JSONObject pass = new JSONObject(acceptedPassword);
                     pass.put("id", UUID.randomUUID().toString());
                     Password newPassword = Password.fromJSON(pass);
@@ -138,8 +139,8 @@ final class PasswordSharingRoutes extends Routes {
                 UUID uuid = UUID.fromString(id);
                 SharedPassword sharedPassword = token.getUser().deleteSharedPassword(uuid, token);
                 if (sharedPassword != null) {
-                    token.getUser().info(String.format("Rjecting shared password from %s.", sharedPassword.getSharer()), token.getIp());
-                    sharedPassword.getSharerUser().info("Your shared password was rejected.");
+                    token.getUser().info(String.format("Rejecting shared password from %s.", sharedPassword.getSharer()), token.getIp());
+                    sharedPassword.getSharerUser().info(String.format("%s has rejected your shared password.", token.getUsername()));
                     return success().put("message", "Successfully rejected shared password");
                 } else {
                     return failure("No such shared password");

@@ -23,8 +23,8 @@ public class UserTest extends VaultTest {
 
     static {
         try {
-            user = getTempUser(password);
-            token = AuthenticationHandler.acquireUnverifiedToken(user, new Base64String(password), Sys.NO_IP);
+            user = getTempUser(username, password);
+            token = AuthenticationHandler.acquireUnverifiedToken(username, new Base64String(password), Sys.NO_IP);
         } catch (Exception err) {
             err.printStackTrace();
             System.out.println("Could not create temp user!");

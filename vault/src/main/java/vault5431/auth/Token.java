@@ -20,13 +20,15 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 
 /**
- * Token class. A token is required for all authorization with respect to the Vault
+ * Token class. A token is required for all authorization with respect to the Vault.
+ *
+ * @author papacharlie
  */
 public final class Token {
 
     private static final SecureRandom random = new SecureRandom();
 
-    private final Base64String username;
+    private final String username;
     private final LocalDateTime creationDate;
     private final LocalDateTime expiresAt;
     private final UUID id;
@@ -40,8 +42,12 @@ public final class Token {
      * @param user     user for which to generate token
      * @param verified whether or not {@code user} has successfully completed 2FA
      */
-    protected Token(User user, boolean verified) throws CouldNotLoadSettingsException {
-        this.username = user.hash;
+    protected Token(String username, boolean verified) throws CouldNotLoadSettingsException {
+        if (!UserManager.userExists(username)) {
+            throw new IllegalArgumentException("No such username!");
+        }
+        User user = UserManager.getUser(username);
+        this.username = username;
         this.creationDate = LocalDateTime.now();
         LocalDateTime expires = LocalDateTime.now().plusMinutes((long) user.loadSettings().getSessionLength());
         this.expiresAt = RollingKeys.getEndOfCurrentWindow().isBefore(expires) ? RollingKeys.getEndOfCurrentWindow() : expires;
@@ -58,7 +64,7 @@ public final class Token {
      *
      * @throws InvalidTokenException thrown when parsed token is not valid
      */
-    private Token(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified, Base64String signature, String ip) throws InvalidTokenException {
+    private Token(String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified, Base64String signature, String ip) throws InvalidTokenException {
         this.username = username;
         this.ip = ip;
         if (creationDate.isBefore(LocalDateTime.now())) {
@@ -82,8 +88,8 @@ public final class Token {
         }
     }
 
-    private static byte[] toSignatureBody(Base64String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified) {
-        return (username.toString() + creationDate.toString() + expiresAt.toString() + id.toString() + verified).getBytes();
+    private static byte[] toSignatureBody(String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified) {
+        return (username + creationDate.toString() + expiresAt.toString() + id.toString() + verified).getBytes();
     }
 
     protected static Token parseCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
@@ -103,7 +109,7 @@ public final class Token {
     protected static Token parseCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
         try {
             CSVRecord record = CSVUtils.parseRecord(cookie).getRecords().get(0);
-            Base64String username = Base64String.fromBase64(record.get(0));
+            String username = record.get(0);
             LocalDateTime creationDate = LocalDateTime.parse(record.get(1));
             LocalDateTime expiresAt = LocalDateTime.parse(record.get(2));
             UUID id = UUID.fromString(record.get(3));
@@ -131,7 +137,7 @@ public final class Token {
         return ip;
     }
 
-    public Base64String getUsername() {
+    public String getUsername() {
         return username;
     }
 
@@ -140,8 +146,9 @@ public final class Token {
     }
 
     /**
-     * Return a token that's been verified. Only to be called when user has completed 2FA
+     * Return a token that's been verified. Only to be called when user has completed 2FA.
      *
+     * @return The verified Token.
      * @throws InvalidTokenException if the token has expired or the signature cannot be verified.
      */
     protected Token verify() throws InvalidTokenException {
@@ -173,4 +180,17 @@ public final class Token {
         }
     }
 
+    public boolean deepEquals(Object obj) {
+        if (obj instanceof Token) {
+            Token other = (Token) obj;
+            return id.equals(other.id)
+                    && username.equals(other.username)
+                    && creationDate.equals(other.creationDate)
+                    && expiresAt.equals(other.expiresAt)
+                    && verified == other.verified
+                    && signature.equals(other.signature);
+        } else {
+            return false;
+        }
+    }
 }

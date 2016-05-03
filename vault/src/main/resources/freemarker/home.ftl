@@ -31,8 +31,7 @@
         var masterKey;
         var passwords;
         var privateSigningKey;
-        if (sessionStorage.getItem("password") && sessionStorage.getItem("username")) {
-            username = sessionStorage.getItem("username");
+        if (sessionStorage.getItem("password")) {
             $.get("/passwords", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords")
@@ -114,7 +113,6 @@
                                         }
                                     }
                                 });
-                                values["sharer"] = username;
                                 values["signature"] = sign(privateSigningKey, values);
                                 $.post("/shared/" + target, {
                                     sharedPassword: JSON.stringify(values)

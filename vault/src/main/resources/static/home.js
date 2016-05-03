@@ -2,6 +2,9 @@
  * Created by papacharlie on 2016-04-13.
  */
 
+function getUsernameFromCookie() {
+    return /token="\w+,/.exec(document.cookie)[0].replace("token=\"","").replace(",","");
+}
 
 function getSharedAccordions(sharedPasswords) {
     if (sharedPasswords.length > 0) {
