@@ -61,5 +61,5 @@ assembly:
 deploy: assembly up
 
 up:
-	rsync -vrc --progress target/scala-2.10/vault5431-assembly-0.3.jar root@vault5431.com:.
+	rsync -vrc --progress target/scala-2.10/vault5431-assembly-1.0.0.jar root@vault5431.com:.
 	rsync -vrc --progress ServerMakefile root@vault5431.com:Makefile
