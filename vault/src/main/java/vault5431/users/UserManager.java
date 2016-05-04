@@ -24,11 +24,14 @@ import static vault5431.Vault.home;
  * User manager. The goal of this class is to ensure that all user creation is done properly, and to manage file access
  * in a synchronous manner. As long as all User instances are acquired through this class, there should be no race
  * conditions.
+ *
+ * @author papacharlie
  */
 public class UserManager {
 
     private static final Map<Base64String, User> users = new HashMap<>();
     private static final ReentrantReadWriteLock userMapLock = new ReentrantReadWriteLock();
+
     static {
         userMapLock.writeLock().lock();
         try {

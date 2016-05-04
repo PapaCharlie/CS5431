@@ -12,6 +12,8 @@ import java.security.PublicKey;
 
 /**
  * Signing utilities. Signing is done with HMAC under SHA256.
+ *
+ * @author papacharlie
  */
 public class SigningUtils {
 

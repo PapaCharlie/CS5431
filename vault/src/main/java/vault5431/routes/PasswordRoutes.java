@@ -5,22 +5,24 @@ import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.users.Password;
 import vault5431.users.User;
-import vault5431.users.UserManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Contains routes for displaying users' vaults.
+ *
+ * @author papacharlie
  */
 final class PasswordRoutes extends Routes {
 
     protected void routes() {
 
-        authenticatedGet("/home", (req, res, token) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "home.ftl");
-        });
+        authenticatedGet("/home", (req, res, token) ->
+                new ModelAndView(new HashMap<>(0), "home.ftl")
+        );
 
         authenticatedGet("/passwords", (req, res, token) -> {
             User user = token.getUser();

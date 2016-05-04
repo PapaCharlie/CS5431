@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.security.*;
 
 /**
- * Utils class for Symmetric encryption
+ * Utils class for Symmetric encryption.
+ *
+ * @author papacharlie
  */
 public class SymmetricUtils {
 

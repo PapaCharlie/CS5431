@@ -8,7 +8,6 @@ import org.apache.http.message.BasicNameValuePair;
 import vault5431.Sys;
 import vault5431.auth.exceptions.TooMany2FAAttemptsException;
 import vault5431.users.User;
-import vault5431.users.exceptions.CouldNotDecryptPhoneNumberException;
 import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
 import java.io.IOException;
@@ -44,7 +43,6 @@ class TwoFactorAuthHandler {
      * @param user user to which authentication code will be sent
      * @return the authentication code sent to the user
      * @throws IOException
-     * @throws CouldNotDecryptPhoneNumberException
      * @throws TwilioRestException
      */
     public static int sendAuthMessage(User user) throws IOException, CouldNotLoadSettingsException, TwilioRestException {

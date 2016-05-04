@@ -11,7 +11,9 @@ import vault5431.users.Settings;
 import java.util.HashMap;
 
 /**
- * Created by papacharlie on 2016-04-27.
+ * Routes for displaying and editing users' settings.
+ *
+ * @author papacharlie
  */
 final class SettingsRoutes extends Routes {
 
@@ -30,7 +32,7 @@ final class SettingsRoutes extends Routes {
     protected void routes() {
 
         authenticatedGet("/settings", (req, res, token) -> {
-            HashMap<String, Object> attributes = new HashMap<>();
+            HashMap<String, Object> attributes = new HashMap<>(3);
             Settings settings = token.getUser().loadSettings();
             attributes.put("phoneNumber", settings.getPhoneNumber());
             attributes.put("concurrentSessions", settings.getConcurrentSessions());

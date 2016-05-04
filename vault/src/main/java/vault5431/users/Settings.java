@@ -14,14 +14,22 @@ import java.util.regex.Pattern;
 import static vault5431.Vault.getAdminEncryptionKey;
 
 /**
- * Created by papacharlie on 2016-04-26.
+ * User settings class. Contains misc information about the user.
+ *
+ * @author papacharlie
  */
-public class Settings {
+public final class Settings {
 
     private String phoneNumber;
     private int concurrentSessions;
     private int sessionLength;
 
+    /**
+     * Create a new Settings instance.
+     * @param phoneNumber the user's phone number
+     * @param concurrentSessions the maximum number of allowed concurrent tokens
+     * @param sessionLength the maximum time to live for tokens
+     */
     public Settings(String phoneNumber, int concurrentSessions, int sessionLength) throws IllegalArgumentException {
         if (Pattern.matches("\\d{3}-\\d{3}-\\d{4}", phoneNumber)) {
             this.phoneNumber = phoneNumber;

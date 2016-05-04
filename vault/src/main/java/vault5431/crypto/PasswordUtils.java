@@ -14,12 +14,14 @@ import java.security.spec.InvalidKeySpecException;
 
 /**
  * Password hashing and verification utilities. Hashing is done with PBKDF2 with HMAC and SHA512.
+ *
+ * @author papacharlie
  */
 public class PasswordUtils {
 
-    public static final int ITERATIONS = 1000;
-    public static final int KEY_SIZE = 256;
-    public static final int SALT_SIZE = KEY_SIZE / 8;
+    private static final int ITERATIONS = 1000;
+    private static final int KEY_SIZE = 256;
+    private static final int SALT_SIZE = KEY_SIZE / 8;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String HASH_ALG = "PBKDF2WithHmacSHA512";

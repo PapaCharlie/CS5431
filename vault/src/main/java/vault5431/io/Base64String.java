@@ -31,10 +31,6 @@ public final class Base64String {
         b64String = Base64.getUrlEncoder().encodeToString(data);
     }
 
-    private void setB64data(byte[] b64data) {
-        this.b64String = new String(b64data);
-    }
-
     /**
      * Returns a new Base64String instance based on data that is already Base64 encoded.
      * WARNING: calling {@link #decodeBytes()} or {@link #decodeString()} on an instance returned from this method will
@@ -60,16 +56,6 @@ public final class Base64String {
     }
 
     /**
-     * Save this instance to a file. See {@link #loadFromFile(File)} for reading the result of this method.
-     *
-     * @param file file to save this instance to
-     * @throws IOException If the file cannot be written to.
-     */
-    public void saveToFile(File file) throws IOException {
-        FileUtils.write(file, this);
-    }
-
-    /**
      * Returns a collection of Base64String read from each line of a file.
      * WARNING: Does not synchronize file access.
      *
@@ -79,6 +65,40 @@ public final class Base64String {
      */
     public static Base64String[] loadFromFile(File file) throws IOException {
         return FileUtils.read(file);
+    }
+
+    /**
+     * Returns whether or not the provided data is correct Base64 data.
+     *
+     * @param data data to check
+     * @return true if the data is valid Base64 data.
+     */
+    public static boolean isValidBase64Data(String data) {
+        return Base64String.fromBase64(data).isValidBase64Data();
+    }
+
+    /**
+     * Same as {@link #isValidBase64Data(String)}.
+     *
+     * @param data data to check
+     * @return true if the data is valid Base64 data.
+     */
+    public static boolean isValidBase64Data(byte[] data) {
+        return Base64String.fromBase64(data).isValidBase64Data();
+    }
+
+    private void setB64data(byte[] b64data) {
+        this.b64String = new String(b64data);
+    }
+
+    /**
+     * Save this instance to a file. See {@link #loadFromFile(File)} for reading the result of this method.
+     *
+     * @param file file to save this instance to
+     * @throws IOException If the file cannot be written to.
+     */
+    public void saveToFile(File file) throws IOException {
+        FileUtils.write(file, this);
     }
 
     public String toString() {
@@ -109,26 +129,6 @@ public final class Base64String {
      */
     public byte[] decodeBytes() {
         return Base64.getUrlDecoder().decode(b64String);
-    }
-
-    /**
-     * Returns whether or not the provided data is correct Base64 data.
-     *
-     * @param data data to check
-     * @return true if the data is valid Base64 data.
-     */
-    public static boolean isValidBase64Data(String data) {
-        return Base64String.fromBase64(data).isValidBase64Data();
-    }
-
-    /**
-     * Same as {@link #isValidBase64Data(String)}.
-     *
-     * @param data data to check
-     * @return true if the data is valid Base64 data.
-     */
-    public static boolean isValidBase64Data(byte[] data) {
-        return Base64String.fromBase64(data).isValidBase64Data();
     }
 
     /**
