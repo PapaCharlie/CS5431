@@ -30,7 +30,7 @@
 <script>
     $(document).ready(function () {
         if (sessionStorage.getItem("redirected")) {
-            sessionStorage.clear();
+            sessionStorage.removeItem("password");
         } else if (sessionStorage.getItem("password")) {
             sessionStorage.setItem("redirected", true);
             window.location.href = "/home";
