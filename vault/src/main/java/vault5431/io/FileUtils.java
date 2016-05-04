@@ -13,6 +13,7 @@ public class FileUtils {
 
     /**
      * Read a collection of {@link Base64String}s from a file.
+     *
      * @param file file from which to read the Base64Strings
      * @return The collection of Base64Strings read.
      * @throws IOException If the file cannot be read.
@@ -36,6 +37,7 @@ public class FileUtils {
 
     /**
      * Empty the contents of a file.
+     *
      * @param file file to empty
      * @throws IOException If the file cannot be written to.
      */
@@ -45,8 +47,9 @@ public class FileUtils {
 
     /**
      * Write data to a file.
-     * @param file file to write the data to
-     * @param data data to write
+     *
+     * @param file   file to write the data to
+     * @param data   data to write
      * @param append whether or not the data should be appended to the file, or if the file should be overwritten
      * @throws IOException If the file cannot be written to.
      */
@@ -62,6 +65,7 @@ public class FileUtils {
 
     /**
      * Overwrite a file's data.
+     *
      * @param file file to overwrite
      * @param data data to write
      * @throws IOException If the file cannot be written to.
@@ -72,6 +76,7 @@ public class FileUtils {
 
     /**
      * Append to a file, and finish with a newline.
+     *
      * @param file file to write to
      * @param data data to append
      * @throws IOException If the file cannot be written to.

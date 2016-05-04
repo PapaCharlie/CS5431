@@ -6,9 +6,7 @@ import vault5431.users.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a user log entry for use by the users to check
@@ -101,12 +99,12 @@ public class UserLogEntry extends LogEntry {
     }
 
     /**
-     * @param object
+     * @param obj
      * @return true if the objects contain the same information and false otherwise
      */
-    public boolean equals(Object object) {
-        if (object instanceof UserLogEntry) {
-            UserLogEntry other = (UserLogEntry) object;
+    public boolean equals(Object obj) {
+        if (obj instanceof UserLogEntry) {
+            UserLogEntry other = (UserLogEntry) obj;
             return (logType.equals(other.logType) &&
                     ip.equals(other.ip) &&
                     affectedUser.equals(other.affectedUser) &&

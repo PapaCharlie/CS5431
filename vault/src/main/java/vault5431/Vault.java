@@ -5,7 +5,6 @@ import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
-import vault5431.users.UserManager;
 
 import javax.crypto.SecretKey;
 import java.io.File;
@@ -15,18 +14,20 @@ import java.security.Security;
 import static spark.Spark.*;
 
 
+/**
+ * Main class.
+ *
+ * @author papacharlie
+ */
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     public static final boolean test = true;
 
     private static final File adminSaltFile = new File(home, "admin.salt");
-
-    private static boolean initialized = false;
     private static final SecretKey adminEncryptionKey;
     private static final SecretKey adminSigningKey;
-    private static final SecretKey adminLoggingKey;
-//    private static final byte[] adminSalt;
+    private static boolean initialized = false;
 
     static {
         initialize();

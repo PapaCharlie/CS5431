@@ -17,8 +17,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 /**
  * Used to sign and encrypt tokens. RollingKeys roll every 24 hours at midnight.
+ *
+ * @author papacharlie
  */
-public class RollingKeys {
+final class RollingKeys {
 
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static final ReentrantReadWriteLock keyLock = new ReentrantReadWriteLock();
@@ -53,7 +55,7 @@ public class RollingKeys {
     }
 
     /**
-     * Sign some arbitrary content using the current rolling key
+     * Sign some arbitrary content using the current rolling key.
      *
      * @param content content to sign
      * @return content's signature
@@ -68,7 +70,7 @@ public class RollingKeys {
     }
 
     /**
-     * Verify a signature based on the current rolling key
+     * Verify a signature based on the current rolling key.
      *
      * @param content   content to verify
      * @param signature signature to verify against
@@ -96,8 +98,7 @@ public class RollingKeys {
         } catch (BadCiphertextException err) {
             err.printStackTrace();
             System.err.println("Current rolling key is invalid. Halting.");
-            System.exit(1);
-            throw new RuntimeException();
+            throw new RuntimeException(err);
         } finally {
             keyLock.readLock().unlock();
         }
@@ -116,8 +117,7 @@ public class RollingKeys {
         } catch (BadCiphertextException err) {
             err.printStackTrace();
             System.err.println("Current rolling key is invalid. Halting.");
-            System.exit(1);
-            throw new RuntimeException();
+            throw new RuntimeException(err);
         } finally {
             keyLock.readLock().unlock();
         }

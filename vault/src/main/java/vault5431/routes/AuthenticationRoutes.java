@@ -189,9 +189,9 @@ final class AuthenticationRoutes extends Routes {
                             Base64String.fromBase64(password),
                             phoneNumber,
                             Base64String.fromBase64(pubCryptoKey),
-                            new SJCLSymmetricField(privCryptoKey, 100),
+                            new SJCLSymmetricField(privCryptoKey, 100, true),
                             Base64String.fromBase64(pubSigningKey),
-                            new SJCLSymmetricField(privSigningKey, 100));
+                            new SJCLSymmetricField(privSigningKey, 100, true));
                 } catch (IllegalArgumentException err) {
                     err.printStackTrace();
                     attributes.put("error", "Invalid password!");

@@ -5,8 +5,4 @@ package vault5431.routes.exceptions;
  */
 public class UnauthorizedRequestException extends Exception {
 
-    public UnauthorizedRequestException() {
-        super();
-    }
-
 }

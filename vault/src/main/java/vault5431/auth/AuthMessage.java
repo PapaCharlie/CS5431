@@ -5,7 +5,7 @@ import java.security.SecureRandom;
 /**
  * Class providing random number generation and presentation for 2FA.
  *
- * @author  cyj
+ * @author cyj
  */
 final class AuthMessage {
     private static final SecureRandom random = new SecureRandom();

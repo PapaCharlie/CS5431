@@ -39,7 +39,7 @@ public final class Token {
     /**
      * Generate a new Token for {@code user}.
      *
-     * @param user     user for which to generate token
+     * @param username user for which to generate token
      * @param verified whether or not {@code user} has successfully completed 2FA
      */
     protected Token(String username, boolean verified) throws CouldNotLoadSettingsException {
@@ -171,9 +171,9 @@ public final class Token {
         return id.hashCode();
     }
 
-    public boolean equals(Object object) {
-        if (object instanceof Token) {
-            Token other = (Token) object;
+    public boolean equals(Object obj) {
+        if (obj instanceof Token) {
+            Token other = (Token) obj;
             return this.id.equals(other.id) && this.username.equals(other.username);
         } else {
             return false;

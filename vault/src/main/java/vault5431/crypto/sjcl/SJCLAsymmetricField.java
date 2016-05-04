@@ -7,7 +7,11 @@ import vault5431.io.Base64String;
 import java.util.HashSet;
 
 /**
- * Created by papacharlie on 2016-05-03.
+ * For verifying whether or not data received from the client is indeed of the expected format. SJCL is the client side
+ * encryption library that returns JSON object containing the iv, the ciphertext, and in this case the kemtag. This
+ * class is used to check if the data was indeed encrypted with ECC by SJCL.
+ *
+ * @author papacharlie
  */
 public final class SJCLAsymmetricField extends JSONObject {
 
@@ -16,11 +20,11 @@ public final class SJCLAsymmetricField extends JSONObject {
         if (!has("iv") || !has("ct") || !has("kemtag")) {
             throw new IllegalArgumentException("All SJCL fields are required.");
         }
-        for (String key : new HashSet<>(keySet())) {
+        new HashSet<>(keySet()).forEach((key) -> {
             if (!(key.equals("iv") || key.equals("ct") || key.equals("kemtag"))) {
                 remove(key);
             }
-        }
+        });
         int kemtag = new Base64String(getString("kemtag")).decodeBytes().length;
         if (kemtag != 128) {
             throw new IllegalArgumentException("kemtag is not 128 bytes long.");

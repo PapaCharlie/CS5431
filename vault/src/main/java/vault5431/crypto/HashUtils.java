@@ -7,7 +7,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
 /**
- * Hashing utilities
+ * Hashing utilities.
+ *
+ * @author papacharlie 
  */
 public class HashUtils {
 

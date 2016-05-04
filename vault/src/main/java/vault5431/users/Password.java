@@ -26,11 +26,12 @@ public final class Password {
      * Creates a new Password instance. This constructor limits the total stored size of the instance. Used when loading
      * instances from disk.
      *
-     * @param name     Website's name
-     * @param url      Website's url
-     * @param username Website's username
-     * @param password Website's password
-     * @param id       Unique id for indexing server/client side
+     * @param name     website's name
+     * @param url      website's url
+     * @param username website's username
+     * @param password website's password
+     * @param id       unique id for indexing server/client side
+     * @param notes    password's notes
      * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
      */
     private Password(String name, String url, String username, String password, String notes, UUID id) throws IllegalArgumentException {
@@ -120,7 +121,11 @@ public final class Password {
         return id;
     }
 
-    protected void newUUID() {
+
+    /**
+     * Cycle's the password's UUID. Used when saving a new password.
+     */
+    void newUUID() {
         id = UUID.randomUUID();
     }
 

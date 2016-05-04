@@ -20,7 +20,6 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
-
 import vault5431.users.exceptions.CorruptedLogException;
 import vault5431.users.exceptions.CouldNotLoadSettingsException;
 import vault5431.users.exceptions.VaultNotFoundException;
@@ -36,7 +35,11 @@ import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.*;
 
 /**
- * User class.
+ * User class. Because an instance of User can only be acquired through the UserManager, and the UserManager always
+ * hands out the same User instance when {@link UserManager#getUser} is called, synchronizing on dynamic fields
+ * has meaning since each thread is sharing the same instance for a given User.
+ *
+ * @author papacharlie
  */
 public final class User {
 
@@ -245,7 +248,7 @@ public final class User {
         }
     }
 
-    public int numSharedPasswords(Token token) throws IOException {
+    public int numSharedPasswords() throws IOException {
         synchronized (sharedPasswordsFile) {
             return FileUtils.read(sharedPasswordsFile).length;
         }

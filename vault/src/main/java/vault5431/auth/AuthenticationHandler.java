@@ -111,7 +111,7 @@ public class AuthenticationHandler {
      * @param ip       ip requesting the token
      * @return A new Token instance, null if provided password was incorrect.
      * @throws TooManyConcurrentSessionsException When assigning a new Token would mean violating the user's maximum
-     *                                            concurrent sessions policy (see {@see Settings} for more information).
+     *                                            concurrent sessions policy (see {@see #Settings} for more information).
      * @throws TooManyFailedLogins                When a user has been banned for having too many failed login attempts.
      * @throws CouldNotLoadSettingsException      When the user's settings could not be found on disk, or were corrupted.
      * @throws IOException                        When the user's hashed password cannot be loaded from disk.

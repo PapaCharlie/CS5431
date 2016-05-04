@@ -33,6 +33,7 @@ public class CSVUtils {
 
     /**
      * Returns a String representing the parameters in CSV format.
+     *
      * @param args parameters to serialize into one CSV line
      * @return The CSV line
      * @throws IOException If the parameters cannot be serialized.
@@ -43,6 +44,7 @@ public class CSVUtils {
 
     /**
      * Parse a CSV line or lines.
+     *
      * @param record CSV data to parse
      * @return The set of CSV lines parsed from the record.
      * @throws IOException If the record cannot be parsed.

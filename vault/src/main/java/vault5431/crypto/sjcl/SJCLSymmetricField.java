@@ -7,7 +7,11 @@ import vault5431.io.Base64String;
 import java.util.HashSet;
 
 /**
- * Created by papacharlie on 2016-05-03.
+ * For verifying whether or not data received from the client is indeed of the expected format. SJCL is the client side
+ * encryption library that returns JSON object containing the iv and the ciphertext. This class is used to check if the
+ * data was indeed encrypted with AES by SJCL.
+ *
+ * @author papacharlie
  */
 public final class SJCLSymmetricField extends JSONObject {
 
@@ -16,11 +20,11 @@ public final class SJCLSymmetricField extends JSONObject {
         if (!has("iv") || !has("ct")) {
             throw new IllegalArgumentException("All SJCL fields are required.");
         }
-        for (String key : new HashSet<>(keySet())) {
+        new HashSet<>(keySet()).forEach((key) -> {
             if (!(key.equals("iv") || key.equals("ct"))) {
                 remove(key);
             }
-        }
+        });
         int iv = new Base64String(getString("iv")).decodeBytes().length;
         if (iv != 24) {
             throw new IllegalArgumentException("iv is not 24 bytes long.");
