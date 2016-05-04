@@ -67,7 +67,7 @@ final class AuthenticationRoutes extends Routes {
                             true
                     );
                     res.redirect("/twofactor");
-                    user.info("Successful password login.", token.getIp());
+                    user.info("Accepted password login, prompting for 2FA.", token.getIp());
                     return emptyPage;
                 } else {
                     user.warning("Failed password verification attempt.", req.ip());
@@ -105,7 +105,7 @@ final class AuthenticationRoutes extends Routes {
 
         post("/twofactor", (req, res) -> {
             Token token = validateToken(req);
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(1);
             if (token != null) {
                 if (!token.isVerified()) {
                     String authCode = req.queryParams("authCode");
@@ -117,8 +117,8 @@ final class AuthenticationRoutes extends Routes {
                         int code = Integer.parseInt(authCode);
                         Token verifiedToken = AuthenticationHandler.acquireVerifiedToken(token, code);
                         if (verifiedToken != null) {
-                            Sys.debug("Two factor auth succesful!", verifiedToken);
-                            verifiedToken.getUser().info("Succesful login.", verifiedToken.getIp());
+                            Sys.debug("Two factor auth successful!", verifiedToken);
+                            verifiedToken.getUser().info("Successful 2FA.", verifiedToken.getIp());
                             res.cookie(
                                     "token",
                                     verifiedToken.toCookie(),
