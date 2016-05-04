@@ -114,20 +114,15 @@ function getSharedAccordions(sharedPasswords) {
                 'text': 'Reveal'
             }).appendTo(passdiv);
 
-            var row3 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
             var notescontainer = $('<div/>', {
-                'class': 'col-sm-4 col-md-4'
-            }).appendTo(row3);
+                'class': 'accordionField'
+            }).appendTo(pb);
             var label = $('<label/>', {
-                //'class': 'col-sm-4 col-md-4',
                 'text': 'Notes',
                 'for': 'notes'
             }).appendTo(notescontainer);
             var notes = $('<div/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'id': 'notes accordionField',
+                'id': 'notes',
                 'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 
@@ -257,20 +252,15 @@ function getAccordions(passwords) {
                 'text': 'Reveal'
             }).appendTo(passdiv);
 
-            var row3 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
             var notescontainer = $('<div/>', {
-                'class': 'col-sm-4 col-md-4'
-            }).appendTo(row3);
+                'class': 'accordionField'
+            }).appendTo(pb);
             var label = $('<label/>', {
-                //'class': 'col-sm-4 col-md-4',
                 'text': 'Notes',
                 'for': 'notes'
             }).appendTo(notescontainer);
             var notes = $('<div/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'id': 'notes accordionField',
+                'id': 'notes',
                 'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 
