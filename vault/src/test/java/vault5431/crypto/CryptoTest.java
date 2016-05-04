@@ -55,15 +55,6 @@ public class CryptoTest extends VaultTest {
     }
 
     @Test
-    public void testSecretKeySaveToFile() throws Exception {
-        SecretKey key = SymmetricUtils.getNewKey();
-        File secretKeyFile = getTempFile("key");
-        SymmetricUtils.saveSecretKey(secretKeyFile, key, keys.getPublic());
-        SecretKey loadedKey = SymmetricUtils.loadSecretKey(secretKeyFile, keys.getPrivate());
-        assertArrayEquals(key.getEncoded(), loadedKey.getEncoded());
-    }
-
-    @Test
     public void testPublicKeySaveToFile() throws Exception {
         File pubKeyFile = getTempFile("id_rsa", ".pub");
         AsymmetricUtils.savePublicKey(pubKeyFile, keys.getPublic());
