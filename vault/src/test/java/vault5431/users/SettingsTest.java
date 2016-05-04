@@ -16,11 +16,12 @@ public class SettingsTest extends VaultTest {
     @Test
     public void testSettingsSave() throws Exception {
         File tmp = getTempFile("settings");
-        Settings settings = new Settings("123-123-1233");
+        Settings settings = new Settings("123-123-1234");
         settings.saveToFile(tmp);
         Settings loadedSettings = Settings.loadFromFile(tmp);
         assertEquals(settings.getConcurrentSessions(), loadedSettings.getConcurrentSessions());
         assertEquals(settings.getSessionLength(), loadedSettings.getSessionLength());
+        assertEquals(settings.getPhoneNumber(), loadedSettings.getPhoneNumber());
     }
 
     @Test(expected = IllegalArgumentException.class)

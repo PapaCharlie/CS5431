@@ -1,7 +1,6 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
@@ -10,7 +9,6 @@ import javax.crypto.SecretKey;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
 import java.security.Security;
 
 import static spark.Spark.*;
@@ -28,12 +26,11 @@ public class Vault {
      * This becomes set to false at deployment.
      */
     public static final boolean test = true;
-    private static boolean initialized = false;
-
     private static final File adminSaltFile = new File(home, "admin.salt");
     private static final SecretKey adminEncryptionKey;
     private static final SecretKey adminSigningKey;
     private static final SecretKey adminLoggingKey;
+    private static boolean initialized = false;
 
     static {
         initialize();
