@@ -2,7 +2,7 @@ package vault5431.routes;
 
 import org.json.JSONArray;
 import spark.ModelAndView;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.Password;

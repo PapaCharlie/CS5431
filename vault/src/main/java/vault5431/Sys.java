@@ -1,7 +1,7 @@
 package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;

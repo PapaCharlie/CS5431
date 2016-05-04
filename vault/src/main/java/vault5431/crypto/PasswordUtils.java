@@ -33,16 +33,14 @@ public class PasswordUtils {
     }
 
     public static SecretKey deriveKey(char[] password, byte[] salt) {
-        SecretKey key = null;
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
             PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_SIZE);
-            key = SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
+            return SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         }
-        return key;
     }
 
     public static Base64String hashPassword(String password) {

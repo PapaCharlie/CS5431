@@ -21,10 +21,12 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static vault5431.Vault.test;
 
 /**
- * Created by cyj on 4/9/16.
  * The two-factor authentication handler. Responsible for maintaining user, authentication code pairs currently in use.
- * Two-factor authentication is necessary for a client to recieve a verified token, and thus acces their vault.
- * In short, the client must pass through this handler at least once to become authorized to do anything.
+ * Two-factor authentication is necessary for a client to receive a verified token, and thus access their vault.
+ * In short, the client must pass through this handler at least once.
+ *
+ * @author papacharlie and cyj
+ *
  */
 class TwoFactorAuthHandler {
 

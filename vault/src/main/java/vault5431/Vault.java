@@ -10,6 +10,7 @@ import javax.crypto.SecretKey;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
 import java.security.Security;
 
 import static spark.Spark.*;
@@ -23,6 +24,9 @@ import static spark.Spark.*;
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
+    /**
+     * This becomes set to false at deployment.
+     */
     public static final boolean test = true;
     private static boolean initialized = false;
 
@@ -52,6 +56,7 @@ public class Vault {
                 throw new RuntimeException("Cannot read admin password!");
             }
         }
+
         for (int i = 0; i < adminPassword.length; i++) {
             adminPassword[i] = (char) (adminPassword[i] ^ 'e'); // e for encryption
         }

@@ -2,7 +2,7 @@ package vault5431;
 
 import org.junit.Test;
 import vault5431.auth.AuthenticationHandler;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.io.Base64String;
 import vault5431.logging.LogEntry;
 import vault5431.users.User;
