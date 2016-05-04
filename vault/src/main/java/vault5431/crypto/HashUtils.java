@@ -9,12 +9,11 @@ import java.security.NoSuchProviderException;
 /**
  * Hashing utilities.
  *
- * @author papacharlie 
+ * @author papacharlie
  */
 public class HashUtils {
 
     private static Base64String hash(byte[] data, String alg, int n) {
-        Base64String hashString = null;
         try {
             MessageDigest cipher = MessageDigest.getInstance(alg, "BC");
             cipher.update(data);
@@ -24,12 +23,11 @@ public class HashUtils {
                 hash = cipher.digest();
                 n--;
             }
-            hashString = new Base64String(hash);
+            return new Base64String(hash);
         } catch (NoSuchProviderException | NoSuchAlgorithmException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         }
-        return hashString;
     }
 
     public static Base64String hash512(byte[] data) {

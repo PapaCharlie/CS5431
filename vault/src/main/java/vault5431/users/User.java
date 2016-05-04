@@ -4,7 +4,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.auth.exceptions.NoSuchUserException;
 import vault5431.auth.exceptions.TooManyConcurrentSessionsException;
 import vault5431.auth.exceptions.TooManyFailedLogins;

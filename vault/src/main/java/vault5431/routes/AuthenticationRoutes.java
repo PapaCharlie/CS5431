@@ -4,7 +4,7 @@ import com.twilio.sdk.TwilioRestException;
 import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.User;

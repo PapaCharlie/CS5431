@@ -9,7 +9,7 @@ import spark.Route;
 import spark.template.freemarker.FreeMarkerEngine;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
 import vault5431.routes.exceptions.SessionExpiredException;
