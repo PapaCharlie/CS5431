@@ -30,7 +30,7 @@ public abstract class LogEntry {
      * @return a Map representation of a SystemLogEntry
      */
     public Map<String, String> toMap() {
-        Map<String, String> hash = new HashMap<>();
+        Map<String, String> hash = new HashMap<>(6);
         hash.put("logType", logType.toString());
         hash.put("ip", ip);
         hash.put("affectedUser", affectedUser);

@@ -20,42 +20,42 @@ import java.util.HashMap;
 import static spark.Spark.*;
 
 /**
- * Created by papacharlie on 3/25/16.
+ * Basic Routes abstract class. Classes that extend Routes will have access to all required API for serving web pages.
+ *
+ * @author papacharlie
  */
 public abstract class Routes {
 
-    protected static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(), "");
+    static final ModelAndView emptyPage = new ModelAndView(new HashMap<>(0), "");
+    private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
+    static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
+    private static boolean initialized = false;
 
-    protected static JSONObject failure(String error) {
+    static JSONObject failure(String error) {
         return new JSONObject().put("success", false).put("error", error);
     }
 
-    protected static JSONObject failure(Exception error) {
+    static JSONObject failure(Exception error) {
         return new JSONObject().put("success", false).put("error", error.getMessage());
     }
 
-    protected static JSONObject userDoesNotExist() {
+    static JSONObject userDoesNotExist() {
         return new JSONObject().put("success", false).put("error", "This user does not exist!");
     }
 
-    protected static JSONObject invalidRequest() {
+    static JSONObject invalidRequest() {
         return new JSONObject().put("success", false).put("error", "Invalid request!");
     }
 
-    protected static JSONObject allFieldsRequired() {
+    static JSONObject allFieldsRequired() {
         return new JSONObject().put("success", false).put("error", "All fields are required!");
     }
 
-    protected static JSONObject success() {
+    static JSONObject success() {
         return new JSONObject().put("success", true).put("error", "");
     }
 
-    protected static final String vault = "/vault";
-    private static final Configuration freeMarkerConfiguration = new Configuration(Configuration.VERSION_2_3_23);
-    protected static final FreeMarkerEngine freeMarkerEngine = new FreeMarkerEngine(freeMarkerConfiguration);
-    private static boolean initialized = false;
-
-    protected static Token validateToken(Request req) {
+    static Token validateToken(Request req) {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {
             try {
                 return AuthenticationHandler.parseFromCookie(req.cookie("token").trim(), req.ip());
@@ -63,7 +63,7 @@ public abstract class Routes {
                 Sys.debug("Received invalid token.", req.ip());
                 return null;
             } catch (InvalidTokenException err) {
-                Sys.warning(String.format("Rejecting token. Reason: %s. There is reason to believe this IP is acting maliciously.", err.getMessage()), req.ip());
+                Sys.warning(String.format("Rejecting token. Reason: \"%s\". There is reason to believe this IP is acting maliciously.", err.getMessage()), req.ip());
                 return null;
             }
         } else {
@@ -71,23 +71,23 @@ public abstract class Routes {
         }
     }
 
-    protected static void authenticatedGet(String path, AuthenticatedRoute route) {
+    static void authenticatedGet(String path, AuthenticatedRoute route) {
         get(path, route);
     }
 
-    protected static void authenticatedPost(String path, AuthenticatedRoute route) {
+    static void authenticatedPost(String path, AuthenticatedRoute route) {
         post(path, route);
     }
 
-    protected static void authenticatedPut(String path, AuthenticatedRoute route) {
+    static void authenticatedPut(String path, AuthenticatedRoute route) {
         put(path, route);
     }
 
-    protected static void authenticatedDelete(String path, AuthenticatedRoute route) {
+    static void authenticatedDelete(String path, AuthenticatedRoute route) {
         delete(path, route);
     }
 
-    protected static boolean provided(String... formFields) {
+    static boolean provided(String... formFields) {
         for (String field : formFields) {
             if (!(field != null && field.length() > 0)) {
                 return false;
@@ -108,7 +108,7 @@ public abstract class Routes {
         new AuthenticationRoutes().routes();
         new ExceptionRoutes().routes();
         new SettingsRoutes().routes();
-        new PasswordSharingRoutes().routes();
+        new SharedPasswordRoutes().routes();
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();
@@ -116,7 +116,12 @@ public abstract class Routes {
 
     protected abstract void routes();
 
-    protected interface AuthenticatedRoute extends Route {
+    /**
+     * This class guarantees routes defined using {@link #authenticatedGet} and co. will only be called with a valid
+     * Token. Effectively, this is the Reference Monitor for route handling, i.e. route code is only called when
+     * proper authentication has been presented.
+     */
+    interface AuthenticatedRoute extends Route {
         Object authenticatedHandle(Request request, Response response, Token token) throws Exception;
 
         default Object handle(Request request, Response response) throws Exception {

@@ -10,8 +10,10 @@
         <h4 class="form-signin-heading">New Password</h4>
         <input type="text" name="name" class="form-control" maxlength="100" placeholder="Website Name" required>
         <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
-        <input type="text" name="username" id="username" class="form-control" maxlength="100" placeholder="Account username" required>
-        <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100" placeholder="Password" required>
+        <input type="text" name="username" id="username" class="form-control" maxlength="100"
+               placeholder="Account username" required>
+        <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100"
+               placeholder="Password" required>
         <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
                   placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
@@ -31,8 +33,7 @@
         var masterKey;
         var passwords;
         var privateSigningKey;
-        if (sessionStorage.getItem("password") && sessionStorage.getItem("username")) {
-            username = sessionStorage.getItem("username");
+        if (sessionStorage.getItem("password")) {
             $.get("/passwords", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("passwords")
@@ -40,7 +41,12 @@
                         && data.hasOwnProperty("privateSigningKey")) {
                     var masterPassword = fromB64(sessionStorage.getItem("password"));
                     masterKey = deriveMasterKey(data.salt, masterPassword);
-                    passwords = decryptPasswords(masterKey, data.passwords);
+                    try {
+                        passwords = decryptPasswords(masterKey, data.passwords);
+                    } catch (err) {
+                        console.error(err);
+                        window.href = "/logout";
+                    }
                     privateSigningKey = parseECDSAPrivateKey(masterPassword, data.privateSigningKey);
                     getAccordions(passwords);
 
@@ -114,7 +120,6 @@
                                         }
                                     }
                                 });
-                                values["sharer"] = username;
                                 values["signature"] = sign(privateSigningKey, values);
                                 $.post("/shared/" + target, {
                                     sharedPassword: JSON.stringify(values)

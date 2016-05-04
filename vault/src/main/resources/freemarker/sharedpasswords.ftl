@@ -13,12 +13,10 @@
 
 <script>
     $(function () {
-        var username;
         var masterKey;
         var sharedPasswords = [];
         var privateEncryptionKey;
-        if (sessionStorage.getItem("password") && sessionStorage.getItem("username")) {
-            username = sessionStorage.getItem("username");
+        if (sessionStorage.getItem("password")) {
             $.get("/shared", function (payload) {
                 var data = JSON.parse(payload);
                 if (data && data.hasOwnProperty("sharedPasswords")
@@ -51,6 +49,45 @@
                             }
                         });
                         getSharedAccordions(sharedPasswords);
+
+                        $(document).on("click", ".save", function () {
+                            var r = confirm("Are you sure you want to accept this password?");
+                            if (r == true) {
+                                var id = $(this).attr("data-id");
+                                var filtered = sharedPasswords.filter(function (password) {
+                                    return password.id === id
+                                });
+                                if (filtered.length > 0) {
+                                    var password = filtered[0];
+                                    var values = {};
+                                    for (var prop in password) {
+                                        if (password.hasOwnProperty(prop) && ["name", "username", "url", "password", "notes"].indexOf(prop) !== -1) {
+                                            values[prop] = encrypt(masterKey, password[prop]);
+                                        }
+                                    }
+                                    $.ajax({
+                                        type: "PUT",
+                                        url: "/shared/" + id,
+                                        data: {
+                                            acceptedPassword: JSON.stringify(values)
+                                        }
+                                    }).done(defaultErrorHandler);
+                                } else {
+                                    console.error("Could not find shared password with id: " + id);
+                                }
+                            }
+                        });
+
+                        $(document).on("click", ".delete", function () {
+                            var r = confirm("Are you sure you want to reject this password?");
+                            if (r == true) {
+                                var id = $(this).attr("data-id");
+                                $.ajax({
+                                    type: "DELETE",
+                                    url: "/shared/" + id
+                                }).done(defaultErrorHandler);
+                            }
+                        });
 
                         $('[data-toggle="tooltip"]').tooltip();
                         $('.copy').each(function (index) {
@@ -101,45 +138,6 @@
             else {
                 $(this).siblings("input").attr('type', 'password');
                 $(this).html("Reveal");
-            }
-        });
-
-        $(document).on("click", ".save", function () {
-            var r = confirm("Are you sure you want to accept this password?");
-            if (r == true) {
-                var id = $(this).attr("data-id");
-                var filtered = sharedPasswords.filter(function (password) {
-                    return password.id === id
-                });
-                if (filtered.length > 0) {
-                    var password = filtered[0];
-                    var values = {};
-                    for (var prop in password) {
-                        if (password.hasOwnProperty(prop) && ["name", "username", "url", "password", "notes"].indexOf(prop) !== -1) {
-                            values[prop] = encrypt(masterKey, password[prop]);
-                        }
-                    }
-                    $.ajax({
-                        type: "PUT",
-                        url: "/shared/" + id,
-                        data: {
-                            acceptedPassword: JSON.stringify(values)
-                        }
-                    }).done(defaultErrorHandler);
-                } else {
-                    console.error("Could not find shared password with id: " + id);
-                }
-            }
-        });
-
-        $(document).on("click", ".delete", function () {
-            var r = confirm("Are you sure you want to reject this password?");
-            if (r == true) {
-                var id = $(this).attr("data-id");
-                $.ajax({
-                    type: "DELETE",
-                    url: "/shared/" + id
-                }).done(defaultErrorHandler);
             }
         });
 

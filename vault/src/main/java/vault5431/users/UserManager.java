@@ -7,6 +7,7 @@ import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
+import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 
 import java.io.File;
@@ -14,19 +15,22 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.regex.Pattern;
 
-import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
  * User manager. The goal of this class is to ensure that all user creation is done properly, and to manage file access
  * in a synchronous manner. As long as all User instances are acquired through this class, there should be no race
  * conditions.
+ *
+ * @author papacharlie
  */
 public class UserManager {
 
     private static final Map<Base64String, User> users = new HashMap<>();
     private static final ReentrantReadWriteLock userMapLock = new ReentrantReadWriteLock();
+
     static {
         userMapLock.writeLock().lock();
         try {
@@ -73,6 +77,10 @@ public class UserManager {
         }
     }
 
+    public static boolean isValidUsername(String username) {
+        return Pattern.matches("\\w+", username);
+    }
+
     public static User getUser(String username) {
         return getUser(hashUsername(username));
     }
@@ -81,8 +89,11 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber, String pubCryptoKey, String privCryptoKey, String pubSigningKey, String privSigningKey)
+    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber, Base64String pubCryptoKey, SJCLSymmetricField privCryptoKey, Base64String pubSigningKey, SJCLSymmetricField privSigningKey)
             throws IOException, CouldNotSaveKeyException, BadCiphertextException {
+        if (!isValidUsername(username)) {
+            throw new IllegalArgumentException("Username is not valid!");
+        }
         User user;
         userMapLock.readLock().lock();
         try {
@@ -114,16 +125,15 @@ public class UserManager {
                         Sys.info("Created vault file.", user);
                     }
                     PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
-                    SymmetricUtils.encrypt(phoneNumber.getBytes(), getAdminEncryptionKey()).saveToFile(user.phoneNumberFile);
-                    new Settings().saveToFile(user.settingsFile);
+                    new Settings(phoneNumber).saveToFile(user.settingsFile);
 
-                    new Base64String(pubCryptoKey).saveToFile(user.pubCryptoKeyFile);
-                    new Base64String(privCryptoKey).saveToFile(user.privCryptoKeyFile);
-                    new Base64String(pubSigningKey).saveToFile(user.pubSigningKeyFile);
-                    new Base64String(privSigningKey).saveToFile(user.privSigningKeyFile);
+                    user.saveAndSignPublicEncryptionKey(pubCryptoKey);
+                    user.saveAndSignPublicSigningKey(pubSigningKey);
+                    new Base64String(privCryptoKey.toString()).saveToFile(user.privCryptoKeyFile);
+                    new Base64String(privSigningKey.toString()).saveToFile(user.privSigningKeyFile);
 
                     byte[] salt = PasswordUtils.generateSalt();
-                    SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);
+                    SymmetricUtils.encrypt(salt, user.getUserEncryptionKey()).saveToFile(user.vaultSaltFile);
 
                     Sys.info("Successfully created user.", user);
                     addUser(user);

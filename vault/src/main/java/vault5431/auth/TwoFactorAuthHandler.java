@@ -6,10 +6,9 @@ import com.twilio.sdk.resource.factory.MessageFactory;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import vault5431.Sys;
-import static vault5431.Vault.test;
 import vault5431.auth.exceptions.TooMany2FAAttemptsException;
 import vault5431.users.User;
-import vault5431.users.exceptions.CouldNotDecryptPhoneNumberException;
+import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,6 +18,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static vault5431.Vault.test;
 
 /**
  * Created by cyj on 4/9/16.
@@ -39,22 +39,19 @@ class TwoFactorAuthHandler {
     private static final String AUTH_TOKEN = "a8113b81179e3832fc3b780590a29b4e";
     private static final String ADMIN_PHONE_NUMBER = "+16072755431";
 
-    /*TODO: remove the test code*/
     /**
-     *
-     * @param user  user to which authentication code will be sent
+     * @param user user to which authentication code will be sent
      * @return the authentication code sent to the user
      * @throws IOException
-     * @throws CouldNotDecryptPhoneNumberException
      * @throws TwilioRestException
      */
-    public static int sendAuthMessage(User user) throws IOException, CouldNotDecryptPhoneNumberException, TwilioRestException {
+    public static int sendAuthMessage(User user) throws IOException, CouldNotLoadSettingsException, TwilioRestException {
         if (!isWaiting(user)) {
             TwilioRestClient client = new TwilioRestClient(ACCOUNT_SID, AUTH_TOKEN);
             AuthMessage auth = new AuthMessage();
 
             List<NameValuePair> params = new ArrayList<>();
-            params.add(new BasicNameValuePair("To", user.getPhoneNumber()));
+            params.add(new BasicNameValuePair("To", user.loadSettings().getPhoneNumber()));
             params.add(new BasicNameValuePair("From", ADMIN_PHONE_NUMBER));
             params.add(new BasicNameValuePair("Body", auth.toString()));
 
@@ -77,6 +74,7 @@ class TwoFactorAuthHandler {
 
     /**
      * Completely remove user from the two-factor authentication handler.
+     *
      * @param user user to be removed
      */
     protected static void removeUser(User user) {
@@ -88,6 +86,7 @@ class TwoFactorAuthHandler {
 
     /**
      * Add the user to the authentication handler, pending 2FA authorization.
+     *
      * @param user user to be added to authentication handler
      * @param m    authentication message sent to user
      */
@@ -108,6 +107,7 @@ class TwoFactorAuthHandler {
     /**
      * Verify the user inputted code with with the authentication handler. If too many failed attempts are
      * done, an exception will be thrown.
+     *
      * @param user user to be authorized
      * @param code inputted user code to be verified
      * @return true if the code matches code in map. false otherwise.
@@ -137,6 +137,7 @@ class TwoFactorAuthHandler {
 
     /**
      * Checks to see if the system is waiting for an user inputted code.
+     *
      * @param user
      * @return true if still waiting. false otherwise.
      */

@@ -19,7 +19,9 @@ import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
- * System class. Will contain Master keys and all methods required to act with Sys authority.
+ * System class. Contains all methods required to act with admin authority.
+ *
+ * @author papacharlie
  */
 public class Sys {
 
@@ -28,7 +30,7 @@ public class Sys {
     public static final File logFile = new File(home, "log");
 
     /**
-     * Logs an error in the system log
+     * Logs an error in the system log.
      *
      * @param message      Reason for error
      * @param affectedUser Affected user
@@ -55,7 +57,7 @@ public class Sys {
     }
 
     /**
-     * Logs a warning in the system log
+     * Logs a warning in the system log.
      *
      * @param message      Reason for warning
      * @param affectedUser Affected user
@@ -82,7 +84,7 @@ public class Sys {
     }
 
     /**
-     * Logs an info message in the system log
+     * Logs an info message in the system log.
      *
      * @param message      Message contents
      * @param affectedUser Affected user
@@ -109,7 +111,7 @@ public class Sys {
     }
 
     /**
-     * Logs a debug message in the system log
+     * Logs a debug message in the system log.
      *
      * @param message      Message contents
      * @param affectedUser Affected user
@@ -155,8 +157,7 @@ public class Sys {
                     System.exit(1);
                 }
             } catch (IOException err) {
-                err.printStackTrace();
-                System.err.println("[WARNING] Failed to log as System! Continuing.");
+                throw new RuntimeException(err);
             }
         }
     }

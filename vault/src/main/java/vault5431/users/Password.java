@@ -3,9 +3,9 @@ package vault5431.users;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 
-import java.util.HashSet;
 import java.util.UUID;
 
 /**
@@ -15,59 +15,32 @@ import java.util.UUID;
  */
 public final class Password {
 
-
-    private static final class SJCLObject extends JSONObject {
-
-        SJCLObject(String field, int maxLength) throws JSONException {
-            super(field);
-            if (!has("iv") || !has("ct")) {
-                throw new IllegalArgumentException("All SJCL fields are required.");
-            }
-            for (String key : new HashSet<>(keySet())) {
-                if (!(key.equals("iv") || key.equals("ct"))) {
-                    remove(key);
-                }
-            }
-            int iv = new Base64String(getString("iv")).decodeBytes().length;
-            if (iv != 24) {
-                throw new IllegalArgumentException("iv is not 24 bytes long.");
-            }
-            int ct = new Base64String(getString("ct")).decodeBytes().length;
-            if (ct % 4 != 0) {
-                throw new IllegalArgumentException("Invalid encrypted text.");
-            }
-            if (ct > maxLength) {
-                throw new IllegalArgumentException("Encrypted text is too long!");
-            }
-        }
-
-    }
-
-    private SJCLObject name;
-    private SJCLObject url;
-    private SJCLObject username;
-    private SJCLObject password;
-    private SJCLObject notes;
+    private SJCLSymmetricField name;
+    private SJCLSymmetricField url;
+    private SJCLSymmetricField username;
+    private SJCLSymmetricField password;
+    private SJCLSymmetricField notes;
     private UUID id;
 
     /**
      * Creates a new Password instance. This constructor limits the total stored size of the instance. Used when loading
      * instances from disk.
      *
-     * @param name     Website's name
-     * @param url      Website's url
-     * @param username Website's username
-     * @param password Website's password
-     * @param id       Unique id for indexing server/client side
+     * @param name     website's name
+     * @param url      website's url
+     * @param username website's username
+     * @param password website's password
+     * @param id       unique id for indexing server/client side
+     * @param notes    password's notes
      * @throws IllegalArgumentException When any of the fields are empty, or either exceed the max size of 750 characters.
      */
     private Password(String name, String url, String username, String password, String notes, UUID id) throws IllegalArgumentException {
         try {
-            this.name = new SJCLObject(name, 150); // 100 char limit
-            this.url = new SJCLObject(url, 512);
-            this.username = new SJCLObject(username, 150);
-            this.password = new SJCLObject(password, 150);
-            this.notes = new SJCLObject(notes, 1350); // 1000 char limit
+            this.name = new SJCLSymmetricField(name, 150); // 100 char limit
+            this.url = new SJCLSymmetricField(url, 512);
+            this.username = new SJCLSymmetricField(username, 150);
+            this.password = new SJCLSymmetricField(password, 150);
+            this.notes = new SJCLSymmetricField(notes, 1350); // 1000 char limit
             this.id = id;
         } catch (JSONException err) {
             throw new IllegalArgumentException("All fields must be valid JSON");
@@ -148,7 +121,11 @@ public final class Password {
         return id;
     }
 
-    protected void newUUID() {
+
+    /**
+     * Cycle's the password's UUID. Used when saving a new password.
+     */
+    void newUUID() {
         id = UUID.randomUUID();
     }
 

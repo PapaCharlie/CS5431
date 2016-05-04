@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.security.*;
 
 /**
- * Utils class for Symmetric encryption
+ * Utils class for Symmetric encryption.
+ *
+ * @author papacharlie
  */
 public class SymmetricUtils {
 
@@ -27,6 +29,18 @@ public class SymmetricUtils {
 
     public static SecretKey keyFromBytes(byte[] bytes) {
         return new SecretKeySpec(bytes, "AES");
+    }
+
+    public static SecretKey hashIterateKey(SecretKey key) {
+        return keyFromBytes(HashUtils.hash256(key.getEncoded()).decodeBytes());
+    }
+
+    public static SecretKey combine(SecretKey key, byte[] bytes) {
+        return keyFromBytes(HashUtils.hash256(Arrays.concatenate(key.getEncoded(), bytes)).decodeBytes());
+    }
+
+    public static SecretKey combine(SecretKey key, Base64String bytes) {
+        return keyFromBytes(HashUtils.hash256(Arrays.concatenate(key.getEncoded(), bytes.decodeBytes())).decodeBytes());
     }
 
     public static SecretKey getNewKey() {
@@ -50,59 +64,43 @@ public class SymmetricUtils {
 
     public static Base64String encrypt(byte[] content, SecretKey key)
             throws BadCiphertextException {
-        Base64String ciphertext = null;
-        IvParameterSpec iv = generateIV();
         try {
+            IvParameterSpec iv = generateIV();
             Cipher aesCipher = getCipher();
             aesCipher.init(Cipher.ENCRYPT_MODE, key, iv);
-            ciphertext = new Base64String(Arrays.concatenate(iv.getIV(), aesCipher.doFinal(content)));
+            return new Base64String(Arrays.concatenate(iv.getIV(), aesCipher.doFinal(content)));
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
-            System.exit(1);
-        } catch (IllegalBlockSizeException err) {
+            throw new RuntimeException(err);
+        } catch (IllegalBlockSizeException | BadPaddingException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
-        } catch (BadPaddingException err) {
-            // Only thrown in decryption mode, we're okay.
-            err.printStackTrace();
         } catch (InvalidKeyException err) {
             Sys.error("Generated a wrong key! Requires immediate action.");
             throw new RuntimeException("Generated a wrong key!");
         }
-        return ciphertext;
     }
 
     public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws BadCiphertextException {
-        byte[] decryptedText = null;
         try {
             Cipher aesCipher = getCipher();
             byte[] content = encryptedContent.decodeBytes();
             IvParameterSpec iv = new IvParameterSpec(Arrays.copyOfRange(content, 0, IV_SIZE));
             byte[] cipherText = Arrays.copyOfRange(content, IV_SIZE, content.length);
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
-            decryptedText = aesCipher.doFinal(cipherText);
+            return aesCipher.doFinal(cipherText);
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         } catch (BadPaddingException | IllegalBlockSizeException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
         } catch (InvalidKeyException err) {
             Sys.error("Generated a wrong key! Requires immediate action.");
-            throw new RuntimeException("Generated a wrong key!");
+            throw new RuntimeException(err);
         }
-        return decryptedText;
     }
 
-    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws BadCiphertextException, IOException {
-        Base64String encryptedKey = AsymmetricUtils.encrypt(key.getEncoded(), publicKey);
-        encryptedKey.saveToFile(keyFile);
-    }
 
-    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, BadCiphertextException {
-        Base64String encryptedKey = Base64String.loadFromFile(file)[0];
-        byte[] key = AsymmetricUtils.decrypt(encryptedKey, privateKey);
-        return keyFromBytes(key);
-    }
 
 }

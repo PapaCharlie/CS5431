@@ -9,18 +9,33 @@ import vault5431.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import static vault5431.Vault.getAdminEncryptionKey;
 
 /**
- * Created by papacharlie on 2016-04-26.
+ * User settings class. Contains misc information about the user.
+ *
+ * @author papacharlie
  */
-public class Settings {
+public final class Settings {
 
+    private String phoneNumber;
     private int concurrentSessions;
     private int sessionLength;
 
-    public Settings(int concurrentSessions, int sessionLength) throws IllegalArgumentException {
+    /**
+     * Create a new Settings instance.
+     * @param phoneNumber the user's phone number
+     * @param concurrentSessions the maximum number of allowed concurrent tokens
+     * @param sessionLength the maximum time to live for tokens
+     */
+    public Settings(String phoneNumber, int concurrentSessions, int sessionLength) throws IllegalArgumentException {
+        if (Pattern.matches("\\d{3}-\\d{3}-\\d{4}", phoneNumber)) {
+            this.phoneNumber = phoneNumber;
+        } else {
+            throw new IllegalArgumentException("This phone number is not valid!");
+        }
         if (0 < concurrentSessions && concurrentSessions <= 20) {
             this.concurrentSessions = concurrentSessions;
         } else {
@@ -33,8 +48,8 @@ public class Settings {
         }
     }
 
-    public Settings() {
-        this(5, 60);
+    public Settings(String phoneNumber) {
+        this(phoneNumber, 5, 60);
     }
 
     protected static Settings loadFromFile(File settingsFile) throws IOException, IllegalArgumentException, BadCiphertextException {
@@ -42,17 +57,18 @@ public class Settings {
     }
 
     public static Settings fromJSON(JSONObject json) throws IllegalArgumentException {
-        if (json.has("concurrentSessions") && json.has("sessionLength")) {
+        if (json.has("phoneNumber") && json.has("concurrentSessions") && json.has("sessionLength")) {
             try {
                 return new Settings(
+                        json.getString("phoneNumber"),
                         json.getInt("concurrentSessions"),
                         json.getInt("sessionLength")
                 );
             } catch (JSONException err) {
-                throw new IllegalArgumentException("All fields must be integers.");
+                throw new IllegalArgumentException("All fields must be of valid type.");
             }
         } else {
-            throw new IllegalArgumentException("All fields required");
+            throw new IllegalArgumentException("All fields required.");
         }
     }
 
@@ -76,12 +92,16 @@ public class Settings {
         return sessionLength;
     }
 
+    public Settings withPhoneNumber(String phoneNumber) throws IllegalArgumentException {
+        return new Settings(phoneNumber, this.concurrentSessions, this.sessionLength); // Let constructor validate fields
+    }
+
     public Settings withConcurrentSessions(int concurrentSessions) throws IllegalArgumentException {
-        return new Settings(concurrentSessions, this.sessionLength); // Let constructor validate fields
+        return new Settings(this.phoneNumber, concurrentSessions, this.sessionLength); // Let constructor validate fields
     }
 
     public Settings withSessionLength(int sessionLength) throws IllegalArgumentException {
-        return new Settings(this.concurrentSessions, sessionLength); // Let constructor validate fields
+        return new Settings(this.phoneNumber, this.concurrentSessions, sessionLength); // Let constructor validate fields
     }
 
     protected void saveToFile(File settingsFile) throws IOException, BadCiphertextException {
@@ -90,6 +110,7 @@ public class Settings {
 
     public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
+        json.put("phoneNumber", phoneNumber);
         json.put("concurrentSessions", concurrentSessions);
         json.put("sessionLength", sessionLength);
         return json;
@@ -99,4 +120,7 @@ public class Settings {
         return toJSONObject().toString();
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 }

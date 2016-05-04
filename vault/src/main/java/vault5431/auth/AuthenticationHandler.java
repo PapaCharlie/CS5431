@@ -6,7 +6,7 @@ import vault5431.auth.exceptions.*;
 import vault5431.io.Base64String;
 import vault5431.users.Settings;
 import vault5431.users.User;
-import vault5431.users.exceptions.CouldNotDecryptPhoneNumberException;
+import vault5431.users.UserManager;
 import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
 import java.io.IOException;
@@ -69,12 +69,12 @@ public class AuthenticationHandler {
      * Send a text message for two factor authentication to the user.
      *
      * @param token token presented with request for 2FA code
-     * @throws IOException                         If the phone number could not be loaded from disk.
-     * @throws CouldNotDecryptPhoneNumberException If the user's phone number could not be decrypted, i.e. disk was corrupted.
-     * @throws TwilioRestException                 If Twilio cannot send the requested text message to the user, i.e. the phone number
-     *                                             is invalid.
+     * @throws IOException                   If the phone number could not be loaded from disk.
+     * @throws CouldNotLoadSettingsException If the user's settings, which contain the phone number, could not be loaded, i.e. disk was corrupted.
+     * @throws TwilioRestException           If Twilio cannot send the requested text message to the user, i.e. the phone number
+     *                                       is invalid.
      */
-    public static void send2FACode(Token token) throws IOException, CouldNotDecryptPhoneNumberException, TwilioRestException {
+    public static void send2FACode(Token token) throws IOException, CouldNotLoadSettingsException, TwilioRestException {
         if (token != null && !token.isVerified()) {
             TwoFactorAuthHandler.sendAuthMessage(token.getUser());
         }
@@ -102,23 +102,28 @@ public class AuthenticationHandler {
 
     /**
      * Returns a new Token for the user. This monitor keeps track of all of the tokens it has assigned, and therefore
-     * throws the resepctive errors when a user is illegally trying to acquire a new token. Tokens returned by this
-     * method are unverfied, i.e. user must still go through two factor authentication before acquiring verified
+     * throws the respective errors when a user is illegally trying to acquire a new token. Tokens returned by this
+     * method are unverified, i.e. user must still go through two factor authentication before acquiring verified
      * tokens.
      *
-     * @param user     user for which to create a Token
+     * @param username user for which to create a Token
      * @param password password against which to check
      * @param ip       ip requesting the token
      * @return A new Token instance, null if provided password was incorrect.
      * @throws TooManyConcurrentSessionsException When assigning a new Token would mean violating the user's maximum
-     *                                            concurrent sessions policy (see {@see Settings} for more information).
+     *                                            concurrent sessions policy (see {@see #Settings} for more information).
      * @throws TooManyFailedLogins                When a user has been banned for having too many failed login attempts.
      * @throws CouldNotLoadSettingsException      When the user's settings could not be found on disk, or were corrupted.
      * @throws IOException                        When the user's hashed password cannot be loaded from disk.
+     * @throws NoSuchUserException                When the provided username does not exist.
      */
-    public static Token acquireUnverifiedToken(User user, Base64String password, String ip)
-            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException {
+    public static Token acquireUnverifiedToken(String username, Base64String password, String ip)
+            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException {
         synchronized (tokenCache) {
+            if (!UserManager.userExists(username)) {
+                throw new NoSuchUserException();
+            }
+            User user = UserManager.getUser(username);
             if (!bannedUsers.contains(user)) {
                 if (!failedLogins.containsKey(user)) {
                     failedLogins.put(user, 0);
@@ -134,7 +139,7 @@ public class AuthenticationHandler {
                         tokenCache.put(user, new HashSet<>());
                     }
                     if (tokenCache.get(user).size() < settings.getConcurrentSessions()) {
-                        Token token = new Token(user, false);
+                        Token token = new Token(username, false);
                         Sys.debug("Assigning token.", user, ip);
                         tokenCache.get(user).add(token.getId());
                         scheduler.schedule(() -> {

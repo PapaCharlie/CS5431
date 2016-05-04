@@ -2,6 +2,9 @@
  * Created by papacharlie on 2016-04-13.
  */
 
+function getUsernameFromCookie() {
+    return /token="\w+,/.exec(document.cookie)[0].replace("token=\"","").replace(",","");
+}
 
 function getSharedAccordions(sharedPasswords) {
     if (sharedPasswords.length > 0) {
@@ -26,7 +29,7 @@ function getSharedAccordions(sharedPasswords) {
                 'text': entry.name
             }).appendTo(title);
             var delbtn = $('<button/>', {
-                'class': 'Reject btn btn-danger btn-xs',
+                'class': 'delete btn btn-danger btn-xs',
                 'data-id': entry.id,
                 'style': 'float: right',
                 'aria-hidden': 'true',
@@ -111,20 +114,15 @@ function getSharedAccordions(sharedPasswords) {
                 'text': 'Reveal'
             }).appendTo(passdiv);
 
-            var row3 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
             var notescontainer = $('<div/>', {
-                'class': 'col-sm-4 col-md-4'
-            }).appendTo(row3);
+                'class': 'accordionField'
+            }).appendTo(pb);
             var label = $('<label/>', {
-                //'class': 'col-sm-4 col-md-4',
                 'text': 'Notes',
                 'for': 'notes'
             }).appendTo(notescontainer);
             var notes = $('<div/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'id': 'notes accordionField',
+                'id': 'notes',
                 'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 
@@ -254,20 +252,15 @@ function getAccordions(passwords) {
                 'text': 'Reveal'
             }).appendTo(passdiv);
 
-            var row3 = $('<div/>', {
-                'class': 'row'
-            }).appendTo(pb);
             var notescontainer = $('<div/>', {
-                'class': 'col-sm-4 col-md-4'
-            }).appendTo(row3);
+                'class': 'accordionField'
+            }).appendTo(pb);
             var label = $('<label/>', {
-                //'class': 'col-sm-4 col-md-4',
                 'text': 'Notes',
                 'for': 'notes'
             }).appendTo(notescontainer);
             var notes = $('<div/>', {
-                //'class': 'col-sm-4 col-md-4',
-                'id': 'notes accordionField',
+                'id': 'notes',
                 'text': entry.notes ? entry.notes : ""
             }).appendTo(notescontainer);
 

@@ -19,7 +19,7 @@
     <div class="login-container">
         <form action="/register" method="post" id="signupForm">
             <label for="usernamesignup" class="uname" data-icon="u">Your Username</label>
-            <p><input type="text" name="username" placeholder="Username" required></p>
+            <p><input type="text" name="username" placeholder="Username" pattern="\w+" maxlength="40" required></p>
             <label for="passwordsignup">Your Password </label>
             <p><input type="password" name="password" id="password" placeholder="Password" required></p>
             <div class="strength" id="length" style="color:#FF0000;display:none"> Password is not strong! Short
@@ -65,7 +65,6 @@
 <script>
     $(document).ready(function () {
         sessionStorage.removeItem("password");
-        sessionStorage.removeItem("username");
         $("#signupForm").submit(function (event) {
             var passwordField = $(this).find("#password");
             var confirmField = $(this).find("#confirm");
@@ -92,11 +91,6 @@
                 var signingPair = generateECDSAKeys();
                 var pubSigningKey = serializePublicKey(signingPair.pub);
                 var privSigningKey = serializePrivateKey(key, signingPair.sec);
-
-//                console.log(pubCryptoKey);
-//                console.log(privCryptoKey);
-//                console.log(pubSigningKey);
-//                console.log(privSigningKey);
 
                 var pubCryptoKeyField = $(this).find("#pubCryptoKey");
                 var privCryptoKeyField = $(this).find("#privCryptoKey");

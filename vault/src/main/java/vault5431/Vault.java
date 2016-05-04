@@ -1,13 +1,12 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
-import vault5431.users.UserManager;
 
 import javax.crypto.SecretKey;
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
@@ -15,24 +14,25 @@ import java.security.Security;
 import static spark.Spark.*;
 
 
+/**
+ * Main class.
+ *
+ * @author papacharlie
+ */
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     public static final boolean test = true;
+    private static boolean initialized = false;
 
     private static final File adminSaltFile = new File(home, "admin.salt");
-
-    private static boolean initialized = false;
     private static final SecretKey adminEncryptionKey;
     private static final SecretKey adminSigningKey;
     private static final SecretKey adminLoggingKey;
-//    private static final byte[] adminSalt;
 
     static {
         initialize();
         byte[] adminSalt;
-        // This line changed at deploy time to prompt SysAdmin for admin password
-        String adminPassword = "debug";
         try {
             adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
         } catch (IOException err) {
@@ -40,9 +40,32 @@ public class Vault {
             System.err.println("Could not load admin salt from file!");
             throw new RuntimeException(err);
         }
-        adminSigningKey = PasswordUtils.deriveKey(adminPassword + "signing", adminSalt);
-        adminEncryptionKey = PasswordUtils.deriveKey(adminPassword + "encryption", adminSalt);
-        adminLoggingKey = PasswordUtils.deriveKey(adminPassword + "logging", adminSalt);
+        char[] adminPassword;
+        if (test) {
+            adminPassword = "debug".toCharArray();
+        } else {
+            Console cons;
+            if ((cons = System.console()) != null) {
+                adminPassword = cons.readPassword("[%s]", "Please enter the admin password:");
+            } else {
+                throw new RuntimeException("Cannot read admin password!");
+            }
+        }
+        for (int i = 0; i < adminPassword.length; i++) {
+            adminPassword[i] = (char) (adminPassword[i] ^ 'e'); // e for encryption
+        }
+        adminEncryptionKey = PasswordUtils.deriveKey(adminPassword, adminSalt);
+        for (int i = 0; i < adminPassword.length; i++) {
+            adminPassword[i] = (char) (adminPassword[i] ^ 'e'); // back to original password
+            adminPassword[i] = (char) (adminPassword[i] ^ 's'); // s for signing
+        }
+        adminSigningKey = PasswordUtils.deriveKey(adminPassword, adminSalt);
+        for (int i = 0; i < adminPassword.length; i++) {
+            adminPassword[i] = (char) (adminPassword[i] ^ 's'); // back to original password
+            adminPassword[i] = (char) (adminPassword[i] ^ 'l'); // l for logging
+        }
+        adminLoggingKey = PasswordUtils.deriveKey(adminPassword, adminSalt);
+        java.util.Arrays.fill(adminPassword, ' ');
     }
 
     /**
@@ -92,55 +115,42 @@ public class Vault {
     }
 
     /**
-     * Returns the admin signing key derived from the SysAdmin password.
+     * Returns the admin encryption key derived from the SysAdmin password.
      */
     public static SecretKey getAdminEncryptionKey() {
         return adminEncryptionKey;
     }
 
     /**
-     * Returns the admin encryption key derived from the SysAdmin password.
+     * Returns the admin signing key derived from the SysAdmin password.
      */
     public static SecretKey getAdminSigningKey() {
         return adminSigningKey;
     }
 
     /**
-     * Returns the admin logging key derived from the SysAdmin password and iterated i times.
+     * Returns the admin logging key derived from the SysAdmin password.
      */
-    public static SecretKey getAdminLoggingKey(int i) {
-//        System.out.println("ORIGINAL KEY : " + new String(adminLoggingKey.getEncoded()));
-        if (i == 0) {
-            return adminLoggingKey;
-        } else {
-            try {
-                String newKey = adminLoggingKey.getFormat();
-                byte[] adminSalt = Base64String.loadFromFile(adminSaltFile)[0].decodeBytes();
-                SecretKey datKey =  PasswordUtils.deriveKey(HashUtils.hash512(newKey.getBytes(), i).toString(), adminSalt);
-//                System.out.println("DAT KEY: " + new String(datKey.getEncoded()));
-                return datKey;
-            } catch (IOException err){
-                err.printStackTrace();
-                System.err.println("Could not load admin salt from file!");
-                throw new RuntimeException(err);
-            }
-        }
-    }
-
     public static SecretKey getAdminLoggingKey() {
         return adminLoggingKey;
     }
 
     public static void main(String[] args) throws Exception {
-        port(5431);
-
-        // This line changed at deploy time to prompt SysAdmin for certificate password and truststore password.
-        secure("./keystore.jks", "vault5431", null, null);
-
+        if (test) {
+            port(5431);
+            secure("./keystore.jks", "vault5431", null, null);
+            System.out.println("Hosting at: https://localhost:5431");
+        } else {
+            port(443);
+            secure(
+                    "./keystore.jks",
+                    new String(System.console().readPassword("Please enter the SSL certificate password: ")),
+                    "./truststore.jks",
+                    new String(System.console().readPassword("Please enter the truststore password: "))
+            );
+        }
         Routes.initialize();
         awaitInitialization();
-
-        System.out.println("Hosting at: https://localhost:5431");
     }
 
 }
