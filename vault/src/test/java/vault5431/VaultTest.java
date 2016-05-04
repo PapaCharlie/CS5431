@@ -39,13 +39,17 @@ public class VaultTest {
         return tmp;
     }
 
+    public static String generateUsername() {
+        return PasswordGenerator.generatePassword(10, true, true, true, false, false);
+    }
+
     public static User getTempUser(String password) throws Exception {
-        return getTempUser(PasswordGenerator.generatePassword(10), password);
+        return getTempUser(generateUsername(), password);
     }
 
     public static User getTempUser(String username, String password) throws Exception {
         while (UserManager.userExists(username)) {
-            username = PasswordGenerator.generatePassword(10);
+            username = generateUsername();
         }
         SJCLSymmetricField empty = new SJCLSymmetricField("{iv: \"0000000000000000000000==\", ct: \"0000000000000000000=\"}", 100);
         User user = UserManager.create(

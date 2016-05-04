@@ -26,7 +26,6 @@ import static vault5431.Vault.test;
  * In short, the client must pass through this handler at least once.
  *
  * @author papacharlie and cyj
- *
  */
 class TwoFactorAuthHandler {
 

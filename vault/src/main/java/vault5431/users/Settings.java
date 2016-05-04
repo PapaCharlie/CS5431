@@ -26,9 +26,10 @@ public final class Settings {
 
     /**
      * Create a new Settings instance.
-     * @param phoneNumber the user's phone number
+     *
+     * @param phoneNumber        the user's phone number
      * @param concurrentSessions the maximum number of allowed concurrent tokens
-     * @param sessionLength the maximum time to live for tokens
+     * @param sessionLength      the maximum time to live for tokens
      */
     public Settings(String phoneNumber, int concurrentSessions, int sessionLength) throws IllegalArgumentException {
         if (Pattern.matches("\\d{3}-\\d{3}-\\d{4}", phoneNumber)) {

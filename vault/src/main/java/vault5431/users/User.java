@@ -133,12 +133,12 @@ public final class User {
     private void saveAndSignPublicKey(File file, Base64String pubKey) throws IOException {
         FileUtils.empty(file);
         FileUtils.append(file, pubKey);
-        FileUtils.append(file, SigningUtils.getSignature(pubKey.decodeBytes(), userSigningKey));
+        FileUtils.append(file, SigningUtils.sign(pubKey.decodeBytes(), userSigningKey));
     }
 
     private String loadAndVerifyPublicKey(File file) throws IOException, InvalidPublicKeySignature {
         Base64String[] data = FileUtils.read(file);
-        if (SigningUtils.verifySignature(data[0].decodeBytes(), data[1], userSigningKey)) {
+        if (SigningUtils.verify(data[0].decodeBytes(), data[1], userSigningKey)) {
             return data[0].getB64String();
         } else {
             throw new InvalidPublicKeySignature();
@@ -206,7 +206,7 @@ public final class User {
             Token successToken = AuthenticationHandler.acquireUnverifiedToken(token.getUsername(), oldPassword, token.getIp());
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
-                PasswordUtils.savePassword(passwordHashFile, newPassword);
+                PasswordUtils.hashAndSavePassword(passwordHashFile, newPassword);
                 warning("Saving newly encrypted vault!", token.getIp());
                 savePasswords(new HashSet<>(Arrays.asList(reEncryptedPasswords)));
                 changePrivateEncryptionKey(newPrivateEncryptionKey, token);

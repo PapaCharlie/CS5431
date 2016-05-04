@@ -63,7 +63,7 @@ final class RollingKeys {
     public static Base64String sign(byte[] content) {
         keyLock.readLock().lock();
         try {
-            return SigningUtils.getSignature(content, signingKey);
+            return SigningUtils.sign(content, signingKey);
         } finally {
             keyLock.readLock().unlock();
         }
@@ -79,7 +79,7 @@ final class RollingKeys {
     public static boolean verifySignature(byte[] content, Base64String signature) {
         keyLock.readLock().lock();
         try {
-            return SigningUtils.verifySignature(content, signature, signingKey);
+            return SigningUtils.verify(content, signature, signingKey);
         } finally {
             keyLock.readLock().unlock();
         }
