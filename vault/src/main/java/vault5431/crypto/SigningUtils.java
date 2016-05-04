@@ -1,6 +1,5 @@
 package vault5431.crypto;
 
-import vault5431.Sys;
 import vault5431.io.Base64String;
 
 import javax.crypto.Mac;
@@ -18,20 +17,17 @@ public class SigningUtils {
     private static final String HMAC_SHA256 = "HmacSHA256";
 
     public static Base64String sign(byte[] content, SecretKey key) {
-        Base64String sig = null;
         try {
             Mac cipher = Mac.getInstance(HMAC_SHA256);
             cipher.init(key);
             byte[] mac = cipher.doFinal(content);
-            sig = new Base64String(mac);
+            return new Base64String(mac);
         } catch (NoSuchAlgorithmException err) {
-            err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         } catch (InvalidKeyException err) {
-            Sys.error("Generated a wrong key! Requires immediate action.");
-            throw new RuntimeException("Generated a wrong key!");
+            System.err.println("Generated a wrong key! Requires immediate action.");
+            throw new RuntimeException(err);
         }
-        return sig;
     }
 
     public static boolean verify(byte[] content, Base64String signature, SecretKey key) {

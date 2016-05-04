@@ -83,25 +83,25 @@ public class Vault {
         Security.addProvider(new BouncyCastleProvider());
         if (!home.exists()) {
             if (!home.mkdir()) {
-                java.lang.System.err.println("Could not create ~/.vault5431 home!");
-                java.lang.System.exit(2);
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(1);
             }
         } else if (home.exists() && !home.isDirectory()) {
             if (!home.delete() && !home.mkdir()) {
-                java.lang.System.err.println("Could not create ~/.vault5431 home!");
-                java.lang.System.exit(2);
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(1);
             }
         }
         if (!Sys.logFile.exists()) {
             try {
                 if (!Sys.logFile.createNewFile()) {
-                    java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
-                    java.lang.System.exit(2);
+                    System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
+                    System.exit(1);
                 }
             } catch (IOException err) {
                 err.printStackTrace();
-                java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
-                java.lang.System.exit(2);
+                System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
+                System.exit(1);
             }
         }
 
