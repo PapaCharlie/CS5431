@@ -20,7 +20,7 @@ final class SharedPasswordRoutes extends Routes {
     protected void routes() {
 
         authenticatedGet("/numshared", (req, res, token) ->
-                success().put("numshared", token.getUser().numSharedPasswords(token))
+                success().put("numshared", token.getUser().numSharedPasswords())
         );
 
         authenticatedGet("/sharedpasswords", (req, res, token) -> {

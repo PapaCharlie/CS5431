@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
-import static vault5431.Vault.getAdminEncryptionKey;
 import static vault5431.Vault.home;
 
 /**
@@ -134,7 +133,7 @@ public class UserManager {
                     new Base64String(privSigningKey.toString()).saveToFile(user.privSigningKeyFile);
 
                     byte[] salt = PasswordUtils.generateSalt();
-                    SymmetricUtils.encrypt(salt, getAdminEncryptionKey()).saveToFile(user.vaultSaltFile);
+                    SymmetricUtils.encrypt(salt, user.getUserEncryptionKey()).saveToFile(user.vaultSaltFile);
 
                     Sys.info("Successfully created user.", user);
                     addUser(user);

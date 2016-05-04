@@ -31,6 +31,18 @@ public class SymmetricUtils {
         return new SecretKeySpec(bytes, "AES");
     }
 
+    public static SecretKey hashIterateKey(SecretKey key) {
+        return keyFromBytes(HashUtils.hash256(key.getEncoded()).decodeBytes());
+    }
+
+    public static SecretKey combine(SecretKey key, byte[] bytes) {
+        return keyFromBytes(HashUtils.hash256(Arrays.concatenate(key.getEncoded(), bytes)).decodeBytes());
+    }
+
+    public static SecretKey combine(SecretKey key, Base64String bytes) {
+        return keyFromBytes(HashUtils.hash256(Arrays.concatenate(key.getEncoded(), bytes.decodeBytes())).decodeBytes());
+    }
+
     public static SecretKey getNewKey() {
         SecretKey key = null;
         try {
@@ -89,15 +101,6 @@ public class SymmetricUtils {
         }
     }
 
-    public static void saveSecretKey(File keyFile, SecretKey key, PublicKey publicKey) throws BadCiphertextException, IOException {
-        Base64String encryptedKey = AsymmetricUtils.encrypt(key.getEncoded(), publicKey);
-        encryptedKey.saveToFile(keyFile);
-    }
 
-    public static SecretKey loadSecretKey(File file, PrivateKey privateKey) throws IOException, BadCiphertextException {
-        Base64String encryptedKey = Base64String.loadFromFile(file)[0];
-        byte[] key = AsymmetricUtils.decrypt(encryptedKey, privateKey);
-        return keyFromBytes(key);
-    }
 
 }

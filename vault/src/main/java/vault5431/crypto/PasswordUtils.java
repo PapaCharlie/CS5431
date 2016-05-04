@@ -32,11 +32,11 @@ public class PasswordUtils {
         return salt;
     }
 
-    public static SecretKey deriveKey(String password, byte[] salt) {
+    public static SecretKey deriveKey(char[] password, byte[] salt) {
         SecretKey key = null;
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
-            PBEKeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATIONS, KEY_SIZE);
+            PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_SIZE);
             key = SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
             err.printStackTrace();
@@ -53,7 +53,7 @@ public class PasswordUtils {
         byte[] decoded = hashedPassword.decodeBytes();
         byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
         byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
-        SecretKey key = deriveKey(password, salt);
+        SecretKey key = deriveKey(password.toCharArray(), salt);
         return Arrays.areEqual(hash, key.getEncoded());
     }
 
@@ -63,7 +63,7 @@ public class PasswordUtils {
 
     public static void savePassword(File passwordFile, String password) throws IOException {
         byte[] salt = generateSalt();
-        new Base64String(Arrays.concatenate(salt, deriveKey(password, salt).getEncoded())).saveToFile(passwordFile);
+        new Base64String(Arrays.concatenate(salt, deriveKey(password.toCharArray(), salt).getEncoded())).saveToFile(passwordFile);
     }
 
     public static boolean verifyPasswordInFile(File passwordFile, Base64String password) throws IOException {
