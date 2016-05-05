@@ -1,15 +1,12 @@
 package vault5431.crypto;
 
 import org.bouncycastle.util.Arrays;
-import vault5431.Sys;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.File;
-import java.io.IOException;
 import java.security.*;
 
 /**
@@ -28,6 +25,10 @@ public class SymmetricUtils {
     }
 
     public static SecretKey keyFromBytes(byte[] bytes) {
+        if (bytes.length != KEY_SIZE / 8) {
+            throw new IllegalArgumentException(
+                    String.format("Can only generate %d bit keys (received incorrect number of bytes", KEY_SIZE));
+        }
         return new SecretKeySpec(bytes, "AES");
     }
 
@@ -44,16 +45,14 @@ public class SymmetricUtils {
     }
 
     public static SecretKey getNewKey() {
-        SecretKey key = null;
         try {
             KeyGenerator gen = KeyGenerator.getInstance("AES", "BC");
             gen.init(KEY_SIZE);
-            key = gen.generateKey();
+            return gen.generateKey();
         } catch (NoSuchAlgorithmException | NoSuchProviderException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         }
-        return key;
     }
 
     public static IvParameterSpec generateIV() {
@@ -62,8 +61,7 @@ public class SymmetricUtils {
         return new IvParameterSpec(iv);
     }
 
-    public static Base64String encrypt(byte[] content, SecretKey key)
-            throws BadCiphertextException {
+    public static Base64String encrypt(byte[] content, SecretKey key) throws BadCiphertextException {
         try {
             IvParameterSpec iv = generateIV();
             Cipher aesCipher = getCipher();
@@ -76,8 +74,8 @@ public class SymmetricUtils {
             err.printStackTrace();
             throw new BadCiphertextException();
         } catch (InvalidKeyException err) {
-            Sys.error("Generated a wrong key! Requires immediate action.");
-            throw new RuntimeException("Generated a wrong key!");
+            System.err.println("Generated a wrong key. Aborting.");
+            throw new RuntimeException(err);
         }
     }
 
@@ -90,17 +88,15 @@ public class SymmetricUtils {
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
             return aesCipher.doFinal(cipherText);
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
-            err.printStackTrace();
             throw new RuntimeException(err);
         } catch (BadPaddingException | IllegalBlockSizeException err) {
             err.printStackTrace();
             throw new BadCiphertextException();
         } catch (InvalidKeyException err) {
-            Sys.error("Generated a wrong key! Requires immediate action.");
+            System.err.println("Generated a wrong key! Aborting.");
             throw new RuntimeException(err);
         }
     }
-
 
 
 }

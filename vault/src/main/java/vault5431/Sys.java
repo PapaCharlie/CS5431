@@ -1,7 +1,7 @@
 package vault5431;
 
 import org.apache.commons.csv.CSVRecord;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
@@ -152,9 +152,8 @@ public class Sys {
                     Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey());
                     FileUtils.append(logFile, encryptedEntry);
                 } catch (BadCiphertextException err) {
-                    err.printStackTrace();
                     System.err.println("Cannot System log entry! Fatal error. Halting.");
-                    System.exit(1);
+                    throw new RuntimeException(err);
                 }
             } catch (IOException err) {
                 throw new RuntimeException(err);
@@ -178,9 +177,8 @@ public class Sys {
                         CSVRecord record = CSVUtils.parseRecord(entry).getRecords().get(0);
                         decryptedEntries[i] = SystemLogEntry.fromCSV(record);
                     } catch (BadCiphertextException err) {
-                        err.printStackTrace();
                         System.err.println("Cannot load/decrypt system log! Fatal! Halting.");
-                        System.exit(1);
+                        throw new RuntimeException(err);
                     }
                 }
                 return decryptedEntries;

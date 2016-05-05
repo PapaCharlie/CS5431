@@ -12,7 +12,6 @@ import vault5431.users.UserManager;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
-import java.util.Base64;
 import java.util.LinkedList;
 
 import static org.apache.commons.io.FileUtils.deleteDirectory;
@@ -40,16 +39,24 @@ public class VaultTest {
         return tmp;
     }
 
+    public static String generateUsername() {
+        return PasswordGenerator.generatePassword(10, true, true, true, false, false);
+    }
+
     public static User getTempUser(String password) throws Exception {
-        return getTempUser(PasswordGenerator.generatePassword(10), password);
+        return getTempUser(generateUsername(), password);
     }
 
     public static User getTempUser(String username, String password) throws Exception {
         while (UserManager.userExists(username)) {
-            username = PasswordGenerator.generatePassword(10);
+            username = generateUsername();
         }
         SJCLSymmetricField empty = new SJCLSymmetricField("{iv: \"0000000000000000000000==\", ct: \"0000000000000000000=\"}", 100);
-        User user = UserManager.create(username, PasswordUtils.hashPassword("auth" + HashUtils.hash256(password.getBytes()).decodeString()), "123-456-6789", new Base64String(""), empty, new Base64String(""), empty);
+        User user = UserManager.create(
+                username,
+                new Base64String(password),
+                "123-456-6789", new Base64String(""), empty, new Base64String(""), empty
+        );
         createdUsers.push(username);
         return user;
     }

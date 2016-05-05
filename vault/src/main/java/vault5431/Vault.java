@@ -22,13 +22,15 @@ import static spark.Spark.*;
 public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
+    /**
+     * This becomes set to false at deployment.
+     */
     public static final boolean test = true;
-    private static boolean initialized = false;
-
     private static final File adminSaltFile = new File(home, "admin.salt");
     private static final SecretKey adminEncryptionKey;
     private static final SecretKey adminSigningKey;
     private static final SecretKey adminLoggingKey;
+    private static boolean initialized = false;
 
     static {
         initialize();
@@ -51,6 +53,7 @@ public class Vault {
                 throw new RuntimeException("Cannot read admin password!");
             }
         }
+
         for (int i = 0; i < adminPassword.length; i++) {
             adminPassword[i] = (char) (adminPassword[i] ^ 'e'); // e for encryption
         }
@@ -80,25 +83,25 @@ public class Vault {
         Security.addProvider(new BouncyCastleProvider());
         if (!home.exists()) {
             if (!home.mkdir()) {
-                java.lang.System.err.println("Could not create ~/.vault5431 home!");
-                java.lang.System.exit(2);
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(1);
             }
         } else if (home.exists() && !home.isDirectory()) {
             if (!home.delete() && !home.mkdir()) {
-                java.lang.System.err.println("Could not create ~/.vault5431 home!");
-                java.lang.System.exit(2);
+                System.err.println("Could not create ~/.vault5431 home!");
+                System.exit(1);
             }
         }
         if (!Sys.logFile.exists()) {
             try {
                 if (!Sys.logFile.createNewFile()) {
-                    java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
-                    java.lang.System.exit(2);
+                    System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
+                    System.exit(1);
                 }
             } catch (IOException err) {
                 err.printStackTrace();
-                java.lang.System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
-                java.lang.System.exit(2);
+                System.err.printf("Could not create system log file at %s!%n", Sys.logFile.getAbsoluteFile());
+                System.exit(1);
             }
         }
 

@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 
 /**
- * Password hashing and verification utilities. Hashing is done with PBKDF2 with HMAC and SHA512.
+ * Password hashing and verification utilities.
  *
  * @author papacharlie
  */
@@ -32,36 +32,37 @@ public class PasswordUtils {
         return salt;
     }
 
+    /**
+     * Derive an AES-256 key from a password using PBKDF2.
+     *
+     * @param password the password from which to derive the key
+     * @param salt     the salt to use
+     * @return The AES secret key derived after {@link #ITERATIONS} iterations.
+     */
     public static SecretKey deriveKey(char[] password, byte[] salt) {
-        SecretKey key = null;
         try {
             SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance(HASH_ALG);
             PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_SIZE);
-            key = SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
+            return SymmetricUtils.keyFromBytes(secretKeyFactory.generateSecret(spec).getEncoded());
         } catch (NoSuchAlgorithmException | InvalidKeySpecException err) {
             err.printStackTrace();
-            System.exit(1);
+            throw new RuntimeException(err);
         }
-        return key;
     }
 
-    public static Base64String hashPassword(String password) {
-        return HashUtils.hash256(password.getBytes(), 2);
+    public static void hashAndSavePassword(File passwordFile, Base64String password) throws IOException {
+        hashAndSavePassword(passwordFile, password.decodeString());
     }
 
-    private static boolean verifyHashedPassword(Base64String hashedPassword, String password) {
-        byte[] decoded = hashedPassword.decodeBytes();
-        byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
-        byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
-        SecretKey key = deriveKey(password.toCharArray(), salt);
-        return Arrays.areEqual(hash, key.getEncoded());
-    }
-
-    public static void savePassword(File passwordFile, Base64String password) throws IOException {
-        savePassword(passwordFile, password.decodeString());
-    }
-
-    public static void savePassword(File passwordFile, String password) throws IOException {
+    /**
+     * Generate a random salt and derive a SecretKey using {@link #deriveKey(char[], byte[])}. The secret key is saved
+     * to disk, with the first {@link #SALT_SIZE} bytes being the salt, and the remaining bytes the hashed password.
+     *
+     * @param passwordFile file to write the salt and password to.
+     * @param password     password to hash.
+     * @throws IOException If the file cannot be written to.
+     */
+    public static void hashAndSavePassword(File passwordFile, String password) throws IOException {
         byte[] salt = generateSalt();
         new Base64String(Arrays.concatenate(salt, deriveKey(password.toCharArray(), salt).getEncoded())).saveToFile(passwordFile);
     }
@@ -70,8 +71,22 @@ public class PasswordUtils {
         return verifyPasswordInFile(passwordFile, password.decodeString());
     }
 
+    /**
+     * Verify that a previous call to {@link #hashAndSavePassword} saved the same password as the one that is being
+     * currently given.
+     *
+     * @param passwordFile file in which to find the saved password
+     * @param password     password to check
+     * @return Whether the given password was indeed the same as the password that was saved.
+     * @throws IOException If the file cannot be read.
+     */
     public static boolean verifyPasswordInFile(File passwordFile, String password) throws IOException {
-        return verifyHashedPassword(Base64String.loadFromFile(passwordFile)[0], password);
+        Base64String hashedPassword = Base64String.loadFromFile(passwordFile)[0];
+        byte[] decoded = hashedPassword.decodeBytes();
+        byte[] salt = Arrays.copyOfRange(decoded, 0, KEY_SIZE / 8);
+        byte[] hash = Arrays.copyOfRange(decoded, KEY_SIZE / 8, decoded.length);
+        SecretKey key = deriveKey(password.toCharArray(), salt);
+        return Arrays.areEqual(hash, key.getEncoded());
     }
 
 }

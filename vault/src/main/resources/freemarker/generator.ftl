@@ -35,34 +35,7 @@
         <div class="panel-body generated-password" id="generatedPassword">
         </div>
     </div>
-    <#--<button class="btn btn-primary" data-toggle="modal" data-target="#newPass">Create New Password</button>-->
-    <span class="addicon glyphicon glyphicon-plus" data-toggle="modal" data-target="#newPass" aria-hidden="true"></span>
-    <div id="newPass" class="modal fade" role="dialog">
-        <div class="modal-dialog">
 
-            <!-- Modal content-->
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Create New Password</h4>
-                </div>
-                <div class="modal-body">
-                    <form class="form-signin" id="newPasswordForm">
-                        <input type="text" name="name" class="form-control" maxlength="500" placeholder="Website Name" required>
-                        <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
-                        <input type="text" name="username" id="username" maxlength="500" class="form-control" placeholder="Account username" required>
-                        <input type="password" name="password" id="inputPassword" maxlength="500" class="form-control" placeholder="Password" required>
-                        <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000" placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
-                        <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
     <script>
         $(function () {
             $('[data-toggle="tooltip"]').tooltip();

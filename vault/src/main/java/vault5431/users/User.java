@@ -4,7 +4,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
-import vault5431.auth.Token;
+import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.auth.exceptions.NoSuchUserException;
 import vault5431.auth.exceptions.TooManyConcurrentSessionsException;
 import vault5431.auth.exceptions.TooManyFailedLogins;
@@ -62,8 +62,9 @@ public final class User {
     private int lineNums;
     private final SecretKey userEncryptionKey;
     private final SecretKey userSigningKey;
-    private final Object loggingKeyLock = new Object();
-    private SecretKey userLoggingKey;
+    private final SecretKey firstUserLoggingKey;
+    private final Object currentUserLoggingKeyLock = new Object();
+    private SecretKey currentUserLoggingKey;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -85,38 +86,42 @@ public final class User {
 
         userEncryptionKey = SymmetricUtils.combine(getAdminEncryptionKey(), hash);
         userSigningKey = SymmetricUtils.combine(getAdminSigningKey(), hash);
-        userLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hash);
-
+        firstUserLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hash);
+        currentUserLoggingKey = firstUserLoggingKey;
     }
 
     private void iterateLoggingKey() {
-        synchronized (loggingKeyLock) {
-            userLoggingKey = SymmetricUtils.hashIterateKey(userLoggingKey);
+        synchronized (currentUserLoggingKeyLock) {
+            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
         }
     }
 
     private SecretKey deriveLogEncryptionKey() {
-        synchronized (loggingKeyLock) {
-            return SymmetricUtils.combine(userLoggingKey, "encryption".getBytes());
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
         }
     }
 
-    private synchronized SecretKey deriveLogSigningKey() {
-        synchronized (loggingKeyLock) {
-            return SymmetricUtils.combine(userLoggingKey, "signing".getBytes());
+    private SecretKey deriveLogSigningKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
         }
     }
 
-    public SecretKey getUserEncryptionKey() {
+    boolean isLegalToken(Token token) {
+        return this.hash.equals(token.getUser().hash);
+    }
+
+    protected SecretKey getUserEncryptionKey() {
         return userEncryptionKey;
     }
 
-    public SecretKey getUserSigningKey() {
+    protected SecretKey getUserSigningKey() {
         return userSigningKey;
     }
 
-    public SecretKey getUserLoggingKey() {
-        return userLoggingKey;
+    protected SecretKey getFirstUserLoggingKey() {
+        return firstUserLoggingKey;
     }
 
     public int hashCode() {
@@ -134,12 +139,12 @@ public final class User {
     private void saveAndSignPublicKey(File file, Base64String pubKey) throws IOException {
         FileUtils.empty(file);
         FileUtils.append(file, pubKey);
-        FileUtils.append(file, SigningUtils.getSignature(pubKey.decodeBytes(), userSigningKey));
+        FileUtils.append(file, SigningUtils.sign(pubKey.decodeBytes(), userSigningKey));
     }
 
     private String loadAndVerifyPublicKey(File file) throws IOException, InvalidPublicKeySignature {
         Base64String[] data = FileUtils.read(file);
-        if (SigningUtils.verifySignature(data[0].decodeBytes(), data[1], userSigningKey)) {
+        if (SigningUtils.verify(data[0].decodeBytes(), data[1], userSigningKey)) {
             return data[0].getB64String();
         } else {
             throw new InvalidPublicKeySignature();
@@ -207,7 +212,7 @@ public final class User {
             Token successToken = AuthenticationHandler.acquireUnverifiedToken(token.getUsername(), oldPassword, token.getIp());
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
-                PasswordUtils.savePassword(passwordHashFile, newPassword);
+                PasswordUtils.hashAndSavePassword(passwordHashFile, newPassword);
                 warning("Saving newly encrypted vault!", token.getIp());
                 savePasswords(new HashSet<>(Arrays.asList(reEncryptedPasswords)));
                 changePrivateEncryptionKey(newPrivateEncryptionKey, token);
@@ -220,14 +225,14 @@ public final class User {
 
     public void changeSettings(Settings settings) throws IOException, BadCiphertextException {
         synchronized (settingsFile) {
-            SymmetricUtils.encrypt(settings.toJson().getBytes(), userEncryptionKey).saveToFile(settingsFile);
+            settings.saveToFile(settingsFile, userEncryptionKey);
         }
     }
 
     public Settings loadSettings() throws CouldNotLoadSettingsException {
         synchronized (settingsFile) {
             try {
-                return Settings.loadFromFile(settingsFile);
+                return Settings.loadFromFile(settingsFile, userEncryptionKey);
             } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
                 throw new CouldNotLoadSettingsException();
             }
@@ -408,9 +413,13 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-                System.out.println(userLoggingKey.getFormat());
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), userLoggingKey));
+//<<<<<<< HEAD
+                System.out.println(currentUserLoggingKey.getFormat());
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), currentUserLoggingKey));
                 lineNums ++;
+//=======
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), firstUserLoggingKey));
+//>>>>>>> master
                 System.out.println("[" + getShortHash() + "] " + entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -508,4 +517,24 @@ public final class User {
         appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
     }
 
+<<<<<<< HEAD
+=======
+    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
+        synchronized (logFile) {
+            Sys.debug("Loading log.", token);
+            Base64String[] encryptedEntries = FileUtils.read(logFile);
+            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+            for (int i = 0; i < encryptedEntries.length; i++) {
+                try {
+                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], firstUserLoggingKey));
+                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
+                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
+                } catch (BadCiphertextException err) {
+                    throw new CorruptedLogException();
+                }
+            }
+            return decryptedEntries;
+        }
+    }
+>>>>>>> master
 }

@@ -21,16 +21,16 @@
         <p>
             Not a member yet ? <a href="/register" class="to_register">Join us</a>
         </p>
-        <#if error??>
-            <p class="has-error">${error}</p>
-        </#if>
+    <#if error??>
+        <p class="has-error">${error}</p>
+    </#if>
     </div>
 
 </div>
 <script>
     $(document).ready(function () {
         if (sessionStorage.getItem("redirected")) {
-            sessionStorage.clear();
+            sessionStorage.removeItem("password");
         } else if (sessionStorage.getItem("password")) {
             sessionStorage.setItem("redirected", true);
             window.location.href = "/home";

@@ -26,7 +26,7 @@ public class PasswordGenerator {
     private static final String SYMBOLS = "!@#$%^&*()-_+={}[]<>?";
 
     private static final HashMap<String, String> PRECEDENCE_MAP = new HashMap<>();
-    private static final String[] SYLLABLES = PRECEDENCE_MAP.keySet().toArray(new String[PRECEDENCE_MAP.keySet().size()]);
+    private static final String[] SYLLABLES;
 
     static {
         // Read the adjacency list from the resource directory.
@@ -38,9 +38,10 @@ public class PasswordGenerator {
                     PRECEDENCE_MAP.put(key, dict.getString(key));
                 }
             }
+            SYLLABLES = PRECEDENCE_MAP.keySet().toArray(new String[PRECEDENCE_MAP.keySet().size()]);
         } catch (IOException err) {
             System.err.println("Could not load adjacency list for pronounceable passwords!");
-            System.exit(1);
+            throw new RuntimeException(err);
         }
     }
 
@@ -136,7 +137,7 @@ public class PasswordGenerator {
      * @param pronounceable whether the password should be pronounceable
      * @return The randomly generated password.
      * @throws IllegalArgumentException If all the charsets are set to false, or the password length is not between
-     * 6 and 100.
+     *                                  6 and 100.
      */
     public static String generatePassword(int length, boolean lower, boolean upper, boolean numbers, boolean symbols, boolean pronounceable) throws IllegalArgumentException {
         if (6 <= length && length <= 100) {

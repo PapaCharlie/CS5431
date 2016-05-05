@@ -124,8 +124,8 @@ public class UserManager {
                     } else {
                         Sys.info("Created vault file.", user);
                     }
-                    PasswordUtils.savePassword(user.passwordHashFile, hashedPassword);
-                    new Settings(phoneNumber).saveToFile(user.settingsFile);
+                    PasswordUtils.hashAndSavePassword(user.passwordHashFile, hashedPassword);
+                    new Settings(phoneNumber).saveToFile(user.settingsFile, user.getUserEncryptionKey());
 
                     user.saveAndSignPublicEncryptionKey(pubCryptoKey);
                     user.saveAndSignPublicSigningKey(pubSigningKey);
