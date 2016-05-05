@@ -48,7 +48,7 @@ final class SettingsRoutes extends Routes {
                     try {
                         Settings settings = token.getUser().loadSettings();
                         if (settings.getConcurrentSessions() != cS) {
-                            token.getUser().changeSettings(settings.withConcurrentSessions(cS));
+                            token.getUser().changeSettings(settings.withConcurrentSessions(cS), token);
                             token.getUser().info("Changed maximum number of concurrent users.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
@@ -65,7 +65,7 @@ final class SettingsRoutes extends Routes {
                     try {
                         Settings settings = token.getUser().loadSettings();
                         if (settings.getSessionLength() != sL) {
-                            token.getUser().changeSettings(settings.withSessionLength(sL));
+                            token.getUser().changeSettings(settings.withSessionLength(sL), token);
                             token.getUser().info("Changed maximum session length.", token.getIp());
                         }
                     } catch (IllegalArgumentException err) {
@@ -80,7 +80,7 @@ final class SettingsRoutes extends Routes {
                 Settings settings = token.getUser().loadSettings();
                 if (!settings.getPhoneNumber().equals(phoneNumber)) {
                     try {
-                        token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber));
+                        token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber), token);
                         token.getUser().info("Changed maximum session length.", token.getIp());
                     } catch (IllegalArgumentException err) {
                         return failure(err);

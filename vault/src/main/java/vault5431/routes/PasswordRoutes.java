@@ -4,7 +4,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.users.Password;
-import vault5431.users.User;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -25,10 +24,9 @@ final class PasswordRoutes extends Routes {
         );
 
         authenticatedGet("/passwords", (req, res, token) -> {
-            User user = token.getUser();
             JSONObject vault = new JSONObject();
-            vault.put("salt", user.loadVaultSalt().toString());
-            Set<Password> passwords = user.loadPasswords(token);
+            vault.put("salt", token.getUser().loadVaultSalt(token).toString());
+            Set<Password> passwords = token.getUser().loadPasswords(token);
             vault.put("passwords", passwords.stream().map(Password::toJSONObject).collect(Collectors.toList()));
             vault.put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token));
             vault.put("privateSigningKey", token.getUser().loadPrivateSigningKey(token));
@@ -81,7 +79,7 @@ final class PasswordRoutes extends Routes {
                 JSONObject pass = new JSONObject(password);
                 pass.put("id", UUID.randomUUID().toString());
                 Password newPassword = Password.fromJSON(pass);
-                token.getUser().addPasswordToVault(newPassword, token);
+                token.getUser().savePassword(newPassword, token);
             } catch (JSONException err) {
                 return failure(err);
             } catch (IllegalArgumentException err) {

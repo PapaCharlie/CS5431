@@ -5,6 +5,12 @@
 
     <span id="plusbtn" class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newpassfunctions"
           aria-hidden="true"></span>
+    <div class="input-group col-xs-6 col-sm-3 pull-right">
+        <div class="input-group-btn">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
+        </div>
+        <input id="search" type="text" class="form-control" placeholder="Type here...">
+    </div>
 
     <div class="collapse" id="newpassfunctions">
         <form class="form-signin newpass" id="newPasswordForm">
@@ -15,7 +21,7 @@
                    placeholder="Account username" required>
             <div class="input-group">
                 <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100"
-                   placeholder="Password" required>
+                       placeholder="Password" required>
                 <span class="input-group-addon"><button id="genrandom" type="button">Random</button></span>
             </div>
             <p id="temprandom" class="hidden"></p>
@@ -212,7 +218,30 @@
             $("#temprandom").addClass("hidden");
         }
     });
+    $(function () {
+        $('#search').keyup(function () {
 
+
+            if ($(this).val() == '') {
+                $('.panel-group').children().show();
+            }
+            /*
+            var rex = new RegExp($(this).val(), 'i');
+            $('.entryName').each(function (i, obj) {
+                if (!rex.test($(this).text())) {
+                    $(this).parent().parent().parent().hide();
+                }
+            });
+            */
+            var rex = new RegExp($(this).val(), 'i');
+            $('.panel-group').children().hide();
+            $('.entryName').each(function(i, obj) {
+                if (rex.test($(this).text())) {
+                    $(this).parent().parent().parent().show();
+                }
+            });
+        });
+    });
 </script>
 </#macro>
 

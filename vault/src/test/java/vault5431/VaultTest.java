@@ -48,8 +48,8 @@ public class VaultTest {
     }
 
     public static User getTempUser(String username, String password) throws Exception {
-        while (UserManager.userExists(username)) {
-            username = generateUsername();
+        if (UserManager.userExists(username)) {
+            throw new IllegalArgumentException("Username already in use!");
         }
         SJCLSymmetricField empty = new SJCLSymmetricField("{iv: \"0000000000000000000000==\", ct: \"0000000000000000000=\"}", 100);
         User user = UserManager.create(
@@ -58,7 +58,7 @@ public class VaultTest {
                 "123-456-6789", new Base64String(""), empty, new Base64String(""), empty
         );
         createdUsers.push(username);
-        return user;
+        return UserManager.getUser(username);
     }
 
     @AfterClass
