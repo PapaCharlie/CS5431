@@ -29,6 +29,7 @@ function getSharedAccordions(sharedPasswords) {
                 'text': entry.name
             }).appendTo(title);
             var sharer = $('<span/>', {
+                'class':'sharedUser',
                 'text': ' -shared by '+entry.sharer
             }).appendTo(title);
             var delbtn = $('<button/>', {
