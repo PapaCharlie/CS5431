@@ -37,23 +37,23 @@ public class Sys {
      * @param ip           IP causing error
      */
     public static void error(String message, User affectedUser, String ip) {
-        appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void error(String message, String ip) {
-        appendToLog(new SystemLogEntry(LogType.ERROR, ip, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.ERROR, ip, SYS, LocalDateTime.now(), message));
     }
 
     public static void error(String message, Token token) {
-        appendToLog(new SystemLogEntry(LogType.ERROR, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.ERROR, token.getIp(), token.getUser(), LocalDateTime.now(), message));
     }
 
     public static void error(String message, User affectedUser) {
-        appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void error(String message) {
-        appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.ERROR, NO_IP, SYS, LocalDateTime.now(), message));
     }
 
     /**
@@ -64,23 +64,23 @@ public class Sys {
      * @param ip           IP causing warning
      */
     public static void warning(String message, User affectedUser, String ip) {
-        appendToLog(new SystemLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void warning(String message, String ip) {
-        appendToLog(new SystemLogEntry(LogType.WARNING, ip, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.WARNING, ip, SYS, LocalDateTime.now(), message));
     }
 
     public static void warning(String message, Token token) {
-        appendToLog(new SystemLogEntry(LogType.WARNING, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.WARNING, token.getIp(), token.getUser(), LocalDateTime.now(), message));
     }
 
     public static void warning(String message, User affectedUser) {
-        appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void warning(String message) {
-        appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.WARNING, NO_IP, SYS, LocalDateTime.now(), message));
     }
 
     /**
@@ -91,23 +91,23 @@ public class Sys {
      * @param ip           Relevant IP
      */
     public static void info(String message, User affectedUser, String ip) {
-        appendToLog(new SystemLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void info(String message, String ip) {
-        appendToLog(new SystemLogEntry(LogType.INFO, ip, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.INFO, ip, SYS, LocalDateTime.now(), message));
     }
 
     public static void info(String message, Token token) {
-        appendToLog(new SystemLogEntry(LogType.INFO, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.INFO, token.getIp(), token.getUser(), LocalDateTime.now(), message));
     }
 
     public static void info(String message, User affectedUser) {
-        appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void info(String message) {
-        appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.INFO, NO_IP, SYS, LocalDateTime.now(), message));
     }
 
     /**
@@ -118,23 +118,23 @@ public class Sys {
      * @param ip           Relevant IP
      */
     public static void debug(String message, User affectedUser, String ip) {
-        appendToLog(new SystemLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.DEBUG, ip, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void debug(String message, String ip) {
-        appendToLog(new SystemLogEntry(LogType.DEBUG, ip, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.DEBUG, ip, SYS, LocalDateTime.now(), message));
     }
 
     public static void debug(String message, Token token) {
-        appendToLog(new SystemLogEntry(LogType.DEBUG, token.getIp(), token.getUser(), LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.DEBUG, token.getIp(), token.getUser(), LocalDateTime.now(), message));
     }
 
     public static void debug(String message, User affectedUser) {
-        appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, affectedUser, LocalDateTime.now(), message));
     }
 
     public static void debug(String message) {
-        appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, SYS, LocalDateTime.now(), message, ""));
+        appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, SYS, LocalDateTime.now(), message));
     }
 
 

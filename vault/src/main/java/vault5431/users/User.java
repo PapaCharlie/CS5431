@@ -22,6 +22,7 @@ import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
 import vault5431.users.exceptions.CorruptedLogException;
 import vault5431.users.exceptions.CouldNotLoadSettingsException;
+import vault5431.users.exceptions.IllegalTokenException;
 import vault5431.users.exceptions.VaultNotFoundException;
 
 import javax.crypto.SecretKey;
@@ -87,26 +88,9 @@ public final class User {
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
-    private void iterateLoggingKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
-        }
-    }
-
-    private SecretKey deriveLogEncryptionKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
-        }
-    }
-
-    private SecretKey deriveLogSigningKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
-        }
-    }
-
-    boolean isLegalToken(Token token) {
-        return this.hash.equals(token.getUser().hash);
+    private void verifyToken(Token token) throws IllegalTokenException {
+        if (!this.hash.equals(token.getUser().hash))
+            throw new IllegalTokenException();
     }
 
     protected SecretKey getUserEncryptionKey() {
@@ -148,13 +132,13 @@ public final class User {
         }
     }
 
-    public void saveAndSignPublicEncryptionKey(Base64String pubCryptoKey) throws IOException {
+    protected void saveAndSignPublicEncryptionKey(Base64String pubCryptoKey) throws IOException {
         synchronized (pubCryptoKeyFile) {
             saveAndSignPublicKey(pubCryptoKeyFile, pubCryptoKey);
         }
     }
 
-    public void saveAndSignPublicSigningKey(Base64String pubCryptoKey) throws IOException {
+    protected void saveAndSignPublicSigningKey(Base64String pubCryptoKey) throws IOException {
         synchronized (pubSigningKeyFile) {
             saveAndSignPublicKey(pubSigningKeyFile, pubCryptoKey);
         }
@@ -172,29 +156,33 @@ public final class User {
         }
     }
 
-    public String loadPrivateEncryptionKey(Token token) throws IOException {
+    public String loadPrivateEncryptionKey(Token token) throws IOException, IllegalTokenException {
         synchronized (privCryptoKeyFile) {
+            verifyToken(token);
             Sys.debug("Loading private encryption key.", token);
             return FileUtils.read(privCryptoKeyFile)[0].decodeString();
         }
     }
 
-    public String loadPrivateSigningKey(Token token) throws IOException {
+    public String loadPrivateSigningKey(Token token) throws IOException, IllegalTokenException {
         synchronized (privSigningKeyFile) {
+            verifyToken(token);
             Sys.debug("Loading private signing key.", token);
             return FileUtils.read(privSigningKeyFile)[0].decodeString();
         }
     }
 
-    private void changePrivateEncryptionKey(SJCLSymmetricField newKey, Token token) throws IOException {
+    private void changePrivateEncryptionKey(SJCLSymmetricField newKey, Token token) throws IOException, IllegalTokenException {
         synchronized (privCryptoKeyFile) {
+            verifyToken(token);
             Sys.debug("Changing private encryption key", token);
             FileUtils.write(privCryptoKeyFile, new Base64String(newKey.toString()));
         }
     }
 
-    private void changePrivateSigningKey(SJCLSymmetricField newKey, Token token) throws IOException {
+    private void changePrivateSigningKey(SJCLSymmetricField newKey, Token token) throws IOException, IllegalTokenException {
         synchronized (privSigningKeyFile) {
+            verifyToken(token);
             Sys.debug("Changing private signing key", token);
             FileUtils.write(privSigningKeyFile, new Base64String(newKey.toString()));
         }
@@ -203,9 +191,10 @@ public final class User {
     public Token changeMasterPassword(Base64String oldPassword, Base64String newPassword,
                                       Password[] reEncryptedPasswords, SJCLSymmetricField newPrivateEncryptionKey,
                                       SJCLSymmetricField newPrivateSigningKey, Token token)
-            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException {
+            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException, IllegalTokenException {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
+            verifyToken(token);
             Token successToken = AuthenticationHandler.acquireUnverifiedToken(token.getUsername(), oldPassword, token.getIp());
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
@@ -214,14 +203,15 @@ public final class User {
                 savePasswords(new HashSet<>(Arrays.asList(reEncryptedPasswords)));
                 changePrivateEncryptionKey(newPrivateEncryptionKey, token);
                 changePrivateSigningKey(newPrivateSigningKey, token);
-                info("Master password change succesful.", token.getIp());
+                info("Master password change successful.", token.getIp());
             }
             return successToken;
         }
     }
 
-    public void changeSettings(Settings settings) throws IOException, BadCiphertextException {
+    public void changeSettings(Settings settings, Token token) throws IOException, BadCiphertextException, IllegalTokenException {
         synchronized (settingsFile) {
+            verifyToken(token);
             settings.saveToFile(settingsFile, userEncryptionKey);
         }
     }
@@ -245,9 +235,10 @@ public final class User {
         }
     }
 
-    public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException {
+    public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (sharedPasswordsFile) {
-            HashSet<SharedPassword> passwords = loadSharedPasswords();
+            verifyToken(token);
+            HashSet<SharedPassword> passwords = loadSharedPasswords(token);
             HashSet<SharedPassword> filteredPasswords = new HashSet<>();
             SharedPassword deleted = null;
             for (SharedPassword sharedPassword : passwords) {
@@ -265,7 +256,21 @@ public final class User {
         }
     }
 
-    public HashSet<SharedPassword> loadSharedPasswords() throws IOException, VaultNotFoundException {
+    public int numSharedPasswords(Token token) throws IOException, IllegalTokenException {
+        synchronized (sharedPasswordsFile) {
+            verifyToken(token);
+            return FileUtils.read(sharedPasswordsFile).length;
+        }
+    }
+
+    public HashSet<SharedPassword> loadSharedPasswords(Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
+        synchronized (sharedPasswordsFile) {
+            verifyToken(token);
+            return loadSharedPasswords();
+        }
+    }
+
+    private HashSet<SharedPassword> loadSharedPasswords() throws IOException, VaultNotFoundException {
         synchronized (sharedPasswordsFile) {
             info("Loading shared passwords.");
             if (!sharedPasswordsFile.exists()) {
@@ -288,18 +293,12 @@ public final class User {
                 throw new VaultNotFoundException();
             }
             return sharedPasswords;
-
         }
     }
 
-    public int numSharedPasswords() throws IOException {
+    public void addSharedPassword(SharedPassword sharedPassword, Token token) throws IOException, VaultNotFoundException {
         synchronized (sharedPasswordsFile) {
-            return FileUtils.read(sharedPasswordsFile).length;
-        }
-    }
-
-    public void addSharedPassword(SharedPassword sharedPassword) throws IOException, VaultNotFoundException {
-        synchronized (sharedPasswordsFile) {
+            info(String.format("%s has shared a password with you.", token.getUsername()));
             HashSet<SharedPassword> sharedPasswords = loadSharedPasswords();
             boolean validUUID = false;
             while (!validUUID) {
@@ -313,8 +312,9 @@ public final class User {
         }
     }
 
-    public void addPasswordToVault(Password password, Token token) throws IOException, VaultNotFoundException {
+    public void savePassword(Password password, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
+            verifyToken(token);
             info("Added password.", token.getIp());
             HashSet<Password> passwords = loadPasswords(token);
             boolean validUUID = false;
@@ -329,8 +329,9 @@ public final class User {
         }
     }
 
-    public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException {
+    public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
+            verifyToken(token);
             HashSet<Password> passwords = loadPasswords(token);
             if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
                 passwords.add(password);
@@ -340,8 +341,9 @@ public final class User {
         }
     }
 
-    public Password deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException {
+    public Password deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
+            verifyToken(token);
             HashSet<Password> passwords = loadPasswords(token);
             HashSet<Password> filteredPasswords = new HashSet<>();
             Password deleted = null;
@@ -369,8 +371,9 @@ public final class User {
         }
     }
 
-    public HashSet<Password> loadPasswords(Token token) throws VaultNotFoundException {
+    public HashSet<Password> loadPasswords(Token token) throws VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
+            verifyToken(token);
             info("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {
                 Sys.error("User's vault file could not be found.", this);
@@ -401,136 +404,127 @@ public final class User {
         }
     }
 
-    public Base64String loadVaultSalt() throws IOException, BadCiphertextException {
+    public Base64String loadVaultSalt(Token token) throws IOException, BadCiphertextException, IllegalTokenException {
         synchronized (vaultSaltFile) {
+            verifyToken(token);
             return new Base64String(SymmetricUtils.decrypt(Base64String.loadFromFile(vaultSaltFile)[0], userEncryptionKey));
         }
     }
 
-    private void appendToLog(UserLogEntry entry) {
+    protected UserLogEntry[] loadLog() throws IOException, CouldNotLoadKeyException, CorruptedLogException {
         synchronized (logFile) {
-            try {
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), currentUserLoggingKey));
-                iterateLoggingKey();
-                System.out.println("[" + getShortHash() + "] " + entry.toString());
-            } catch (IOException err) {
-                err.printStackTrace();
-                warning("Failed to log for user! Continuing (not recommended).", this);
-                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
-            } catch (BadCiphertextException err) {
-                err.printStackTrace();
-                Sys.error("Serialization of log entry was too long, or unencryptable.", this);
+            synchronized (currentUserLoggingKeyLock) {
+                Base64String[] encryptedEntries = FileUtils.read(logFile);
+                UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+                currentUserLoggingKey = firstUserLoggingKey;
+                for (int i = 0; i < encryptedEntries.length; i++) {
+                    try {
+                        SecretKey encryptionKey = deriveLogEncryptionKey();
+                        SecretKey signingKey = deriveLogSigningKey();
+                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], encryptionKey));
+                        CSVRecord unverifiedRecord = CSVUtils.parseRecord(entry).getRecords().get(0);
+                        decryptedEntries[i] = UserLogEntry.fromCSV(unverifiedRecord, signingKey);
+                        iterateLoggingKey();
+                    } catch (BadCiphertextException | IllegalArgumentException err) {
+                        throw new CorruptedLogException();
+                    }
+                }
+                return decryptedEntries;
             }
         }
     }
 
-    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
+    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException, IllegalTokenException {
+        verifyToken(token);
+        Sys.debug("Loading log.", token);
+        return loadLog();
+    }
+
+    private void appendToLog(LogType logType, String message, String affectedUser, String ip) {
         synchronized (logFile) {
-            Sys.debug("Loading log.", token);
-            Base64String[] encryptedEntries = FileUtils.read(logFile);
-            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-            SecretKey decryptIteratingKey = firstUserLoggingKey;
-            for (int i = 0; i < encryptedEntries.length; i++) {
+            synchronized (currentUserLoggingKeyLock) {
                 try {
-                    String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], decryptIteratingKey));
-                    CSVRecord unverifiedRecord = CSVUtils.parseRecord(entry).getRecords().get(0);
-                    UserLogEntry signedEntry = UserLogEntry.fromCSV(unverifiedRecord);
-                    // Verifying Signature step
-                    String[] splitEntry = entry.split(",");
-                    LocalDateTime timestamp = LocalDateTime.parse(splitEntry[3]);
-                    UserLogEntry testEntry = new UserLogEntry(LogType.fromString(splitEntry[0]),
-                            splitEntry[1],splitEntry[2], timestamp, splitEntry[4]);
-                    testEntry.signUserLog(userSigningKey);
-                    boolean valid = signedEntry.checkSignature(testEntry);
-                    System.out.println(valid);
-                    UserLogEntry verifiedEntry = null;
-                    if (valid) {
-                        verifiedEntry = signedEntry;
-                    } else {
-                        UserLogEntry invalidEntry = new UserLogEntry(LogType.ERROR, NO_IP,
-                                "USER", LocalDateTime.now(), "THIS LOG ENTRY IS INVALID");
-                        invalidEntry.signUserLog(userSigningKey);
-                        verifiedEntry = invalidEntry;
-                    }
-                    decryptedEntries[i] = verifiedEntry;
-                    decryptIteratingKey = SymmetricUtils.hashIterateKey(decryptIteratingKey);
+                    SecretKey encryptionKey = deriveLogEncryptionKey();
+                    SecretKey signingKey = deriveLogSigningKey();
+                    UserLogEntry entry = new UserLogEntry(logType, ip, affectedUser, LocalDateTime.now(), message, signingKey);
+                    FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), encryptionKey));
+                    iterateLoggingKey();
+                    System.out.println("[" + getShortHash() + "] " + entry.toString());
+                } catch (IOException err) {
+                    err.printStackTrace();
+                    warning("Failed to log for user! Continuing (not recommended).", this);
+                    System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
                 } catch (BadCiphertextException err) {
-                    throw new CorruptedLogException();
+                    err.printStackTrace();
+                    Sys.error("Serialization of log entry was too long, or unencryptable.", this);
                 }
             }
-            return decryptedEntries;
+        }
+    }
+
+    private void iterateLoggingKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
+        }
+    }
+
+    private SecretKey deriveLogEncryptionKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
+        }
+    }
+
+    private SecretKey deriveLogSigningKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
         }
     }
 
     public void error(String message, User affectedUser, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.ERROR, message, affectedUser.getShortHash(), ip);
     }
 
     public void error(String message, User affectedUser) {
-        UserLogEntry entry = new UserLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.ERROR, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void error(String message, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.ERROR, message, NO_USER, ip);
     }
 
     public void error(String message) {
-        UserLogEntry entry = new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.ERROR, message, NO_USER, NO_IP);
     }
 
     public void warning(String message, User affectedUser, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.WARNING, message, affectedUser.getShortHash(), ip);
     }
 
     public void warning(String message, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.WARNING, message, NO_USER, ip);
     }
 
     public void warning(String message, User affectedUser) {
-        UserLogEntry entry = new UserLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.WARNING, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void warning(String message) {
-        UserLogEntry entry = new UserLogEntry(LogType.WARNING, NO_IP, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.WARNING, message, NO_USER, NO_IP);
     }
 
     public void info(String message, User affectedUser, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.INFO, message, affectedUser.getShortHash(), ip);
     }
 
     public void info(String message, String ip) {
-        UserLogEntry entry = new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.INFO, message, NO_USER, ip);
     }
 
     public void info(String message, User affectedUser) {
-        UserLogEntry entry = new UserLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.INFO, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void info(String message) {
-        UserLogEntry entry = new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message);
-        entry.signUserLog(userSigningKey);
-        appendToLog(entry);
+        appendToLog(LogType.INFO, message, NO_USER, NO_IP);
     }
 }
