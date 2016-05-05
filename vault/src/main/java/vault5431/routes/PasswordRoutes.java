@@ -26,7 +26,7 @@ final class PasswordRoutes extends Routes {
 
         authenticatedGet("/passwords", (req, res, token) -> {
             JSONObject vault = new JSONObject();
-            vault.put("salt", token.getUser().toString());
+            vault.put("salt", token.getUser().loadVaultSalt().toString());
             Set<Password> passwords = token.getUser().loadPasswords(token);
             vault.put("passwords", passwords.stream().map(Password::toJSONObject).collect(Collectors.toList()));
             vault.put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token));
