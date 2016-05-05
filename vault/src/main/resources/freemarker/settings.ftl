@@ -1,7 +1,7 @@
 <#include "vault.ftl">
 
 <#macro page_head>
-<script type="text/javascript" src="/userlog.js"></script>
+<#--<script type="text/javascript" src="/userlog.js"></script>-->
 </#macro>
 
 <#macro page_body>
