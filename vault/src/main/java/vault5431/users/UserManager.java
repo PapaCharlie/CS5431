@@ -1,5 +1,6 @@
 package vault5431.users;
 
+import org.apache.commons.collections.functors.ExceptionClosure;
 import org.apache.commons.io.FileUtils;
 import vault5431.Sys;
 import vault5431.crypto.HashUtils;
@@ -39,8 +40,11 @@ public class UserManager {
                     new File(dir, name).isDirectory())) {
                 Base64String hash = Base64String.fromBase64(dirname);
                 User user = new User(hash);
+                user.loadLog();
                 addUser(user);
             }
+        } catch (Exception err) {
+            throw new RuntimeException(err);
         } finally {
             userMapLock.writeLock().unlock();
         }

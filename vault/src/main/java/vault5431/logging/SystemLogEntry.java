@@ -2,6 +2,8 @@ package vault5431.logging;
 
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import vault5431.Sys;
+import vault5431.io.Base64String;
 import vault5431.users.User;
 
 import java.io.IOException;
@@ -15,7 +17,17 @@ import java.util.List;
 public class SystemLogEntry extends LogEntry {
 
     public SystemLogEntry(LogType logType, String ip, String affectedUser,
-                          LocalDateTime timestamp, String message, String signature) {
+                          LocalDateTime timestamp, String message) {
+        this(logType, ip, affectedUser, timestamp, message, new Base64String(""));
+    }
+
+    public SystemLogEntry(LogType logType, String ip, User affectedUser,
+                          LocalDateTime timestamp, String message) {
+        this(logType, ip, affectedUser.getShortHash(), timestamp, message, new Base64String(""));
+    }
+
+    public SystemLogEntry(LogType logType, String ip, String affectedUser,
+                          LocalDateTime timestamp, String message, Base64String signature) {
         this.logType = logType;
         this.ip = ip;
         this.affectedUser = affectedUser;
@@ -25,7 +37,7 @@ public class SystemLogEntry extends LogEntry {
     }
 
     public SystemLogEntry(LogType logType, String ip, User affectedUser,
-                          LocalDateTime timestamp, String message, String signature) {
+                          LocalDateTime timestamp, String message, Base64String signature) {
         this(logType, ip, affectedUser.getShortHash(), timestamp, message, signature);
     }
 
@@ -34,7 +46,14 @@ public class SystemLogEntry extends LogEntry {
      * @return a SystemLogEntry with the relevant information from the CSV string
      */
     public static SystemLogEntry fromCSV(CSVRecord entry) {
-        return new SystemLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+        return new SystemLogEntry(
+                LogType.fromString(entry.get(0)),
+                entry.get(1),
+                entry.get(2),
+                LocalDateTime.parse(entry.get(3)),
+                entry.get(4),
+                Base64String.fromBase64(entry.get(5))
+        );
     }
 
     /**
@@ -48,20 +67,16 @@ public class SystemLogEntry extends LogEntry {
         SystemLogEntry[] parsedEntries = new SystemLogEntry[records.size()];
         for (int i = 0; i < parsedEntries.length; i++) {
             CSVRecord entry = records.get(i);
-            parsedEntries[i] = new SystemLogEntry(LogType.fromString(entry.get(0)), entry.get(1), entry.get(2), LocalDateTime.parse(entry.get(3)), entry.get(4), entry.get(5));
+            parsedEntries[i] = new SystemLogEntry(
+                    LogType.fromString(entry.get(0)),
+                    entry.get(1),
+                    entry.get(2),
+                    LocalDateTime.parse(entry.get(3)),
+                    entry.get(4),
+                    Base64String.fromBase64(entry.get(5))
+            );
         }
         return parsedEntries;
-    }
-
-    /**
-     * Checks the signature of a log to ensure that the log entry is written by the
-     * system and not an outsider user/attacker
-     *
-     * @param signature
-     * @return true if there if signatures match, false otherwise.
-     */
-    public boolean checkSignature(String signature) {
-        return signature.equals(this.signature);
     }
 
     @Override
@@ -76,7 +91,7 @@ public class SystemLogEntry extends LogEntry {
      * @return a String[] representation of the SystemLogEntry
      */
     public String[] asArray() {
-        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature};
+        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message, signature.getB64String()};
     }
 
     /**

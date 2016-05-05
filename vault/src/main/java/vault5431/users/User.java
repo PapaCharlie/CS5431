@@ -88,24 +88,6 @@ public final class User {
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
-    private void iterateLoggingKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
-        }
-    }
-
-    private SecretKey deriveLogEncryptionKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
-        }
-    }
-
-    private SecretKey deriveLogSigningKey() {
-        synchronized (currentUserLoggingKeyLock) {
-            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
-        }
-    }
-
     private void verifyToken(Token token) throws IllegalTokenException {
         if (!this.hash.equals(token.getUser().hash))
             throw new IllegalTokenException();
@@ -429,85 +411,120 @@ public final class User {
         }
     }
 
-    private void appendToLog(UserLogEntry entry) {
+    protected UserLogEntry[] loadLog() throws IOException, CouldNotLoadKeyException, CorruptedLogException {
         synchronized (logFile) {
-            try {
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), firstUserLoggingKey));
-                System.out.println("[" + getShortHash() + "] " + entry.toString());
-            } catch (IOException err) {
-                err.printStackTrace();
-                warning("Failed to log for user! Continuing (not recommended).", this);
-                System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
-            } catch (BadCiphertextException err) {
-                err.printStackTrace();
-                Sys.error("Serialization of log entry was too long, or unencryptable.", this);
+            synchronized (currentUserLoggingKeyLock) {
+                Base64String[] encryptedEntries = FileUtils.read(logFile);
+                UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+                currentUserLoggingKey = firstUserLoggingKey;
+                for (int i = 0; i < encryptedEntries.length; i++) {
+                    try {
+                        SecretKey encryptionKey = deriveLogEncryptionKey();
+                        SecretKey signingKey = deriveLogSigningKey();
+                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], encryptionKey));
+                        CSVRecord unverifiedRecord = CSVUtils.parseRecord(entry).getRecords().get(0);
+                        decryptedEntries[i] = UserLogEntry.fromCSV(unverifiedRecord, signingKey);
+                        iterateLoggingKey();
+                    } catch (BadCiphertextException | IllegalArgumentException err) {
+                        throw new CorruptedLogException();
+                    }
+                }
+                return decryptedEntries;
             }
+        }
+    }
+
+    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException, IllegalTokenException {
+        verifyToken(token);
+        Sys.debug("Loading log.", token);
+        return loadLog();
+    }
+
+    private void appendToLog(LogType logType, String message, String affectedUser, String ip) {
+        synchronized (logFile) {
+            synchronized (currentUserLoggingKeyLock) {
+                try {
+                    SecretKey encryptionKey = deriveLogEncryptionKey();
+                    SecretKey signingKey = deriveLogSigningKey();
+                    UserLogEntry entry = new UserLogEntry(logType, ip, affectedUser, LocalDateTime.now(), message, signingKey);
+                    FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), encryptionKey));
+                    iterateLoggingKey();
+                    System.out.println("[" + getShortHash() + "] " + entry.toString());
+                } catch (IOException err) {
+                    err.printStackTrace();
+                    warning("Failed to log for user! Continuing (not recommended).", this);
+                    System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
+                } catch (BadCiphertextException err) {
+                    err.printStackTrace();
+                    Sys.error("Serialization of log entry was too long, or unencryptable.", this);
+                }
+            }
+        }
+    }
+
+    private void iterateLoggingKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
+        }
+    }
+
+    private SecretKey deriveLogEncryptionKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
+        }
+    }
+
+    private SecretKey deriveLogSigningKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
         }
     }
 
     public void error(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.ERROR, message, affectedUser.getShortHash(), ip);
     }
 
     public void error(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.ERROR, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void error(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.ERROR, message, NO_USER, ip);
     }
 
     public void error(String message) {
-        appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.ERROR, message, NO_USER, NO_IP);
     }
 
     public void warning(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.WARNING, message, affectedUser.getShortHash(), ip);
     }
 
     public void warning(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.WARNING, message, NO_USER, ip);
     }
 
     public void warning(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.WARNING, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void warning(String message) {
-        appendToLog(new UserLogEntry(LogType.WARNING, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.WARNING, message, NO_USER, NO_IP);
     }
 
     public void info(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.INFO, message, affectedUser.getShortHash(), ip);
     }
 
     public void info(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.INFO, message, NO_USER, ip);
     }
 
     public void info(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        appendToLog(LogType.INFO, message, affectedUser.getShortHash(), NO_IP);
     }
 
     public void info(String message) {
-        appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
-    }
-
-    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
-        synchronized (logFile) {
-            Sys.debug("Loading log.", token);
-            Base64String[] encryptedEntries = FileUtils.read(logFile);
-            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-            for (int i = 0; i < encryptedEntries.length; i++) {
-                try {
-                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], firstUserLoggingKey));
-                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
-                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
-                } catch (BadCiphertextException err) {
-                    throw new CorruptedLogException();
-                }
-            }
-            return decryptedEntries;
-        }
+        appendToLog(LogType.INFO, message, NO_USER, NO_IP);
     }
 }
