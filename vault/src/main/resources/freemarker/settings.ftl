@@ -35,7 +35,7 @@
             </form>
         </div>
         <div class="tab-pane" style="padding: 5px;" id="master">
-            <h4>Change Your Master Password</h4>
+            <h4>Change Your Master Password <h4 style="color: red;">This is IMPORTANT- DO NOT FORGET IT</h4></h4>
             <form action="/changepassword" method="post" id="changePasswordForm">
                 <div class="form-group">
                     <label for="oldPassword" class="control-label">Current password: </label>
