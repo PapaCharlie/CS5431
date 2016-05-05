@@ -24,8 +24,8 @@
 <div class="col-sm-3 col-md-2 sidebar">
     <ul class="nav nav-sidebar">
         <li id="homeLink"></li>
-        <li><a href="/generator">Password Generator</a></li>
         <li><a id="sharedpasswordsLink" href="/sharedpasswords">Shared Passwords </a></li>
+        <li><a href="/generator">Password Generator</a></li>
         <li><a href="/settings">Settings</a></li>
         <li><a href="/userlog">User Log</a></li>
         <li><a href="" id="logout">Logout</a></li>

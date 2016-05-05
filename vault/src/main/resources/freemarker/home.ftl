@@ -3,21 +3,27 @@
 <#macro page_body>
 <div class="col-sm-9 col-md-10">
 
-    <span class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newPasswordForm"
+    <span id="plusbtn" class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newpassfunctions"
           aria-hidden="true"></span>
 
-    <form class="form-signin collapse newpass" id="newPasswordForm">
-        <h4 class="form-signin-heading">New Password</h4>
-        <input type="text" name="name" class="form-control" maxlength="100" placeholder="Website Name" required>
-        <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
-        <input type="text" name="username" id="username" class="form-control" maxlength="100"
-               placeholder="Account username" required>
-        <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100"
-               placeholder="Password" required>
-        <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
-                  placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
-    </form>
+    <div class="collapse" id="newpassfunctions">
+        <form class="form-signin newpass" id="newPasswordForm">
+            <h4 class="form-signin-heading">New Password</h4>
+            <input type="text" name="name" class="form-control" maxlength="100" placeholder="Website Name" required>
+            <input type="url" name="url" class="form-control" maxlength="500" placeholder="URL" required>
+            <input type="text" name="username" id="username" class="form-control" maxlength="100"
+                   placeholder="Account username" required>
+            <div class="input-group">
+                <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100"
+                   placeholder="Password" required>
+                <span class="input-group-addon"><button id="genrandom" type="button">Random</button></span>
+            </div>
+            <p id="temprandom" class="hidden"></p>
+            <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
+                      placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
+        </form>
+    </div>
 </div>
 
 <#--<div class="col-sm-9 col-md-10 col-sm-offset-3 col-md-offset-2">-->
@@ -180,6 +186,30 @@
                 type: "DELETE",
                 url: "/passwords/" + id
             }).done(defaultErrorHandler);
+        }
+    });
+
+    $(document).on("click", "#genrandom", function () {
+        var values = {};
+        values.length = 12;
+        values["lower"] = true;
+        values["upper"] = true;
+        values["numbers"] = true;
+        values["symbols"] = true;
+        $.post('/generator', values, function (data) {
+            var response = JSON.parse(data);
+            if (response.success) {
+                $("#temprandom").removeClass("hidden");
+                $("#temprandom").text(response.password);
+            } else {
+                alert(response.error);
+            }
+        });
+    });
+
+    $(document).on("click", "#plusbtn", function () {
+        if (!$("#temprandom").hasClass("hidden")){
+            $("#temprandom").addClass("hidden");
         }
     });
 
