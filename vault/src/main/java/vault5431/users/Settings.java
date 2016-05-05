@@ -7,6 +7,7 @@ import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
@@ -53,8 +54,8 @@ public final class Settings {
         this(phoneNumber, 5, 60);
     }
 
-    protected static Settings loadFromFile(File settingsFile) throws IOException, IllegalArgumentException, BadCiphertextException {
-        return fromJSON(new String(SymmetricUtils.decrypt(FileUtils.read(settingsFile)[0], getAdminEncryptionKey())));
+    protected static Settings loadFromFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, IllegalArgumentException, BadCiphertextException {
+        return fromJSON(new String(SymmetricUtils.decrypt(FileUtils.read(settingsFile)[0], userEncryptionKey)));
     }
 
     public static Settings fromJSON(JSONObject json) throws IllegalArgumentException {
@@ -105,8 +106,8 @@ public final class Settings {
         return new Settings(this.phoneNumber, this.concurrentSessions, sessionLength); // Let constructor validate fields
     }
 
-    protected void saveToFile(File settingsFile) throws IOException, BadCiphertextException {
-        FileUtils.write(settingsFile, SymmetricUtils.encrypt(toJson().getBytes(), getAdminEncryptionKey()));
+    protected void saveToFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, BadCiphertextException {
+        FileUtils.write(settingsFile, SymmetricUtils.encrypt(toJson().getBytes(), userEncryptionKey));
     }
 
     public JSONObject toJSONObject() {

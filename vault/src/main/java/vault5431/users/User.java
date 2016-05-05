@@ -60,8 +60,9 @@ public final class User {
 
     private final SecretKey userEncryptionKey;
     private final SecretKey userSigningKey;
-    private final Object loggingKeyLock = new Object();
-    private SecretKey userLoggingKey;
+    private final SecretKey firstUserLoggingKey;
+    private final Object currentUserLoggingKeyLock = new Object();
+    private SecretKey currentUserLoggingKey;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -82,38 +83,42 @@ public final class User {
 
         userEncryptionKey = SymmetricUtils.combine(getAdminEncryptionKey(), hash);
         userSigningKey = SymmetricUtils.combine(getAdminSigningKey(), hash);
-        userLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hash);
-
+        firstUserLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hash);
+        currentUserLoggingKey = firstUserLoggingKey;
     }
 
     private void iterateLoggingKey() {
-        synchronized (loggingKeyLock) {
-            userLoggingKey = SymmetricUtils.hashIterateKey(userLoggingKey);
+        synchronized (currentUserLoggingKeyLock) {
+            currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
         }
     }
 
     private SecretKey deriveLogEncryptionKey() {
-        synchronized (loggingKeyLock) {
-            return SymmetricUtils.combine(userLoggingKey, "encryption".getBytes());
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
         }
     }
 
-    private synchronized SecretKey deriveLogSigningKey() {
-        synchronized (loggingKeyLock) {
-            return SymmetricUtils.combine(userLoggingKey, "signing".getBytes());
+    private SecretKey deriveLogSigningKey() {
+        synchronized (currentUserLoggingKeyLock) {
+            return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
         }
     }
 
-    public SecretKey getUserEncryptionKey() {
+    boolean isLegalToken(Token token) {
+        return this.hash.equals(token.getUser().hash);
+    }
+
+    protected SecretKey getUserEncryptionKey() {
         return userEncryptionKey;
     }
 
-    public SecretKey getUserSigningKey() {
+    protected SecretKey getUserSigningKey() {
         return userSigningKey;
     }
 
-    public SecretKey getUserLoggingKey() {
-        return userLoggingKey;
+    protected SecretKey getFirstUserLoggingKey() {
+        return firstUserLoggingKey;
     }
 
     public int hashCode() {
@@ -217,14 +222,14 @@ public final class User {
 
     public void changeSettings(Settings settings) throws IOException, BadCiphertextException {
         synchronized (settingsFile) {
-            SymmetricUtils.encrypt(settings.toJson().getBytes(), userEncryptionKey).saveToFile(settingsFile);
+            settings.saveToFile(settingsFile, userEncryptionKey);
         }
     }
 
     public Settings loadSettings() throws CouldNotLoadSettingsException {
         synchronized (settingsFile) {
             try {
-                return Settings.loadFromFile(settingsFile);
+                return Settings.loadFromFile(settingsFile, userEncryptionKey);
             } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
                 throw new CouldNotLoadSettingsException();
             }
@@ -405,7 +410,7 @@ public final class User {
     public void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), userLoggingKey));
+                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), firstUserLoggingKey));
                 System.out.println("[" + getShortHash() + "] " + entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -473,7 +478,7 @@ public final class User {
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
             for (int i = 0; i < encryptedEntries.length; i++) {
                 try {
-                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], userLoggingKey));
+                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], firstUserLoggingKey));
                     CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
                     decryptedEntries[i] = UserLogEntry.fromCSV(record);
                 } catch (BadCiphertextException err) {
