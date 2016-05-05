@@ -28,6 +28,9 @@ function getSharedAccordions(sharedPasswords) {
                 'data-parent': '#accordion',
                 'text': entry.name
             }).appendTo(title);
+            var sharer = $('<span/>', {
+                'text': ' -shared by '+entry.sharer
+            }).appendTo(title);
             var delbtn = $('<button/>', {
                 'class': 'delete btn btn-danger btn-xs',
                 'data-id': entry.id,
