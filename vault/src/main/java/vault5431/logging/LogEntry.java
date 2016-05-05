@@ -18,7 +18,7 @@ public abstract class LogEntry {
     String message; //The message of the log
     String signature; //Signature of the creator of the log
 
-    public abstract boolean checkSignature(String signature);
+//    public abstract boolean checkSignature(String signature);
 
     public abstract String toCSV() throws IOException;
 

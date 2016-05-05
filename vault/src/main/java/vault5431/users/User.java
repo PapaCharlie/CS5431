@@ -48,7 +48,6 @@ public final class User {
 
     public final Base64String hash;
     public final File logFile;
-    public final File logVerifyFile;
     public final File vaultFile;
     public final File vaultSaltFile;
     public final File sharedPasswordsFile;
@@ -59,7 +58,6 @@ public final class User {
     public final File pubSigningKeyFile;
     public final File privSigningKeyFile;
 
-    private int lineNums;
     private final SecretKey userEncryptionKey;
     private final SecretKey userSigningKey;
     private final SecretKey firstUserLoggingKey;
@@ -73,7 +71,6 @@ public final class User {
     protected User(Base64String hash) {
         this.hash = hash;
         logFile = new File(getHome(), "log");
-        logVerifyFile = new File(getHome(), "log.verify");
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
         sharedPasswordsFile = new File(getHome(), "shared");
@@ -410,16 +407,11 @@ public final class User {
         }
     }
 
-    public void appendToLog(UserLogEntry entry) {
+    private void appendToLog(UserLogEntry entry) {
         synchronized (logFile) {
             try {
-//<<<<<<< HEAD
-                System.out.println(currentUserLoggingKey.getFormat());
                 FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), currentUserLoggingKey));
-                lineNums ++;
-//=======
-                FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), firstUserLoggingKey));
-//>>>>>>> master
+                iterateLoggingKey();
                 System.out.println("[" + getShortHash() + "] " + entry.toString());
             } catch (IOException err) {
                 err.printStackTrace();
@@ -430,37 +422,38 @@ public final class User {
                 Sys.error("Serialization of log entry was too long, or unencryptable.", this);
             }
         }
-        synchronized (logVerifyFile) {
-            try {
-                FileUtils.append(logVerifyFile, SigningUtils.getSignature(entry.toCSV().getBytes(), getAdminSigningKey()));
-            } catch (IOException err) {
-                err.printStackTrace();
-                warning("Failed to write to log.verify for user! Continuing", this);
-            }
-        }
-        System.out.println(lineNums);
     }
 
     public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
-        Base64String[] signedEntries = null;
-        synchronized (logVerifyFile) {
-            Sys.debug("Load log.verify", token);
-            signedEntries = FileUtils.read(logVerifyFile);
-        }
         synchronized (logFile) {
             Sys.debug("Loading log.", token);
             Base64String[] encryptedEntries = FileUtils.read(logFile);
             UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
+            SecretKey decryptIteratingKey = firstUserLoggingKey;
             for (int i = 0; i < encryptedEntries.length; i++) {
                 try {
-                    byte[] decrypted = SymmetricUtils.decrypt(encryptedEntries[i], userLoggingKey);
-                    boolean valid = SigningUtils.verifySignature(decrypted, signedEntries[i], getAdminSigningKey());
+                    String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], decryptIteratingKey));
+                    CSVRecord unverifiedRecord = CSVUtils.parseRecord(entry).getRecords().get(0);
+                    UserLogEntry signedEntry = UserLogEntry.fromCSV(unverifiedRecord);
+                    // Verifying Signature step
+                    String[] splitEntry = entry.split(",");
+                    LocalDateTime timestamp = LocalDateTime.parse(splitEntry[3]);
+                    UserLogEntry testEntry = new UserLogEntry(LogType.fromString(splitEntry[0]),
+                            splitEntry[1],splitEntry[2], timestamp, splitEntry[4]);
+                    testEntry.signUserLog(userSigningKey);
+                    boolean valid = signedEntry.checkSignature(testEntry);
                     System.out.println(valid);
-                    String decryptedEntry = (valid) ? new String(decrypted) : (new UserLogEntry(LogType.ERROR, NO_IP,
-                            "USER", LocalDateTime.now(), "THIS LOG ENTRY IS INVALID", "DOESNTMATTER")).toCSV();
-                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
-                    System.out.println(decryptedEntry);
-                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
+                    UserLogEntry verifiedEntry = null;
+                    if (valid) {
+                        verifiedEntry = signedEntry;
+                    } else {
+                        UserLogEntry invalidEntry = new UserLogEntry(LogType.ERROR, NO_IP,
+                                "USER", LocalDateTime.now(), "THIS LOG ENTRY IS INVALID");
+                        invalidEntry.signUserLog(userSigningKey);
+                        verifiedEntry = invalidEntry;
+                    }
+                    decryptedEntries[i] = verifiedEntry;
+                    decryptIteratingKey = SymmetricUtils.hashIterateKey(decryptIteratingKey);
                 } catch (BadCiphertextException err) {
                     throw new CorruptedLogException();
                 }
@@ -470,71 +463,74 @@ public final class User {
     }
 
     public void error(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.ERROR, ip, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void error(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.ERROR, NO_IP, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void error(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.ERROR, ip, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void error(String message) {
-        appendToLog(new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.ERROR, NO_IP, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void warning(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.WARNING, ip, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void warning(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.WARNING, ip, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void warning(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.WARNING, NO_IP, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void warning(String message) {
-        appendToLog(new UserLogEntry(LogType.WARNING, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.WARNING, NO_IP, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void info(String message, User affectedUser, String ip) {
-        appendToLog(new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.INFO, ip, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void info(String message, String ip) {
-        appendToLog(new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.INFO, ip, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void info(String message, User affectedUser) {
-        appendToLog(new UserLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.INFO, NO_IP, affectedUser, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
 
     public void info(String message) {
-        appendToLog(new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message, ""));
+        UserLogEntry entry = new UserLogEntry(LogType.INFO, NO_IP, NO_USER, LocalDateTime.now(), message);
+        entry.signUserLog(userSigningKey);
+        appendToLog(entry);
     }
-
-<<<<<<< HEAD
-=======
-    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException {
-        synchronized (logFile) {
-            Sys.debug("Loading log.", token);
-            Base64String[] encryptedEntries = FileUtils.read(logFile);
-            UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
-            for (int i = 0; i < encryptedEntries.length; i++) {
-                try {
-                    String decryptedEntry = new String(SymmetricUtils.decrypt(encryptedEntries[i], firstUserLoggingKey));
-                    CSVRecord record = CSVUtils.parseRecord(decryptedEntry).getRecords().get(0);
-                    decryptedEntries[i] = UserLogEntry.fromCSV(record);
-                } catch (BadCiphertextException err) {
-                    throw new CorruptedLogException();
-                }
-            }
-            return decryptedEntries;
-        }
-    }
->>>>>>> master
 }
