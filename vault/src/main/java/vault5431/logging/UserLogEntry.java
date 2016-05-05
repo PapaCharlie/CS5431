@@ -76,7 +76,7 @@ public class UserLogEntry extends LogEntry {
     public void signUserLog(SecretKey sigKey) {
         String stringContent = logType + ip + affectedUser + message;
         byte[] byteContent = stringContent.getBytes();
-        signature = SigningUtils.getSignature(byteContent, sigKey).toString();
+        signature = SigningUtils.sign(byteContent, sigKey).toString();
     }
 
     /**
