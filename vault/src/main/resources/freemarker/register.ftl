@@ -71,13 +71,16 @@
 
             var password = passwordField.val();
             var confirm = confirmField.val();
-            console.log(password);
-            console.log(confirm);
+            var result = is_comprehensive8(password);
             if (password != confirm) {
-                console.log("SUBMIT FAIL");
                 confirmField.css('border-color', 'red');
                 $('#alert').show();
                 return false;
+            }else if((!is_basic16(password) && !result[0])){
+                    var alert = result[1];
+                    passwordField.css('border-color', 'red');
+                    $(alert).show();
+                    return false;
             } else {
                 var key = hash(passwordField.val());
 
@@ -122,7 +125,6 @@
     $('#confirm').blur(function () {
         var password = $('#password').val();
         var confirm = $('#confirm').val();
-        console.log(password);
         if (password != confirm) {
             $('#confirm').css('border-color', 'red');
             $('#alert').show();
@@ -142,11 +144,8 @@
 
     function found_in_wordlist(password) {
         var alpha_only = password.replace(/[^a-zA-Z]/g, '').toLowerCase();
-        console.log(alpha_only);
         for (var i = 0; i < wordlist.length; i++) {
             if (alpha_only == wordlist[i]) {
-                console.log("FOUND");
-                console.log(wordlist[i]);
                 return true;
             }
         }
