@@ -14,13 +14,13 @@ public class LogTest {
     @Test
     public void toStringUserTest() throws Exception {
         UserLogEntry testUserInfo = new UserLogEntry(LogType.INFO, "0.0.0.0.0", "CYJ",
-                LocalDateTime.now(), "Logged In", "[PLACEHOLDER]");
+                LocalDateTime.now(), "Logged In");
         UserLogEntry testUserDebug = new UserLogEntry(LogType.DEBUG, "0.0.0.0.0", "CYJ",
-                LocalDateTime.now(), "Vault Configuration Error", "[PLACEHOLDER]");
+                LocalDateTime.now(), "Vault Configuration Error");
         UserLogEntry testUserWarning = new UserLogEntry(LogType.WARNING, "0.0.0.0.0", "CYJ",
-                LocalDateTime.now(), "Password incorrect.", "[PLACEHOLDER]");
+                LocalDateTime.now(), "Password incorrect.");
         UserLogEntry testUserError = new UserLogEntry(LogType.ERROR, "0.0.0.0.0", "CYJ",
-                LocalDateTime.now(), "Vault has been locked", "[PLACEHOLDER]");
+                LocalDateTime.now(), "Vault has been locked");
 
         System.out.println("USER LOG FORMATTING");
         System.out.println(testUserInfo.toString());
