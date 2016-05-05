@@ -154,6 +154,7 @@ function getAccordions(passwords) {
                 'href': '#' + entry.id,
                 'data-toggle': 'collapse',
                 'data-parent': '#accordion',
+                'class': 'entryName',
                 'text': entry.name
             }).appendTo(title);
             var delbtn = $('<button/>', {

@@ -2,6 +2,10 @@
 
 <#macro page_head>
 <#--<script type="text/javascript" src="/userlog.js"></script>-->
+<script type="text/javascript">
+    var wordlist = [];
+</script>
+<script type="text/javascript" src="/10k.js"></script>
 </#macro>
 
 <#macro page_body>
@@ -47,11 +51,31 @@
                     <input style="width:50%" type="password" name="newPassword1" id="newPassword1" class="form-control"
                            required>
                 </div>
+                <div class="strength" id="length" style="color:#FF0000;display:none"> Password is not strong! Short
+                    passwords are easy to guess. Try one with at least 8 characters.
+                </div>
+                <div class="strength" id="uppercase" style="color:#FF0000;display:none"> Password is not strong! Try
+                    including an uppercase letter.
+                </div>
+                <div class="strength" id="lowercase" style="color:#FF0000;display:none"> Password is not strong!Try
+                    including a lowercase letter.
+                </div>
+                <div class="strength" id="wordlist" style="color:#FF0000;display:none"> Password is not strong! Try one
+                    without common words or passwords.
+                </div>
+                <div class="strength" id="digit" style="color:#FF0000;display:none"> Password is not strong! Try including a
+                    number.
+                </div>
+                <div class="strength" id="symbol" style="color:#FF0000;display:none"> Password is not strong! Try including
+                    a non-alphanumeric character.
+                </div>
+                <div class="strength" id="empty" style="color:#FF0000;display:none"> You can't leave this field empty.</div>
                 <div class="form-group">
                     <label for="newPassword2" class="control-label">Confirm new password: </label>
                     <input style="width:50%" type="password" name="newPassword2" id="newPassword2" class="form-control"
                            required>
                 </div>
+                <div id="alert" style="color:#FF0000;display:none" role="alert"> These passwords don't match</div>
                 <button class="btn btn-success" type="submit">Save</button>
             </form>
         </div>
@@ -78,6 +102,21 @@
 
     $("#changePasswordForm").on('submit', function (event) {
         event.preventDefault();
+        var newPassword1 = $('#newPassword1').val();
+        var newPassword2 = $('#newPassword2').val();
+        var result = is_comprehensive8(newPassword1);
+        if (newPassword1 != newPassword2) {
+            console.log("SUBMIT FAIL");
+            $('#newPassword2').css('border-color', 'red');
+            $('#alert').show();
+            return false;
+        }
+        if(!result[0] || !is_basic16(newPassword1) ){
+            var alert = result[1];
+            $('#newPassword1').css('border-color', 'red');
+            $(alert).show();
+            return false;
+        }
         if (sessionStorage.getItem("password")) {
             $.get("/passwords", function (payload) {
                 var masterKey;
@@ -146,6 +185,146 @@
             window.location = "/";
         }
     });
+
+    $('#newPassword1').on('input', function () {
+        $('#newPassword2').val("");
+        $('#newPassword2').css('border-color', '#ccc');
+        $('#alert').hide();
+    });
+
+
+    $('#newPassword2').focus(function () {
+        $('#newPassword2').css('border-color', '#ccc');
+        $('#alert').hide();
+    });
+
+
+    $('#newPassword2').blur(function () {
+        var password = $('#newPassword1').val();
+        var confirm = $('#newPassword2').val();
+        console.log(password);
+        if (password != confirm) {
+            $('#newPassword2').css('border-color', 'red');
+            $('#alert').show();
+        }
+
+    });
+
+    //checks if password is at least 16 characters long
+    function is_basic16(password) {
+        if (password.length >= 16) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function found_in_wordlist(password) {
+        var alpha_only = password.replace(/[^a-zA-Z]/g, '').toLowerCase();
+        console.log(alpha_only);
+        for (var i = 0; i < wordlist.length; i++) {
+            if (alpha_only == wordlist[i]) {
+                console.log("FOUND");
+                console.log(wordlist[i]);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //according to Kelly's paper where he defines the comprehensive8 criteria
+    //returns an array containing a boolean or the condition it fails
+    function is_comprehensive8(password) {
+        var result = []
+        var check_length = password.length >= 8;
+        var has_digit = (/^(?=.*\d)/).test(password);
+        var has_capital = (/^(?=.*[A-Z])/).test(password);
+        var has_symbol = (/^(?=.*[^a-zA-Z\d])/).test(password);
+        var has_lowercase = (/^(?=.*[a-z])/).test(password);
+        var patt = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z\d])/;
+        var passes_criteria = patt.test(password) && check_length && (!found_in_wordlist(password));
+        result.push(passes_criteria);
+        if (!check_length) {
+            result.push("length");
+        }
+        else if (!has_digit) {
+            result.push("digit");
+        }
+        else if (!has_capital) {
+            result.push("uppercase");
+        }
+        else if (!has_symbol) {
+            result.push("symbol");
+        }
+        else if (!has_lowercase) {
+            result.push("lowercase");
+        }
+        else if (!passes_criteria) {
+            result.push("wordlist");
+        }
+        else {
+            result.push("strong");
+        }
+        //console.log(wordlist[10]);
+        return result;
+    }
+
+
+    $('#newPassword1').blur(function () {
+        var password = $('#newPassword1').val();
+        var confirm = $('#newPassword2').val();
+        //console.log(wordlist[10]);
+        if (password == "") {
+            $('#empty').show();
+            return false;
+        }
+        if (!(is_basic16(password))) {
+            var result = is_comprehensive8(password);
+            var error = result[1];
+            //console.log(result[0]);
+            //console.log(error);
+            if (!result[0]) {
+                //console.log("error");
+                if (error == "length") {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#length').show();
+                }
+                else if (error == "digit") {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#digit').show();
+                }
+                else if (error == "uppercase") {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#uppercase').show();
+                }
+                else if (error == "symbol") {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#symbol').show();
+                }
+                else if (error == "lowercase") {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#lowercase').show();
+                }
+                else {
+                    $('#newPassword1').css('border-color', 'red');
+                    $('#wordlist').show();
+                }
+
+            } else {
+                $('#newPassword1').css('border-color', '#ccc');
+                $('.strength').hide();
+            }
+
+        }
+    });
+
+
+    $('#newPassword1').focus(function () {
+        $('#newPassword1').css('border-color', '#ccc');
+        $('.strength').hide();
+    });
+    
 </script>
 </#macro>
 
