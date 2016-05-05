@@ -4,6 +4,8 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.users.User;
 
+import vault5431.crypto.SigningUtils;
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,7 +16,22 @@ import java.util.List;
  */
 public class UserLogEntry extends LogEntry {
 
+    public UserLogEntry(LogType logType, String ip, User affectedUser,
+                        LocalDateTime timestamp, String message) {
+        this(logType, ip, affectedUser.getShortHash(), timestamp, message);
+
+    }
+
     public UserLogEntry(LogType logType, String ip, String affectedUser,
+                        LocalDateTime timestamp, String message) {
+        this.logType = logType;
+        this.ip = ip;
+        this.affectedUser = affectedUser;
+        this.timestamp = timestamp;
+        this.message = message;
+    }
+
+    private UserLogEntry(LogType logType, String ip, String affectedUser,
                         LocalDateTime timestamp, String message, String signature) {
         this.logType = logType;
         this.ip = ip;
@@ -54,14 +71,23 @@ public class UserLogEntry extends LogEntry {
     }
 
     /**
+     * Signs the UserLog based on its contents.
+     */
+    public void signUserLog(SecretKey sigKey) {
+        String stringContent = logType + ip + affectedUser + message;
+        byte[] byteContent = stringContent.getBytes();
+        signature = SigningUtils.getSignature(byteContent, sigKey).toString();
+    }
+
+    /**
      * Checks the signature of a log to ensure that the log entry is written by the
      * system and not an outsider user/attacker
      *
      * @param signature
      * @return true if there if signatures match, false otherwise.
      */
-    public boolean checkSignature(String signature) {
-        return signature.equals(this.signature);
+    public boolean checkSignature(UserLogEntry unverifiedEntry) {
+        return unverifiedEntry.signature.equals(this.signature);
     }
 
     /**
