@@ -20,7 +20,7 @@ final class SharedPasswordRoutes extends Routes {
     protected void routes() {
 
         authenticatedGet("/numshared", (req, res, token) ->
-                success().put("numshared", token.getUser().numSharedPasswords())
+                success().put("numshared", token.getUser().numSharedPasswords(token))
         );
 
         authenticatedGet("/sharedpasswords", (req, res, token) -> {
@@ -63,9 +63,9 @@ final class SharedPasswordRoutes extends Routes {
         });
 
         authenticatedGet("/shared", (req, res, token) -> {
-            Set<SharedPassword> sharedPasswords = token.getUser().loadSharedPasswords();
+            Set<SharedPassword> sharedPasswords = token.getUser().loadSharedPasswords(token);
             JSONObject response = success();
-            response.put("salt", token.getUser().loadVaultSalt().toString());
+            response.put("salt", token.getUser().loadVaultSalt(token).toString());
             if (sharedPasswords.size() > 0) {
                 JSONArray passwords = new JSONArray();
                 for (SharedPassword sharedPassword : sharedPasswords) {
@@ -95,8 +95,7 @@ final class SharedPasswordRoutes extends Routes {
                 json.put("sharer", token.getUsername());
                 SharedPassword password = SharedPassword.fromJSON(json);
                 User user = UserManager.getUser(target);
-                user.addSharedPassword(password);
-                user.info(String.format("Received shared password from %s.", password.getSharer()), token.getIp());
+                user.addSharedPassword(password, token);
                 return success();
             } catch (JSONException err) {
                 return invalidRequest();
@@ -120,7 +119,7 @@ final class SharedPasswordRoutes extends Routes {
                     JSONObject pass = new JSONObject(acceptedPassword);
                     pass.put("id", UUID.randomUUID().toString());
                     Password newPassword = Password.fromJSON(pass);
-                    token.getUser().addPasswordToVault(newPassword, token);
+                    token.getUser().savePassword(newPassword, token);
                     return success().put("message", "Successfully accepted shared password.");
                 } else {
                     return failure("No such shared password");
