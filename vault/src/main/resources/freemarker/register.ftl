@@ -19,7 +19,7 @@
     <div class="login-container">
         <form action="/register" method="post" id="signupForm">
             <label for="usernamesignup" class="uname" data-icon="u">Your Username</label>
-            <p><input type="text" name="username" placeholder="Username" pattern="\w+" maxlength="40" required></p>
+            <p><input type="text" name="username" placeholder="Username" pattern="\w+" maxlength="40" required autofocus></p>
             <label for="passwordsignup">Your Password </label>
             <p><input type="password" name="password" id="password" placeholder="Password" required></p>
             <div class="strength" id="length" style="color:#FF0000;display:none"> Password is not strong! Short

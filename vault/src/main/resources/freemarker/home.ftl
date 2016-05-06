@@ -22,7 +22,7 @@
             <div class="input-group">
                 <input type="password" name="password" id="inputPassword" class="form-control" maxlength="100"
                        placeholder="Password" required>
-                <span class="input-group-addon"><button id="genrandom" type="button">Random</button></span>
+                <span class="input-group-addon"><button id="genrandom" type="button">Quick Gen</button></span>
             </div>
             <p id="temprandom" class="hidden generated-password"></p>
             <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
@@ -202,7 +202,7 @@
 
         $(document).on("click", "#genrandom", function () {
             var values = {};
-            values.length = 12;
+            values.length = 15;
             values["lower"] = true;
             values["upper"] = true;
             values["numbers"] = true;
