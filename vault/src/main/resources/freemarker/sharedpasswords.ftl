@@ -9,9 +9,9 @@
 <div class="col-sm-9 col-md-10">
     <p>
     <div class="input-group col-xs-6 col-sm-3">
-        <div class="input-group-btn">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
-        </div>
+    <div class="input-group-addon">
+        <span>Search </span>
+    </div>
         <input id="search" type="text" class="form-control" placeholder="Type username here...">
     </div>
     </p>
