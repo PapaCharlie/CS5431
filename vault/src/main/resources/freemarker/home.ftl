@@ -138,6 +138,8 @@
                                 }, function (data) {
                                     var response = JSON.parse(data);
                                     if (response.success) {
+//                                        $(this).modal("hide");
+//                                        $($(this).attr("id")).modal("hide");
                                         alert("Successfully shared this password with " + target + "!");
                                     } else {
                                         alert(response.error);
