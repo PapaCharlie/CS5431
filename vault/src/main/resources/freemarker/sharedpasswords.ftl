@@ -56,6 +56,10 @@
                                 sharedPasswords.push(signedPassword)
                             } else {
                                 console.error("Rejecting password from " + password.sharer + " based on signature.");
+                                $.ajax({
+                                    type: "DELETE",
+                                    url: "/shared/" + password.id
+                                }).done(defaultErrorHandler);
                             }
                         });
                         getSharedAccordions(sharedPasswords);

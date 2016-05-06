@@ -1,6 +1,5 @@
 package vault5431.users;
 
-import org.apache.commons.collections.functors.ExceptionClosure;
 import org.apache.commons.io.FileUtils;
 import vault5431.Sys;
 import vault5431.crypto.HashUtils;
@@ -53,7 +52,7 @@ public class UserManager {
     private static User addUser(User user) {
         userMapLock.writeLock().lock();
         try {
-            return users.put(user.hash, user);
+            return users.put(user.hashedUsername, user);
         } finally {
             userMapLock.writeLock().unlock();
         }
@@ -93,7 +92,14 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(String username, Base64String hashedPassword, String phoneNumber, Base64String pubCryptoKey, SJCLSymmetricField privCryptoKey, Base64String pubSigningKey, SJCLSymmetricField privSigningKey)
+    public synchronized static User create(
+            String username,
+            Base64String hashedPassword,
+            String phoneNumber,
+            Base64String pubCryptoKey,
+            SJCLSymmetricField privCryptoKey,
+            Base64String pubSigningKey,
+            SJCLSymmetricField privSigningKey)
             throws IOException, CouldNotSaveKeyException, BadCiphertextException {
         if (!isValidUsername(username)) {
             throw new IllegalArgumentException("Username is not valid!");
@@ -140,6 +146,7 @@ public class UserManager {
                     SymmetricUtils.encrypt(salt, user.getUserEncryptionKey()).saveToFile(user.vaultSaltFile);
 
                     Sys.info("Successfully created user.", user);
+                    user.info("Your account was successfully created!");
                     addUser(user);
                     return user;
                 } else {
