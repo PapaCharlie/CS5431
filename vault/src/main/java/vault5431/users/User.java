@@ -195,7 +195,7 @@ public final class User {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
             verifyToken(token);
-            Token successToken = AuthenticationHandler.acquireUnverifiedToken(token.getUsername(), oldPassword, token.getIp());
+            Token successToken = AuthenticationHandler.changeMasterPassword(token, oldPassword);
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
                 PasswordUtils.hashAndSavePassword(passwordHashFile, newPassword);

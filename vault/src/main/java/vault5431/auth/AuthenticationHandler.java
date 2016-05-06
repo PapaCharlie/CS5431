@@ -168,6 +168,38 @@ public class AuthenticationHandler {
         }
     }
 
+    public static Token changeMasterPassword(Token oldToken, Base64String oldPassword) throws TooManyFailedLogins, IOException, CouldNotLoadSettingsException {
+        synchronized (tokenCache) {
+            oldToken.getUser().warning("Received request to change master password. Stay tuned.", oldToken.getIp());
+            User user = oldToken.getUser();
+            if (!bannedUsers.contains(user)) {
+                if (failedLogins.get(user) > MAX_FAILED_LOGINS) {
+                    banUser(user, oldToken.getIp());
+                    Sys.debug("Banning user because too many failed logins.", oldToken);
+                    throw new TooManyFailedLogins();
+                }
+                if (user.verifyMasterPassword(oldPassword)) {
+                    Token newToken = new Token(oldToken.getUsername(), true);
+                    Sys.debug("Assigning token.", newToken);
+                    tokenCache.replace(user, new HashSet<>(1));
+                    tokenCache.get(user).add(newToken.getId());
+                    scheduler.schedule(() -> {
+                        synchronized (tokenCache) {
+                            tokenCache.get(user).remove(newToken.getId());
+                            failedLogins.remove(user);
+                        }
+                    }, newToken.secondsUntilExpiration(), SECONDS);
+                    return newToken;
+                } else {
+                    failedLogins.replace(user, failedLogins.get(user) + 1);
+                    return null;
+                }
+            } else {
+                throw new TooManyFailedLogins();
+            }
+        }
+    }
+
     /**
      * Returns a verified instance of the provided token.
      *
@@ -215,13 +247,17 @@ public class AuthenticationHandler {
         private final Base64String signature;
         private final String ip;
 
+        private Token(String username, boolean verified) throws CouldNotLoadSettingsException {
+            this(username, verified, Sys.NO_IP);
+        }
+
         /**
          * Generate a new Token for {@code user}.
          *
          * @param username user for which to generate token
          * @param verified whether or not {@code user} has successfully completed 2FA
          */
-        private Token(String username, boolean verified) throws CouldNotLoadSettingsException {
+        private Token(String username, boolean verified, String ip) throws CouldNotLoadSettingsException {
             if (!UserManager.userExists(username)) {
                 throw new IllegalArgumentException("No such username!");
             }
@@ -235,7 +271,7 @@ public class AuthenticationHandler {
             random.nextBytes(randomBytes);
             this.verified = verified;
             this.signature = RollingKeys.sign(toSignatureBody(username, this.creationDate, this.expiresAt, id, verified));
-            this.ip = Sys.NO_IP;
+            this.ip = ip;
         }
 
         /**

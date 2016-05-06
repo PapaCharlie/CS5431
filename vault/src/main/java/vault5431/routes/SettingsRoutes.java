@@ -91,7 +91,6 @@ final class SettingsRoutes extends Routes {
         });
 
         authenticatedPost("/changepassword", (req, res, token) -> {
-            System.out.println(req.queryParams().toString());
             String oldPassword = req.queryParams("oldPassword");
             String newPassword1 = req.queryParams("newPassword1");
             String newPassword2 = req.queryParams("newPassword2");
