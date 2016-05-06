@@ -6,8 +6,8 @@
     <span id="plusbtn" class="addicon glyphicon glyphicon-plus" data-toggle="collapse" data-target="#newpassfunctions"
           aria-hidden="true"></span>
     <div class="input-group col-xs-6 col-sm-3 pull-right">
-        <div class="input-group-btn">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
+        <div class="input-group-addon">
+            <span>Search </span>
         </div>
         <input id="search" type="text" class="form-control" placeholder="Type account name here...">
     </div>
