@@ -7,7 +7,7 @@
           aria-hidden="true"></span>
     <div class="input-group col-xs-6 col-sm-3 pull-right">
         <div class="input-group-btn">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search</button>
         </div>
         <input id="search" type="text" class="form-control" placeholder="Type account name here...">
     </div>
@@ -180,45 +180,40 @@
             }).done(defaultErrorHandler);
         });
 
-
-    });
-
-
-    $(document).on("click", ".delete", function () {
-        var r = confirm("Are you sure you want to delete this Account?");
-        if (r == true) {
-            var id = $(this).attr("data-id");
-            $.ajax({
-                type: "DELETE",
-                url: "/passwords/" + id
-            }).done(defaultErrorHandler);
-        }
-    });
-
-    $(document).on("click", "#genrandom", function () {
-        var values = {};
-        values.length = 12;
-        values["lower"] = true;
-        values["upper"] = true;
-        values["numbers"] = true;
-        values["symbols"] = true;
-        $.post('/generator', values, function (data) {
-            var response = JSON.parse(data);
-            if (response.success) {
-                $("#temprandom").removeClass("hidden");
-                $("#temprandom").text(response.password);
-            } else {
-                alert(response.error);
+        $(document).on("click", ".delete", function () {
+            var r = confirm("Are you sure you want to delete this Account?");
+            if (r == true) {
+                var id = $(this).attr("data-id");
+                $.ajax({
+                    type: "DELETE",
+                    url: "/passwords/" + id
+                }).done(defaultErrorHandler);
             }
         });
-    });
 
-    $(document).on("click", "#plusbtn", function () {
-        if (!$("#temprandom").hasClass("hidden")){
-            $("#temprandom").addClass("hidden");
-        }
-    });
-    $(function () {
+        $(document).on("click", "#genrandom", function () {
+            var values = {};
+            values.length = 12;
+            values["lower"] = true;
+            values["upper"] = true;
+            values["numbers"] = true;
+            values["symbols"] = true;
+            $.post('/generator', values, function (data) {
+                var response = JSON.parse(data);
+                if (response.success) {
+                    $("#temprandom").removeClass("hidden");
+                    $("#temprandom").text(response.password);
+                } else {
+                    alert(response.error);
+                }
+            });
+        });
+
+        $(document).on("click", "#plusbtn", function () {
+            if (!$("#temprandom").hasClass("hidden")) {
+                $("#temprandom").addClass("hidden");
+            }
+        });
         $('#search').keyup(function () {
 
 
@@ -235,7 +230,7 @@
             */
             var rex = new RegExp($(this).val(), 'i');
             $('.panel-group').children().hide();
-            $('.entryName').each(function(i, obj) {
+            $('.entryName').each(function (i, obj) {
                 if (rex.test($(this).text())) {
                     $(this).parent().parent().parent().show();
                 }
