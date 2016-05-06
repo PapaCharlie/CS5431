@@ -9,7 +9,7 @@
         <div class="input-group-btn">
             <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
         </div>
-        <input id="search" type="text" class="form-control" placeholder="Type here...">
+        <input id="search" type="text" class="form-control" placeholder="Type account name here...">
     </div>
 
     <div class="collapse" id="newpassfunctions">
