@@ -47,7 +47,7 @@ public final class User {
 
     public static final String NO_USER = "NOUSER";
 
-    public final Base64String hash;
+    public final Base64String hashedUsername;
     public final File logFile;
     public final File vaultFile;
     public final File vaultSaltFile;
@@ -69,8 +69,8 @@ public final class User {
         this(UserManager.hashUsername(username));
     }
 
-    protected User(Base64String hash) {
-        this.hash = hash;
+    protected User(Base64String hashedUsername) {
+        this.hashedUsername = hashedUsername;
         logFile = new File(getHome(), "log");
         vaultFile = new File(getHome(), "vault");
         vaultSaltFile = new File(getHome(), "vault.salt");
@@ -82,14 +82,14 @@ public final class User {
         pubSigningKeyFile = new File(getHome(), "signing.pub");
         privSigningKeyFile = new File(getHome(), "signing.priv");
 
-        userEncryptionKey = SymmetricUtils.combine(getAdminEncryptionKey(), hash);
-        userSigningKey = SymmetricUtils.combine(getAdminSigningKey(), hash);
-        firstUserLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hash);
+        userEncryptionKey = SymmetricUtils.combine(getAdminEncryptionKey(), hashedUsername);
+        userSigningKey = SymmetricUtils.combine(getAdminSigningKey(), hashedUsername);
+        firstUserLoggingKey = SymmetricUtils.combine(getAdminLoggingKey(), hashedUsername);
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
     private void verifyToken(Token token) throws IllegalTokenException {
-        if (!this.hash.equals(token.getUser().hash))
+        if (!this.hashedUsername.equals(token.getUser().hashedUsername) || (!test && !token.isVerified()))
             throw new IllegalTokenException();
     }
 
@@ -106,15 +106,15 @@ public final class User {
     }
 
     public int hashCode() {
-        return hash.hashCode();
+        return hashedUsername.hashCode();
     }
 
     public String getShortHash() {
-        return hash.getB64String().substring(0, Integer.min(hash.size(), 10));
+        return hashedUsername.getB64String().substring(0, Integer.min(hashedUsername.size(), 10));
     }
 
     public File getHome() {
-        return new File(home, hash.getB64String());
+        return new File(home, hashedUsername.getB64String());
     }
 
     private void saveAndSignPublicKey(File file, Base64String pubKey) throws IOException {
