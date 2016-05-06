@@ -4,6 +4,7 @@ import spark.ModelAndView;
 import spark.Response;
 import vault5431.auth.exceptions.*;
 import vault5431.routes.exceptions.SessionExpiredException;
+import vault5431.users.exceptions.IllegalTokenException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ final class ExceptionRoutes extends Routes {
      */
     private void renderFatalError(String errorMessage, Response res) {
         res.removeCookie("token");
-        Map<String, Object> attributes = new HashMap<>();
+        Map<String, Object> attributes = new HashMap<>(1);
         attributes.put("error", errorMessage);
         ModelAndView model = new ModelAndView(attributes, "login.ftl");
         res.body(freeMarkerEngine.render(model));
@@ -47,6 +48,10 @@ final class ExceptionRoutes extends Routes {
 
         exception(TooMany2FAAttemptsException.class, (e, req, res) ->
                 renderFatalError("You've attempted two factor authentication too many times!", res));
+
+        exception(IllegalTokenException.class, (e, req, res) -> {
+            res.body(freeMarkerEngine.render(new ModelAndView(new HashMap<>(0), "unauthorized.ftl")));
+        });
 
     }
 

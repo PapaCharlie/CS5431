@@ -81,7 +81,7 @@ final class SettingsRoutes extends Routes {
                 if (!settings.getPhoneNumber().equals(phoneNumber)) {
                     try {
                         token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber), token);
-                        token.getUser().info("Changed maximum session length.", token.getIp());
+                        token.getUser().info("Changed phone number.", token.getIp());
                     } catch (IllegalArgumentException err) {
                         return failure(err);
                     }
