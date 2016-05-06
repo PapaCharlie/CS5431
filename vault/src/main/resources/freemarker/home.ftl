@@ -121,6 +121,7 @@
                         var inputs = $(this).find(':input');
                         var values = {};
                         var target = $(this).find('#target').val();
+                        var id = $(this).find("input[name='id']").val();
                         $.get("/publicEncryptionKey/" + target, {}, function (data) {
                             var response = JSON.parse(data);
                             if (response.success && response.publicEncryptionKey) {
@@ -138,9 +139,8 @@
                                 }, function (data) {
                                     var response = JSON.parse(data);
                                     if (response.success) {
-//                                        $(this).modal("hide");
-//                                        $($(this).attr("id")).modal("hide");
                                         alert("Successfully shared this password with " + target + "!");
+                                        $('#'+id+'sharemodal').modal("hide");
                                     } else {
                                         alert(response.error);
                                     }
