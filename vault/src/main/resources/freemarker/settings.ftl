@@ -97,7 +97,7 @@
             $.post('/settings', values, function (data) {
                 var response = JSON.parse(data);
                 if (response.success) {
-                    window.location = "/settings";
+                    alert("Settings successfully changed!");
                 } else {
                     alert(response.error);
                 }

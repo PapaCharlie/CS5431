@@ -135,7 +135,14 @@
                                 values["signature"] = sign(privateSigningKey, values);
                                 $.post("/shared/" + target, {
                                     sharedPassword: JSON.stringify(values)
-                                }, defaultErrorHandler);
+                                }, function (data) {
+                                    var response = JSON.parse(data);
+                                    if (response.success) {
+                                        alert("Successfully shared this password with " + target + "!");
+                                    } else {
+                                        alert(response.error);
+                                    }
+                                });
                             } else {
                                 alert(response.error);
                             }
