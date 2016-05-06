@@ -28,6 +28,10 @@ function getSharedAccordions(sharedPasswords) {
                 'data-parent': '#accordion',
                 'text': entry.name
             }).appendTo(title);
+            var sharer = $('<span/>', {
+                'class':'sharedUser',
+                'text': ' -shared by '+entry.sharer
+            }).appendTo(title);
             var delbtn = $('<button/>', {
                 'class': 'delete btn btn-danger btn-xs',
                 'data-id': entry.id,
@@ -154,6 +158,7 @@ function getAccordions(passwords) {
                 'href': '#' + entry.id,
                 'data-toggle': 'collapse',
                 'data-parent': '#accordion',
+                'class': 'entryName',
                 'text': entry.name
             }).appendTo(title);
             var delbtn = $('<button/>', {

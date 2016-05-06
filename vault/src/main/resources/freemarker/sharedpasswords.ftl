@@ -5,8 +5,18 @@
 
 </div>
 
+
 <div class="col-sm-9 col-md-10">
+    <p>
+    <div class="input-group col-xs-6 col-sm-3">
+        <div class="input-group-btn">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Search </button>
+        </div>
+        <input id="search" type="text" class="form-control" placeholder="Type username here...">
+    </div>
+    </p>
     <h4 class="storedpasswords-heading">Shared Passwords</h4>
+
     <div class="panel-group" id="accordion">
     </div>
 </div>
@@ -146,6 +156,19 @@
         });
 
     });
+
+        $('#search').keyup(function () {
+            if ($(this).val() == '') {
+                $('.panel-group').children().show();
+            }
+            var rex = new RegExp($(this).val(), 'i');
+            $('.panel-group').children().hide();
+            $('.sharedUser').each(function(i, obj) {
+                if (rex.test($(this).text())) {
+                    $(this).parent().parent().parent().show();
+                }
+            });
+        });
 </script>
 </#macro>
 
