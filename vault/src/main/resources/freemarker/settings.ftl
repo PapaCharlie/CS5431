@@ -111,7 +111,7 @@
             $('#alert').show();
             return false;
         }
-        if(!is_basic16(password) && !result[0] ){
+        if(!is_basic16(newPassword1) && !result[0] ){
             var alert = result[1];
             $('#newPassword1').css('border-color', 'red');
             $(alert).show();
