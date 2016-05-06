@@ -24,7 +24,7 @@
                        placeholder="Password" required>
                 <span class="input-group-addon"><button id="genrandom" type="button">Random</button></span>
             </div>
-            <p id="temprandom" class="hidden"></p>
+            <p id="temprandom" class="hidden generated-password"></p>
             <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
                       placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
