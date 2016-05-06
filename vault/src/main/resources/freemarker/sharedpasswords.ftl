@@ -164,7 +164,10 @@
             var rex = new RegExp($(this).val(), 'i');
             $('.panel-group').children().hide();
             $('.sharedUser').each(function(i, obj) {
-                if (rex.test($(this).text())) {
+                var text = $(this).text();
+                var temp = text.split("by");
+                var user = temp[1];
+                if (rex.test(user)) {
                     $(this).parent().parent().parent().show();
                 }
             });
