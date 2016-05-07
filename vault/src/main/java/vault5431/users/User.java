@@ -20,10 +20,7 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.UserLogEntry;
-import vault5431.users.exceptions.CorruptedLogException;
-import vault5431.users.exceptions.CouldNotLoadSettingsException;
-import vault5431.users.exceptions.IllegalTokenException;
-import vault5431.users.exceptions.VaultNotFoundException;
+import vault5431.users.exceptions.*;
 
 import javax.crypto.SecretKey;
 import java.io.File;
@@ -296,13 +293,16 @@ public final class User {
         }
     }
 
-    public void addSharedPassword(SharedPassword sharedPassword, Token token) throws IOException, VaultNotFoundException {
+    public void addSharedPassword(SharedPassword sharedPassword, Token token) throws IOException, VaultNotFoundException, AlreadySharingPasswordException {
         synchronized (sharedPasswordsFile) {
             info(String.format("%s has shared a password with you.", token.getUsername()));
             HashSet<SharedPassword> sharedPasswords = loadSharedPasswords();
+            if (sharedPasswords.stream().anyMatch((other) -> other.getSharer().equals(token.getUsername()))) {
+                throw new AlreadySharingPasswordException();
+            }
             boolean validUUID = false;
             while (!validUUID) {
-                if (sharedPasswords.stream().filter((other) -> other.getID().equals(sharedPassword.getID())).count() > 0) {
+                if (sharedPasswords.stream().anyMatch((other) -> other.getID().equals(sharedPassword.getID()))) {
                     sharedPassword.newUUID();
                 } else {
                     validUUID = true;
