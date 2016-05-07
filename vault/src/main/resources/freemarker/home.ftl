@@ -1,5 +1,9 @@
 <#include "vault.ftl">
 
+<#macro page_head>
+<script type="text/javascript" src="/generator.js"></script>
+</#macro>
+
 <#macro page_body>
 <div class="col-sm-9 col-md-10">
 
@@ -201,21 +205,8 @@
         });
 
         $(document).on("click", "#genrandom", function () {
-            var values = {};
-            values.length = 15;
-            values["lower"] = true;
-            values["upper"] = true;
-            values["numbers"] = true;
-            values["symbols"] = true;
-            $.post('/generator', values, function (data) {
-                var response = JSON.parse(data);
-                if (response.success) {
-                    $("#temprandom").removeClass("hidden");
-                    $("#temprandom").text(response.password);
-                } else {
-                    alert(response.error);
-                }
-            });
+            $("#temprandom").removeClass("hidden");
+            $("#temprandom").text(generatePassword());
         });
 
         $(document).on("click", "#plusbtn", function () {

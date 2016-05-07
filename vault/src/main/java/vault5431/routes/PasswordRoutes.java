@@ -88,6 +88,10 @@ final class PasswordRoutes extends Routes {
             return success();
         });
 
+        authenticatedGet("/generator", (req, res, token) ->
+                new ModelAndView(new HashMap<>(0), "generator.ftl")
+        );
+
     }
 
 }
