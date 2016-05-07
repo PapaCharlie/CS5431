@@ -2,6 +2,7 @@
 
 <#macro page_head>
 <link rel="stylesheet" type="text/css" href="/generator.css">
+<script type="text/javascript" src="/generator.js"></script>
 </#macro>
 
 <#macro page_body>
@@ -62,14 +63,8 @@
                         values[this.name] = this.checked;
                     }
                 });
-                $.post('/generator', values, function (data) {
-                    var response = JSON.parse(data);
-                    if (response.success) {
-                        $("#generatedPassword").text(response.password);
-                    } else {
-                        alert(response.error);
-                    }
-                });
+                var password = generatePassword(values.length, values.lower, values.upper, values.numbers, values.symbols, values.pronounceable);
+                $("#generatedPassword").text(password);
             });
         });
     </script>

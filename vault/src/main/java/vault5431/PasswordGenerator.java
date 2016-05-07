@@ -9,7 +9,7 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 
 /**
- * Basic password generator class.
+ * The server side implementation of the password generator. The client has its own version.
  *
  * @author papacharlie
  */
@@ -25,7 +25,7 @@ public class PasswordGenerator {
 
     private static final String SYMBOLS = "!@#$%^&*()-_+={}[]<>?";
 
-    private static final HashMap<String, String> PRECEDENCE_MAP = new HashMap<>();
+    private static final HashMap<String, String> PRECEDENCE_MAP = new HashMap<>(3372);
     private static final String[] SYLLABLES;
 
     static {
