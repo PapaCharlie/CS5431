@@ -125,6 +125,10 @@
                         var inputs = $(this).find(':input');
                         var values = {};
                         var target = $(this).find('#target').val();
+                        if (getUsernameFromCookie() === target) {
+                            alert("You cannot share a password with yourself!");
+                            return false;
+                        }
                         var id = $(this).find("input[name='id']").val();
                         $.get("/publicEncryptionKey/" + target, {}, function (data) {
                             var response = JSON.parse(data);

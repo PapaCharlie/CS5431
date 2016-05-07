@@ -9,6 +9,7 @@ import vault5431.users.Password;
 import vault5431.users.SharedPassword;
 import vault5431.users.User;
 import vault5431.users.UserManager;
+import vault5431.users.exceptions.AlreadySharingPasswordException;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -104,6 +105,8 @@ final class SharedPasswordRoutes extends Routes {
                 return success();
             } catch (JSONException err) {
                 return invalidRequest();
+            } catch (AlreadySharingPasswordException err) {
+                return failure("To share a password with this person, they must first accept the password you have already shared with them.");
             } catch (IllegalArgumentException err) {
                 return failure(err);
             }
