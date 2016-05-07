@@ -10,7 +10,10 @@ import vault5431.users.SharedPassword;
 import vault5431.users.User;
 import vault5431.users.UserManager;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by papacharlie on 2016-05-01.
@@ -23,10 +26,9 @@ final class SharedPasswordRoutes extends Routes {
                 success().put("numshared", token.getUser().numSharedPasswords(token))
         );
 
-        authenticatedGet("/sharedpasswords", (req, res, token) -> {
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "sharedpasswords.ftl");
-        });
+        authenticatedGet("/sharedpasswords", (req, res, token) ->
+                new ModelAndView(new HashMap<>(0), "sharedpasswords.ftl")
+        );
 
         authenticatedGet("/privateEncryptionKey", (req, res, token) ->
                 success().put("privateEncryptionKey", token.getUser().loadPrivateEncryptionKey(token))
@@ -88,6 +90,9 @@ final class SharedPasswordRoutes extends Routes {
             }
             if (!UserManager.userExists(target)) {
                 return userDoesNotExist();
+            }
+            if (token.getUsername().equals(target)) {
+                return failure("You cannot share a password with yourself!");
             }
             try {
                 JSONObject json = new JSONObject(sharedPassword);
