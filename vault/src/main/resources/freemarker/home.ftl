@@ -28,7 +28,9 @@
                        placeholder="Password" required>
                 <span class="input-group-addon"><button id="genrandom" type="button">Quick Gen</button></span>
             </div>
-            <p id="temprandom" class="hidden generated-password"></p>
+            <div id="temprandom" class="hidden generated-password" style="display:inline"></div>
+            <button id="addrandom" type="button" class="hidden">Quick Add</button>
+
             <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
                       placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
             <button class="btn btn-lg btn-primary btn-block" type="submit">Create New Password</button>
@@ -210,14 +212,23 @@
 
         $(document).on("click", "#genrandom", function () {
             $("#temprandom").removeClass("hidden");
+            $("#addrandom").removeClass("hidden");
             $("#temprandom").text(generatePassword());
         });
 
         $(document).on("click", "#plusbtn", function () {
             if (!$("#temprandom").hasClass("hidden")) {
                 $("#temprandom").addClass("hidden");
+                $("#addrandom").addClass("hidden");
             }
         });
+
+        $(document).on("click", "#addrandom", function () {
+            var pass = $("#temprandom").text();
+            $("#inputPassword").val(pass);
+        });
+
+
         $('#search').keyup(function () {
 
 
