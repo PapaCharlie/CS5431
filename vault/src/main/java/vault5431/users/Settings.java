@@ -22,6 +22,7 @@ import static vault5431.Vault.getAdminEncryptionKey;
 public final class Settings {
 
     private String phoneNumber;
+    private boolean isPhoneNumberVerified;
     private int concurrentSessions;
     private int sessionLength;
 
@@ -32,7 +33,8 @@ public final class Settings {
      * @param concurrentSessions the maximum number of allowed concurrent tokens
      * @param sessionLength      the maximum time to live for tokens
      */
-    public Settings(String phoneNumber, int concurrentSessions, int sessionLength) throws IllegalArgumentException {
+    public Settings(String phoneNumber, boolean isPhoneNumberVerified, int concurrentSessions, int sessionLength) throws IllegalArgumentException {
+        this.isPhoneNumberVerified = isPhoneNumberVerified;
         if (Pattern.matches("\\d{3}-\\d{3}-\\d{4}", phoneNumber)) {
             this.phoneNumber = phoneNumber;
         } else {
@@ -51,7 +53,7 @@ public final class Settings {
     }
 
     public Settings(String phoneNumber) {
-        this(phoneNumber, 5, 60);
+        this(phoneNumber, false, 5, 60);
     }
 
     protected static Settings loadFromFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, IllegalArgumentException, BadCiphertextException {
@@ -59,10 +61,11 @@ public final class Settings {
     }
 
     public static Settings fromJSON(JSONObject json) throws IllegalArgumentException {
-        if (json.has("phoneNumber") && json.has("concurrentSessions") && json.has("sessionLength")) {
+        if (json.has("phoneNumber") && json.has("concurrentSessions") && json.has("sessionLength") && json.has("isPhoneNumberVerified")) {
             try {
                 return new Settings(
                         json.getString("phoneNumber"),
+                        json.getBoolean("isPhoneNumberVerified"),
                         json.getInt("concurrentSessions"),
                         json.getInt("sessionLength")
                 );
@@ -86,6 +89,14 @@ public final class Settings {
         return fromJSON(json.decodeString());
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public boolean isPhoneNumberVerified() {
+        return isPhoneNumberVerified;
+    }
+
     public int getConcurrentSessions() {
         return concurrentSessions;
     }
@@ -95,15 +106,19 @@ public final class Settings {
     }
 
     public Settings withPhoneNumber(String phoneNumber) throws IllegalArgumentException {
-        return new Settings(phoneNumber, this.concurrentSessions, this.sessionLength); // Let constructor validate fields
+        return new Settings(phoneNumber, false, this.concurrentSessions, this.sessionLength); // Let constructor validate fields
     }
 
     public Settings withConcurrentSessions(int concurrentSessions) throws IllegalArgumentException {
-        return new Settings(this.phoneNumber, concurrentSessions, this.sessionLength); // Let constructor validate fields
+        return new Settings(this.phoneNumber, this.isPhoneNumberVerified, concurrentSessions, this.sessionLength); // Let constructor validate fields
+    }
+
+    public Settings withVerifiedPhoneNumber() {
+        return new Settings(this.phoneNumber, true, this.concurrentSessions, this.sessionLength);
     }
 
     public Settings withSessionLength(int sessionLength) throws IllegalArgumentException {
-        return new Settings(this.phoneNumber, this.concurrentSessions, sessionLength); // Let constructor validate fields
+        return new Settings(this.phoneNumber, this.isPhoneNumberVerified, this.concurrentSessions, sessionLength); // Let constructor validate fields
     }
 
     protected void saveToFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, BadCiphertextException {
@@ -113,6 +128,7 @@ public final class Settings {
     public JSONObject toJSONObject() {
         JSONObject json = new JSONObject();
         json.put("phoneNumber", phoneNumber);
+        json.put("isPhoneNumberVerified", isPhoneNumberVerified);
         json.put("concurrentSessions", concurrentSessions);
         json.put("sessionLength", sessionLength);
         return json;
@@ -120,9 +136,5 @@ public final class Settings {
 
     public String toJson() {
         return toJSONObject().toString();
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
     }
 }

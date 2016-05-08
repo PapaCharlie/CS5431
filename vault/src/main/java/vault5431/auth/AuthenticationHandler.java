@@ -49,13 +49,18 @@ public class AuthenticationHandler {
      * @throws InvalidTokenException       If the Token's signature does not match, or if the current time does not fall in its
      *                                     date range.
      */
-    public static Token parseFromCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException {
+    public static Token parseFromCookie(String cookie, String ip) throws CouldNotParseTokenException, InvalidTokenException, NoSuchUserException {
         Token token = Token.parseCookie(cookie.trim(), ip);
-        if (token != null && tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
-            return token;
-        } else {
-            return null;
+        if (token != null) {
+            if (token.userExists()) {
+                if (tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
+                    return token;
+                }
+            } else {
+                throw new NoSuchUserException();
+            }
         }
+        return null;
     }
 
     /**
@@ -79,7 +84,7 @@ public class AuthenticationHandler {
      * @throws TwilioRestException           If Twilio cannot send the requested text message to the user, i.e. the phone number
      *                                       is invalid.
      */
-    public static void send2FACode(Token token) throws IOException, CouldNotLoadSettingsException, TwilioRestException {
+    public static void send2FACode(Token token) throws IOException, CouldNotLoadSettingsException, TwilioRestException, PhoneNumberNotVerified {
         if (token != null && !token.isVerified()) {
             TwoFactorAuthHandler.sendAuthMessage(token.getUser());
         }
@@ -123,7 +128,7 @@ public class AuthenticationHandler {
      * @throws NoSuchUserException                When the provided username does not exist.
      */
     public static Token acquireUnverifiedToken(String username, Base64String password, String ip)
-            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException {
+            throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException, PhoneNumberNotVerified {
         synchronized (tokenCache) {
             if (!UserManager.userExists(username)) {
                 throw new NoSuchUserException();
@@ -140,8 +145,11 @@ public class AuthenticationHandler {
                 }
                 if (user.verifyMasterPassword(password)) {
                     Settings settings = user.loadSettings();
+                    if (!settings.isPhoneNumberVerified()) {
+                        throw new PhoneNumberNotVerified();
+                    }
                     if (!tokenCache.containsKey(user)) {
-                        tokenCache.put(user, new HashSet<>());
+                        tokenCache.put(user, new HashSet<>(1));
                     }
                     if (tokenCache.get(user).size() < settings.getConcurrentSessions()) {
                         Token token = new Token(username, false);
@@ -301,6 +309,10 @@ public class AuthenticationHandler {
             } else {
                 throw new InvalidTokenException("Could not verify token's signature.");
             }
+        }
+
+        boolean userExists() {
+            return UserManager.getUser(username) != null;
         }
 
         private static byte[] toSignatureBody(String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified) {

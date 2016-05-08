@@ -85,7 +85,7 @@ public final class User {
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
-    private void verifyToken(Token token) throws IllegalTokenException {
+    private void ownsToken(Token token) throws IllegalTokenException {
         if (!this.hashedUsername.equals(token.getUser().hashedUsername) || (!test && !token.isVerified()))
             throw new IllegalTokenException();
     }
@@ -155,7 +155,7 @@ public final class User {
 
     public String loadPrivateEncryptionKey(Token token) throws IOException, IllegalTokenException {
         synchronized (privCryptoKeyFile) {
-            verifyToken(token);
+            ownsToken(token);
             Sys.debug("Loading private encryption key.", token);
             return FileUtils.read(privCryptoKeyFile)[0].decodeString();
         }
@@ -163,7 +163,7 @@ public final class User {
 
     public String loadPrivateSigningKey(Token token) throws IOException, IllegalTokenException {
         synchronized (privSigningKeyFile) {
-            verifyToken(token);
+            ownsToken(token);
             Sys.debug("Loading private signing key.", token);
             return FileUtils.read(privSigningKeyFile)[0].decodeString();
         }
@@ -171,7 +171,7 @@ public final class User {
 
     private void changePrivateEncryptionKey(SJCLSymmetricField newKey, Token token) throws IOException, IllegalTokenException {
         synchronized (privCryptoKeyFile) {
-            verifyToken(token);
+            ownsToken(token);
             Sys.debug("Changing private encryption key", token);
             FileUtils.write(privCryptoKeyFile, new Base64String(newKey.toString()));
         }
@@ -179,7 +179,7 @@ public final class User {
 
     private void changePrivateSigningKey(SJCLSymmetricField newKey, Token token) throws IOException, IllegalTokenException {
         synchronized (privSigningKeyFile) {
-            verifyToken(token);
+            ownsToken(token);
             Sys.debug("Changing private signing key", token);
             FileUtils.write(privSigningKeyFile, new Base64String(newKey.toString()));
         }
@@ -191,7 +191,7 @@ public final class User {
             throws TooManyConcurrentSessionsException, TooManyFailedLogins, CouldNotLoadSettingsException, IOException, NoSuchUserException, IllegalTokenException {
         synchronized (passwordHashFile) {
             // Flag suspicious activity if oldPassword is incorrect. Will behave as if failed login and throw respective errors.
-            verifyToken(token);
+            ownsToken(token);
             Token successToken = AuthenticationHandler.changeMasterPassword(token, oldPassword);
             if (successToken != null) {
                 warning("Changing master password!", token.getIp());
@@ -208,8 +208,20 @@ public final class User {
 
     public void changeSettings(Settings settings, Token token) throws IOException, BadCiphertextException, IllegalTokenException {
         synchronized (settingsFile) {
-            verifyToken(token);
+            ownsToken(token);
             settings.saveToFile(settingsFile, userEncryptionKey);
+        }
+    }
+
+    public void verifyPhoneNumber() throws CouldNotLoadSettingsException {
+        synchronized (settingsFile) {
+            try {
+                info("Phone number was verified.");
+                Settings settings = Settings.loadFromFile(settingsFile, userEncryptionKey);
+                settings.withVerifiedPhoneNumber().saveToFile(settingsFile, userEncryptionKey);
+            } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
+                throw new CouldNotLoadSettingsException();
+            }
         }
     }
 
@@ -234,7 +246,7 @@ public final class User {
 
     public SharedPassword deleteSharedPassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (sharedPasswordsFile) {
-            verifyToken(token);
+            ownsToken(token);
             HashSet<SharedPassword> passwords = loadSharedPasswords(token);
             HashSet<SharedPassword> filteredPasswords = new HashSet<>();
             SharedPassword deleted = null;
@@ -255,14 +267,14 @@ public final class User {
 
     public int numSharedPasswords(Token token) throws IOException, IllegalTokenException {
         synchronized (sharedPasswordsFile) {
-            verifyToken(token);
+            ownsToken(token);
             return FileUtils.read(sharedPasswordsFile).length;
         }
     }
 
     public HashSet<SharedPassword> loadSharedPasswords(Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (sharedPasswordsFile) {
-            verifyToken(token);
+            ownsToken(token);
             return loadSharedPasswords();
         }
     }
@@ -314,7 +326,7 @@ public final class User {
 
     public void savePassword(Password password, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
-            verifyToken(token);
+            ownsToken(token);
             info("Added password.", token.getIp());
             HashSet<Password> passwords = loadPasswords(token);
             boolean validUUID = false;
@@ -331,7 +343,7 @@ public final class User {
 
     public void changePassword(Password password, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
-            verifyToken(token);
+            ownsToken(token);
             HashSet<Password> passwords = loadPasswords(token);
             if (passwords.removeIf((pass) -> pass.getID().equals(password.getID()))) {
                 passwords.add(password);
@@ -343,7 +355,7 @@ public final class User {
 
     public Password deletePassword(UUID uuid, Token token) throws IOException, VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
-            verifyToken(token);
+            ownsToken(token);
             HashSet<Password> passwords = loadPasswords(token);
             HashSet<Password> filteredPasswords = new HashSet<>();
             Password deleted = null;
@@ -373,7 +385,7 @@ public final class User {
 
     public HashSet<Password> loadPasswords(Token token) throws VaultNotFoundException, IllegalTokenException {
         synchronized (vaultFile) {
-            verifyToken(token);
+            ownsToken(token);
             info("Loading passwords.", token.getIp());
             if (!vaultFile.exists()) {
                 Sys.error("User's vault file could not be found.", this);
@@ -406,7 +418,7 @@ public final class User {
 
     public Base64String loadVaultSalt(Token token) throws IOException, BadCiphertextException, IllegalTokenException {
         synchronized (vaultSaltFile) {
-            verifyToken(token);
+            ownsToken(token);
             return new Base64String(SymmetricUtils.decrypt(Base64String.loadFromFile(vaultSaltFile)[0], userEncryptionKey));
         }
     }
@@ -435,7 +447,7 @@ public final class User {
     }
 
     public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException, IllegalTokenException {
-        verifyToken(token);
+        ownsToken(token);
         Sys.debug("Loading log.", token);
         return loadLog();
     }

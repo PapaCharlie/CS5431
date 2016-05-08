@@ -3,6 +3,7 @@ package vault5431.routes;
 import org.json.JSONArray;
 import spark.ModelAndView;
 import vault5431.auth.AuthenticationHandler.Token;
+import vault5431.auth.TwoFactorAuthHandler;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.Password;
@@ -81,7 +82,12 @@ final class SettingsRoutes extends Routes {
                 if (!settings.getPhoneNumber().equals(phoneNumber)) {
                     try {
                         token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber), token);
-                        token.getUser().info("Changed phone number.", token.getIp());
+                        token.getUser().info("Changing phone number. Prompting for verification.", token.getIp());
+                        int verificationCode = TwoFactorAuthHandler.sendVerificationMessage(token.getUser());
+                        String message = "Please visit the URL contained in the text message you have been sent, and " +
+                                "enter the following number: " + verificationCode + ". If you fail to do so, this " +
+                                "account will be deleted in 30 minutes.";
+                        return success(message);
                     } catch (IllegalArgumentException err) {
                         return failure(err);
                     }

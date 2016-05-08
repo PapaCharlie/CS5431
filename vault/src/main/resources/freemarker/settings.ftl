@@ -97,7 +97,7 @@
             $.post('/settings', values, function (data) {
                 var response = JSON.parse(data);
                 if (response.success) {
-                    alert("Settings successfully changed!");
+                    alert(response.message ? response.message : "Settings successfully changed!");
                 } else {
                     alert(response.error);
                 }
@@ -118,7 +118,7 @@
             if (!is_basic16(newPassword1) && !result[0]) {
 //                var alert = result[1];
                 $('#newPassword1').css('border-color', 'red');
-                $('#alert').show();
+                $('#' + result[1]).show();
                 return false;
             }
             if (sessionStorage.getItem("password")) {

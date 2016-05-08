@@ -52,7 +52,7 @@ public class VaultTest {
             throw new IllegalArgumentException("Username already in use!");
         }
         SJCLSymmetricField empty = new SJCLSymmetricField("{iv: \"0000000000000000000000==\", ct: \"0000000000000000000=\"}", 100);
-        User user = UserManager.create(
+        UserManager.create(
                 username,
                 new Base64String(password),
                 "123-456-6789", new Base64String(""), empty, new Base64String(""), empty

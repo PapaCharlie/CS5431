@@ -1,7 +1,10 @@
 package vault5431.users;
 
+import com.twilio.sdk.TwilioRestException;
 import org.apache.commons.io.FileUtils;
 import vault5431.Sys;
+import vault5431.auth.AuthenticationHandler;
+import vault5431.auth.TwoFactorAuthHandler;
 import vault5431.crypto.HashUtils;
 import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SymmetricUtils;
@@ -9,6 +12,7 @@ import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
+import vault5431.users.exceptions.CouldNotLoadSettingsException;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,17 +62,35 @@ public class UserManager {
         }
     }
 
+    public static void deleteUser(Base64String hashedUsername) {
+        userMapLock.writeLock().lock();
+        try {
+            if (userExists(hashedUsername)) {
+                FileUtils.deleteDirectory(getUser(hashedUsername).getHome());
+                users.remove(hashedUsername);
+            }
+        } catch (IOException err) {
+            //
+        } finally {
+            userMapLock.writeLock().unlock();
+        }
+    }
+
     public static Base64String hashUsername(String username) {
         return HashUtils.hash256(username.getBytes());
     }
 
-    public static boolean userExists(String username) {
+    public static boolean userExists(Base64String hashedUsername) {
         userMapLock.readLock().lock();
         try {
-            return users.containsKey(hashUsername(username));
+            return users.containsKey(hashedUsername);
         } finally {
             userMapLock.readLock().unlock();
         }
+    }
+
+    public static boolean userExists(String username) {
+        return userExists(hashUsername(username));
     }
 
     public static User getUser(Base64String hash) {
@@ -92,7 +114,7 @@ public class UserManager {
         return new File(home, hashUsername(username).getB64String());
     }
 
-    public synchronized static User create(
+    public synchronized static int create(
             String username,
             Base64String hashedPassword,
             String phoneNumber,
@@ -100,7 +122,7 @@ public class UserManager {
             SJCLSymmetricField privCryptoKey,
             Base64String pubSigningKey,
             SJCLSymmetricField privSigningKey)
-            throws IOException, CouldNotSaveKeyException, BadCiphertextException {
+            throws IOException, CouldNotSaveKeyException, BadCiphertextException, TwilioRestException, CouldNotLoadSettingsException {
         if (!isValidUsername(username)) {
             throw new IllegalArgumentException("Username is not valid!");
         }
@@ -108,7 +130,7 @@ public class UserManager {
         userMapLock.readLock().lock();
         try {
             if (userExists(username)) {
-                return getUser(username);
+                throw new IllegalArgumentException("This username is already taken");
             } else {
                 user = new User(username);
             }
@@ -123,14 +145,12 @@ public class UserManager {
                 if (homedir.mkdir()) {
                     Sys.debug("Created user home directory.", user);
                     if (!user.vaultFile.createNewFile()) {
-                        Sys.error("Could not create vault file!.", user);
-                        return null;
+                        throw new IOException("Could not create vault file!");
                     } else {
                         Sys.info("Created vault file.", user);
                     }
                     if (!user.sharedPasswordsFile.createNewFile()) {
-                        Sys.error("Could not create shared passwords file!.", user);
-                        return null;
+                        throw new IOException("Could not create shared passwords file!.");
                     } else {
                         Sys.info("Created vault file.", user);
                     }
@@ -148,14 +168,14 @@ public class UserManager {
                     Sys.info("Successfully created user.", user);
                     user.info("Your account was successfully created!");
                     addUser(user);
-                    return user;
+                    user.info("Sending phone number verification code.");
+                    return TwoFactorAuthHandler.sendVerificationMessage(user);
                 } else {
-                    Sys.error("Could not create directory! Not adding to user map.", user);
                     FileUtils.deleteDirectory(homedir);
-                    return null;
+                    throw new IOException("Could not create directory!");
                 }
             } else {
-                return getUser(username);
+                throw new IllegalArgumentException("This username is already taken");
             }
         } catch (Exception err) {
             err.printStackTrace();

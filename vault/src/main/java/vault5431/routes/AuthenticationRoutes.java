@@ -5,6 +5,8 @@ import spark.ModelAndView;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.AuthenticationHandler.Token;
+import vault5431.auth.TwoFactorAuthHandler;
+import vault5431.auth.exceptions.PhoneNumberNotVerified;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.users.User;
@@ -38,14 +40,22 @@ final class AuthenticationRoutes extends Routes {
             } else {
                 res.removeCookie("token");
                 Sys.debug("Received GET to /.", req.ip());
-                Map<String, Object> attributes = new HashMap<>();
+                Map<String, Object> attributes = new HashMap<>(2);
+                if (req.session().attribute("error") != null) {
+                    attributes.put("error", req.session().attribute("error"));
+                }
+                if (req.session().attribute("success") != null) {
+                    attributes.put("success", req.session().attribute("success"));
+                }
+                req.session().removeAttribute("error");
+                req.session().removeAttribute("success");
                 return new ModelAndView(attributes, "login.ftl");
             }
         }, freeMarkerEngine);
 
         post("/", (req, res) -> {
             Sys.debug("Received POST to /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(2);
             String username = req.queryParams("username");
             String password = req.queryParams("password");
             if (!provided(username, password)) {
@@ -58,30 +68,37 @@ final class AuthenticationRoutes extends Routes {
             }
             if (UserManager.userExists(username)) {
                 User user = UserManager.getUser(username);
-                Token token = AuthenticationHandler.acquireUnverifiedToken(username, Base64String.fromBase64(password), req.ip());
-                if (token != null) {
-                    res.cookie(
-                            "token",
-                            token.toCookie(),
-                            token.secondsUntilExpiration(),
-                            true
-                    );
-                    res.redirect("/twofactor");
-                    user.info("Accepted password login, prompting for 2FA.", token.getIp());
+                try {
+                    Token token = AuthenticationHandler.acquireUnverifiedToken(username, Base64String.fromBase64(password), req.ip());
+
+                    if (token != null) {
+                        res.cookie(
+                                "token",
+                                token.toCookie(),
+                                token.secondsUntilExpiration(),
+                                true
+                        );
+                        res.redirect("/twofactor");
+                        user.info("Accepted password login, prompting for 2FA.", token.getIp());
+                        return emptyPage;
+                    } else {
+                        user.warning("Failed password verification attempt.", req.ip());
+                    }
+                } catch (PhoneNumberNotVerified err) {
+                    req.session().attribute("error", "Please verify your phone number before logging in.");
+                    res.redirect("/");
                     return emptyPage;
-                } else {
-                    user.warning("Failed password verification attempt.", req.ip());
                 }
             }
             Sys.debug("Failed login attempt.", req.ip());
-            String errorMessage = "This username/password combination does not exist!";
-            attributes.put("error", errorMessage);
-            return new ModelAndView(attributes, "login.ftl");
+            req.session().attribute("error", "This username/password combination does not exist!");
+            res.redirect("/");
+            return emptyPage;
         }, freeMarkerEngine);
 
         get("/twofactor", (req, res) -> {
             Token token = validateToken(req);
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(1);
             if (token != null) {
                 if (!token.isVerified()) {
                     try {
@@ -149,13 +166,12 @@ final class AuthenticationRoutes extends Routes {
 
         get("/register", (req, res) -> {
             Sys.debug("Received GET to /register", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "register.ftl");
+            return new ModelAndView(new HashMap<>(0), "register.ftl");
         }, freeMarkerEngine);
 
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(1);
             String username = req.queryParams("username");
             String password = req.queryParams("password");
             String confirm = req.queryParams("confirm");
@@ -173,7 +189,7 @@ final class AuthenticationRoutes extends Routes {
                     && Base64String.isValidBase64Data(pubCryptoKey)
                     && Base64String.isValidBase64Data(pubSigningKey))) {
                 attributes.put("error", "All fields are not of valid format. Please use the proper means.");
-                return new ModelAndView(attributes, "login.ftl");
+                return new ModelAndView(attributes, "register.ftl");
             }
             if (!password.equals(confirm)) {
                 attributes.put("error", "Passwords are not equal!");
@@ -185,23 +201,25 @@ final class AuthenticationRoutes extends Routes {
             }
             if (!UserManager.userExists(username)) {
                 try {
-                    UserManager.create(username,
+                    int verificationCode = UserManager.create(username,
                             Base64String.fromBase64(password),
                             phoneNumber,
                             Base64String.fromBase64(pubCryptoKey),
                             new SJCLSymmetricField(privCryptoKey, 100, true),
                             Base64String.fromBase64(pubSigningKey),
                             new SJCLSymmetricField(privSigningKey, 100, true));
+                    String message = "Please visit the URL contained in the text message you have been sent, and enter the following number: " + verificationCode + ". If you fail to do so, this account will be deleted in 30 minutes.";
+                    attributes.put("success", message);
+                    req.session().attribute("success", message);
+                    res.redirect("/");
+                    return emptyPage;
                 } catch (IllegalArgumentException err) {
-                    err.printStackTrace();
                     attributes.put("error", "Invalid password!");
                     return new ModelAndView(attributes, "register.ftl");
                 } catch (Exception err) {
                     System.err.println("Could not create user!");
                     throw new RuntimeException(err);
                 }
-                res.redirect("/");
-                return emptyPage;
             } else {
                 attributes.put("error", "This username is already taken!");
                 return new ModelAndView(attributes, "register.ftl");
@@ -219,8 +237,57 @@ final class AuthenticationRoutes extends Routes {
             Sys.debug("Displaying unauthorized page.", req.ip());
             res.status(401);
             res.removeCookie("token");
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "unauthorized.ftl");
+            return new ModelAndView(new HashMap<>(0), "unauthorized.ftl");
+        }, freeMarkerEngine);
+
+        get("/verifyPhoneNumber", (req, res) -> {
+            Map<String, Object> attributes = new HashMap<>(2);
+            if (req.session().attribute("error") != null) {
+                attributes.put("error", req.session().attribute("error"));
+            }
+            if (req.session().attribute("success") != null) {
+                attributes.put("success", req.session().attribute("success"));
+            }
+            req.session().removeAttribute("error");
+            req.session().removeAttribute("success");
+            return new ModelAndView(attributes, "verifyphonenumber.ftl");
+        }, freeMarkerEngine);
+
+        get("/verifyPhoneNumber/:url", (req, res) -> {
+            String url = req.params("url");
+            Map<String, Object> attributes = new HashMap<>(1);
+            if (provided(url) && Base64String.isValidBase64Data(url) && TwoFactorAuthHandler.isValidVerificationUrl(Base64String.fromBase64(url))) {
+                attributes.put("form", true);
+                return new ModelAndView(attributes, "verifyphonenumber.ftl");
+            }
+            attributes.put("error", true);
+            return new ModelAndView(attributes, "verifyphonenumber.ftl");
+        }, freeMarkerEngine);
+
+        post("/verifyPhoneNumber/:url", (req, res) -> {
+            Base64String url = Base64String.fromBase64(req.params("url"));
+            String verificationCode = req.queryParams("verificationCode");
+            Map<String, Object> attributes = new HashMap<>(1);
+            if (provided(verificationCode) && url != null && url.isValidBase64Data()) {
+                int code;
+                try {
+                    code = Integer.parseInt(verificationCode);
+                    boolean success = TwoFactorAuthHandler.verifyPhoneNumber(url, code);
+                    if (success) {
+                        req.session().attribute("success", true);
+                    } else {
+                        req.session().attribute("error", "That was not the code given to you. Your account has been deleted. Please try again.");
+                    }
+                    res.redirect("/verifyPhoneNumber");
+                    return emptyPage;
+                } catch (IllegalArgumentException err) {
+                    attributes.put("error", "Please input an integer.");
+                    return new ModelAndView(attributes, "verifyphonenumber.ftl");
+                }
+            }
+            req.session().attribute("error", "This page does not exist!");
+            res.redirect("verifyPhoneNumber");
+            return emptyPage;
         }, freeMarkerEngine);
 
     }
