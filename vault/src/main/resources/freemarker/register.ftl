@@ -77,9 +77,8 @@
                 $('#alert').show();
                 return false;
             } else if ((!is_basic16(password) && !result[0])) {
-                var alert = result[1];
                 passwordField.css('border-color', 'red');
-                $(alert).show();
+                $("#" + result[1]).show();
                 return false;
             } else {
                 var key = hash(passwordField.val());

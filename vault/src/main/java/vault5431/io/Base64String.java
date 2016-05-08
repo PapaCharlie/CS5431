@@ -40,9 +40,13 @@ public final class Base64String {
      * @return New Base64String instance.
      */
     public static Base64String fromBase64(byte[] b64Bytes) {
-        Base64String base64String = new Base64String(new byte[0]);
-        base64String.setB64data(b64Bytes);
-        return base64String;
+        if (b64Bytes != null) {
+            Base64String base64String = new Base64String(new byte[0]);
+            base64String.setB64data(b64Bytes);
+            return base64String;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -52,7 +56,11 @@ public final class Base64String {
      * @return New Base64String instance.
      */
     public static Base64String fromBase64(String b64String) {
-        return fromBase64(b64String.getBytes());
+        if (b64String != null) {
+            return fromBase64(b64String.getBytes());
+        } else {
+            return null;
+        }
     }
 
     /**
