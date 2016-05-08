@@ -4,6 +4,7 @@ import vault5431.Sys;
 import vault5431.crypto.HashUtils;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
+import vault5431.routes.Routes;
 import vault5431.users.exceptions.CouldNotCreateUserException;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class UserManager {
                 addUser(user);
             }
         } catch (Exception err) {
-            throw new RuntimeException(err);
+            Routes.panic(err);
         } finally {
             userMapLock.writeLock().unlock();
         }

@@ -1,7 +1,6 @@
 package vault5431.logging;
 
 import org.apache.commons.csv.CSVRecord;
-import vault5431.users.User;
 
 import java.io.IOException;
 import java.time.LocalDateTime;

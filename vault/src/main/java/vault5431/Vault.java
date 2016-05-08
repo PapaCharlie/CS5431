@@ -1,19 +1,15 @@
 package vault5431;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import spark.ModelAndView;
-import spark.Spark;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
 import vault5431.routes.Routes;
-import vault5431.users.exceptions.CorruptedLogException;
 
 import javax.crypto.SecretKey;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
-import java.util.HashMap;
 
 import static spark.Spark.*;
 
@@ -135,7 +131,6 @@ public class Vault {
         }
         Routes.initialize();
         awaitInitialization();
-
     }
 
 }

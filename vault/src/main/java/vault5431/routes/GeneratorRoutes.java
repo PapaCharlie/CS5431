@@ -1,15 +1,5 @@
 package vault5431.routes;
 
-import spark.ModelAndView;
-import vault5431.PasswordGenerator;
-import vault5431.Sys;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import static spark.Spark.get;
-import static spark.Spark.post;
-
 /**
  * Contains the routes for "/generator".
  *

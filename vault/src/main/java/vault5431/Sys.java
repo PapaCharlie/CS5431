@@ -9,6 +9,7 @@ import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.SystemLogEntry;
+import vault5431.routes.Routes;
 import vault5431.users.User;
 import vault5431.users.exceptions.CorruptedLogException;
 
@@ -50,6 +51,7 @@ public class Sys {
                 loadLog();
             } catch (CorruptedLogException err) {
                 System.err.println("System log was corrupted!");
+                Routes.panic(err);
                 throw new RuntimeException(err);
             }
         }
@@ -200,6 +202,7 @@ public class Sys {
                         throw new RuntimeException(err);
                     }
                 } catch (IOException err) {
+                    Routes.panic(err);
                     throw new RuntimeException(err);
                 }
             }
@@ -226,6 +229,7 @@ public class Sys {
                     return decryptedEntries;
                 } catch (IllegalArgumentException | InvalidSignatureException | IOException err) {
                     System.err.println("[WARNING] Failed to load system log!");
+                    Routes.panic(err);
                     throw new CorruptedLogException(err);
                 }
             }
