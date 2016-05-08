@@ -1,21 +1,23 @@
 package vault5431;
 
-import org.apache.commons.csv.CSVRecord;
 import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
+import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 import vault5431.logging.CSVUtils;
 import vault5431.logging.LogType;
 import vault5431.logging.SystemLogEntry;
 import vault5431.users.User;
+import vault5431.users.exceptions.CorruptedLogException;
 
+import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-import static vault5431.Vault.getAdminEncryptionKey;
+import static vault5431.Vault.getAdminLoggingKey;
 import static vault5431.Vault.home;
 
 /**
@@ -27,7 +29,31 @@ public class Sys {
 
     public static final String SYS = "SYS";
     public static final String NO_IP = "0.0.0.0";
-    public static final File logFile = new File(home, "log");
+    private static final File logFile = new File(home, Vault.test ? "testlog" : "log");
+    private static final SecretKey firstLoggingKey = getAdminLoggingKey();
+    private static SecretKey currentLoggingKey = firstLoggingKey;
+
+    protected synchronized static void initialize() {
+        if (!logFile.exists()) {
+            try {
+                if (!logFile.createNewFile()) {
+                    System.err.printf("Could not create system log file at %s!%n", logFile.getAbsoluteFile());
+                    System.exit(1);
+                }
+            } catch (IOException err) {
+                err.printStackTrace();
+                System.err.printf("Could not create system log file at %s!%n", logFile.getAbsoluteFile());
+                throw new RuntimeException(err);
+            }
+        } else {
+            try {
+                loadLog();
+            } catch (CorruptedLogException err) {
+                System.err.println("System log was corrupted!");
+                throw new RuntimeException(err);
+            }
+        }
+    }
 
     /**
      * Logs an error in the system log.
@@ -137,6 +163,23 @@ public class Sys {
         appendToLog(new SystemLogEntry(LogType.DEBUG, NO_IP, SYS, LocalDateTime.now(), message));
     }
 
+    private static void iterateLoggingKey() {
+        synchronized (firstLoggingKey) {
+            currentLoggingKey = SymmetricUtils.hashIterateKey(currentLoggingKey);
+        }
+    }
+
+    private static SecretKey deriveLogEncryptionKey() {
+        synchronized (firstLoggingKey) {
+            return SymmetricUtils.combine(currentLoggingKey, "encryption".getBytes());
+        }
+    }
+
+    private static SecretKey deriveLogSigningKey() {
+        synchronized (firstLoggingKey) {
+            return SymmetricUtils.combine(currentLoggingKey, "signing".getBytes());
+        }
+    }
 
     /**
      * Append LogEntry to system log.
@@ -144,48 +187,47 @@ public class Sys {
      *
      * @param entry Entry to log
      */
-    public static void appendToLog(SystemLogEntry entry) {
+    public synchronized static void appendToLog(SystemLogEntry entry) {
         synchronized (logFile) {
-            try {
-                System.out.println("[SYS] " + entry.toString());
+            synchronized (firstLoggingKey) {
                 try {
-                    Base64String encryptedEntry = SymmetricUtils.encrypt(entry.toCSV().getBytes(), getAdminEncryptionKey());
-                    FileUtils.append(logFile, encryptedEntry);
-                } catch (BadCiphertextException err) {
-                    System.err.println("Cannot System log entry! Fatal error. Halting.");
+                    try {
+                        FileUtils.append(logFile, SymmetricUtils.authEnc(entry.toCSV().getBytes(), deriveLogEncryptionKey(), deriveLogSigningKey()));
+                        iterateLoggingKey();
+                        System.out.println("[SYS] " + entry.toString());
+                    } catch (BadCiphertextException err) {
+                        System.err.println("Cannot System log entry! Fatal error. Halting.");
+                        throw new RuntimeException(err);
+                    }
+                } catch (IOException err) {
                     throw new RuntimeException(err);
                 }
-            } catch (IOException err) {
-                throw new RuntimeException(err);
             }
         }
     }
 
     /**
-     * Load system log from disk, only for demonstration purposes. System should not be decryptable by anyone but sys admins
+     * Load system log from disk, only for demonstration purposes. System should not be decryptable by anyone but sys admins.
      *
      * @return Set of LogEntries loaded from disk.
      */
-    public static SystemLogEntry[] loadLog() {
+    public synchronized static SystemLogEntry[] loadLog() throws CorruptedLogException {
         synchronized (logFile) {
-            try {
-                Base64String[] encryptedEntries = FileUtils.read(logFile);
-                SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
-                for (int i = 0; i < encryptedEntries.length; i++) {
-                    try {
-                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], getAdminEncryptionKey()));
-                        CSVRecord record = CSVUtils.parseRecord(entry).getRecords().get(0);
-                        decryptedEntries[i] = SystemLogEntry.fromCSV(record);
-                    } catch (BadCiphertextException err) {
-                        System.err.println("Cannot load/decrypt system log! Fatal! Halting.");
-                        throw new RuntimeException(err);
+            synchronized (firstLoggingKey) {
+                try {
+                    Base64String[] encryptedEntries = FileUtils.read(logFile);
+                    SystemLogEntry[] decryptedEntries = new SystemLogEntry[encryptedEntries.length];
+                    currentLoggingKey = firstLoggingKey;
+                    for (int i = 0; i < encryptedEntries.length; i++) {
+                        String entry = new String(SymmetricUtils.authDec(encryptedEntries[i], deriveLogEncryptionKey(), deriveLogSigningKey()));
+                        decryptedEntries[i] = SystemLogEntry.fromCSV(CSVUtils.parseRecord(entry).getRecords().get(0));
+                        iterateLoggingKey();
                     }
+                    return decryptedEntries;
+                } catch (IllegalArgumentException | InvalidSignatureException | IOException err) {
+                    System.err.println("[WARNING] Failed to load system log!");
+                    throw new CorruptedLogException(err);
                 }
-                return decryptedEntries;
-            } catch (IOException err) {
-                err.printStackTrace();
-                System.err.println("[WARNING] Failed to load system log! Continuing.");
-                return new SystemLogEntry[0];
             }
         }
     }

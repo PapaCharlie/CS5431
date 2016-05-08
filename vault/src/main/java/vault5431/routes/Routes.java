@@ -10,6 +10,7 @@ import spark.template.freemarker.FreeMarkerEngine;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.AuthenticationHandler.Token;
+import vault5431.auth.SMSHandler;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
 import vault5431.auth.exceptions.NoSuchUserException;
@@ -109,6 +110,16 @@ public abstract class Routes {
         new GeneratorRoutes().routes();
         new LogRoutes().routes();
         new PasswordRoutes().routes();
+
+        exception(RuntimeException.class, (e, req, res) -> {
+            e.printStackTrace();
+            stop();
+            get("/*", (request, response) -> {
+                SMSHandler.sendSms("646-339-1069", "We're under attack! Please check the logs to see the problem.");
+                return new ModelAndView(new HashMap<>(0), "maintenance.ftl");
+            }, freeMarkerEngine);
+        });
+
     }
 
     protected abstract void routes();

@@ -5,7 +5,7 @@ import org.junit.Test;
 /**
  * Created by papacharlie on 2016-04-25.
  */
-public class GeneratorTest {
+public class GeneratorTest extends VaultTest {
 
     @Test
     public void testGenerator() throws Exception {

@@ -1,8 +1,11 @@
 package vault5431.io;
 
+import org.bouncycastle.util.Arrays;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
+
 
 /**
  * Base64 utils class. All crypto algorithms either expect such a string, or output such a string.
@@ -173,5 +176,9 @@ public final class Base64String {
         } else {
             return false;
         }
+    }
+
+    public void append(Base64String other) {
+        this.b64String = new Base64String(Arrays.concatenate(decodeBytes(), other.decodeBytes())).b64String;
     }
 }

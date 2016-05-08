@@ -15,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 public class SigningUtils {
 
     private static final String HMAC_SHA256 = "HmacSHA256";
+    protected static final int SIGNATURE_SIZE = 256/8;
 
     public static Base64String sign(byte[] content, SecretKey key) {
         try {

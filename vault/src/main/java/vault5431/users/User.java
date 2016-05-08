@@ -1,6 +1,5 @@
 package vault5431.users;
 
-import org.apache.commons.csv.CSVRecord;
 import org.json.JSONException;
 import vault5431.Sys;
 import vault5431.auth.AuthenticationHandler;
@@ -14,6 +13,7 @@ import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
 import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
+import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 
+import static org.bouncycastle.util.Arrays.concatenate;
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.*;
 
@@ -45,22 +46,21 @@ public final class User {
     public static final String NO_USER = "NOUSER";
 
     public final Base64String hashedUsername;
-    public final File logFile;
-    public final File vaultFile;
-    public final File vaultSaltFile;
-    public final File sharedPasswordsFile;
-    public final File settingsFile;
-    public final File passwordHashFile;
-    public final File pubCryptoKeyFile;
-    public final File privCryptoKeyFile;
-    public final File pubSigningKeyFile;
-    public final File privSigningKeyFile;
+    private final File logFile;
+    private final File vaultFile;
+    private final File vaultSaltFile;
+    private final File sharedPasswordsFile;
+    private final File settingsFile;
+    private final File passwordHashFile;
+    private final File pubCryptoKeyFile;
+    private final File privCryptoKeyFile;
+    private final File pubSigningKeyFile;
+    private final File privSigningKeyFile;
 
     private final SecretKey userEncryptionKey;
     private final SecretKey userSigningKey;
-    private final SecretKey userBaseLoggingKey;
-    private final Object loggingKeyLock = new Object();
-    private SecretKey userLoggingKey;
+    private final SecretKey firstUserLoggingKey;
+    private SecretKey currentUserLoggingKey;
 
     protected User(String username) {
         this(UserManager.hashUsername(username));
@@ -68,16 +68,17 @@ public final class User {
 
     protected User(Base64String hashedUsername) {
         this.hashedUsername = hashedUsername;
-        logFile = new File(getHome(), "log");
-        vaultFile = new File(getHome(), "vault");
-        vaultSaltFile = new File(getHome(), "vault.salt");
-        sharedPasswordsFile = new File(getHome(), "shared");
-        passwordHashFile = new File(getHome(), "password.hash");
-        settingsFile = new File(getHome(), "settings");
-        pubCryptoKeyFile = new File(getHome(), "crypto.pub");
-        privCryptoKeyFile = new File(getHome(), "crypto.priv");
-        pubSigningKeyFile = new File(getHome(), "signing.pub");
-        privSigningKeyFile = new File(getHome(), "signing.priv");
+        File home = getHome();
+        logFile = new File(home, "log");
+        vaultFile = new File(home, "vault");
+        vaultSaltFile = new File(home, "vault.salt");
+        sharedPasswordsFile = new File(home, "shared");
+        passwordHashFile = new File(home, "password.hash");
+        settingsFile = new File(home, "settings");
+        pubCryptoKeyFile = new File(home, "crypto.pub");
+        privCryptoKeyFile = new File(home, "crypto.priv");
+        pubSigningKeyFile = new File(home, "signing.pub");
+        privSigningKeyFile = new File(home, "signing.priv");
 
         userEncryptionKey = SymmetricUtils.combine(getAdminEncryptionKey(), hashedUsername);
         userSigningKey = SymmetricUtils.combine(getAdminSigningKey(), hashedUsername);
@@ -85,21 +86,57 @@ public final class User {
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
+    protected void initialize(Base64String hashedPassword,
+                              String phoneNumber,
+                              Base64String pubCryptoKey,
+                              SJCLSymmetricField privCryptoKey,
+                              Base64String pubSigningKey,
+                              SJCLSymmetricField privSigningKey) throws CouldNotCreateUserException {
+        try {
+            Sys.debug("Creating user home directory.", this);
+            File homedir = getHome();
+            if (homedir.mkdir()) {
+                Sys.debug("Created user home directory.", this);
+                if (!vaultFile.createNewFile()) {
+                    Sys.error("Could not create vault file!.", this);
+                    throw new CouldNotCreateUserException();
+                } else {
+                    Sys.info("Created vault file.", this);
+                }
+                if (!sharedPasswordsFile.createNewFile()) {
+                    Sys.error("Could not create shared passwords file!.", this);
+                    throw new CouldNotCreateUserException();
+                } else {
+                    Sys.info("Created vault file.", this);
+                }
+                PasswordUtils.hashAndSavePassword(passwordHashFile, hashedPassword);
+                saveSettings(new Settings(phoneNumber));
+                saveAndSignPublicEncryptionKey(pubCryptoKey);
+                saveAndSignPublicSigningKey(pubSigningKey);
+                new Base64String(privCryptoKey.toString()).saveToFile(privCryptoKeyFile);
+                new Base64String(privSigningKey.toString()).saveToFile(privSigningKeyFile);
+                generateNewVaultSalt();
+
+
+                Sys.info("Successfully created user.", this);
+                info("Your account was successfully created!");
+            } else {
+                Sys.error("Could not create directory! Not adding to user map.", this);
+                org.apache.commons.io.FileUtils.deleteDirectory(getHome());
+            }
+        } catch (Exception err) {
+            try {
+                org.apache.commons.io.FileUtils.deleteDirectory(getHome());
+            } catch (Exception ex) {
+                throw new CouldNotCreateUserException(ex);
+            }
+            throw new CouldNotCreateUserException(err);
+        }
+    }
+
     private void verifyToken(Token token) throws IllegalTokenException {
         if (!this.hashedUsername.equals(token.getUser().hashedUsername) || (!test && !token.isVerified()))
             throw new IllegalTokenException();
-    }
-
-    protected SecretKey getUserEncryptionKey() {
-        return userEncryptionKey;
-    }
-
-    protected SecretKey getUserSigningKey() {
-        return userSigningKey;
-    }
-
-    protected SecretKey getFirstUserLoggingKey() {
-        return firstUserLoggingKey;
     }
 
     public int hashCode() {
@@ -110,22 +147,32 @@ public final class User {
         return hashedUsername.getB64String().substring(0, Integer.min(hashedUsername.size(), 10));
     }
 
-    public File getHome() {
+    private File getHome() {
         return new File(home, hashedUsername.getB64String());
     }
 
     private void saveAndSignPublicKey(File file, Base64String pubKey) throws IOException {
         FileUtils.empty(file);
         FileUtils.append(file, pubKey);
-        FileUtils.append(file, SigningUtils.sign(pubKey.decodeBytes(), userSigningKey));
+        FileUtils.append(file, SigningUtils.sign(concatenate(hashedUsername.decodeBytes(), pubKey.decodeBytes()), userSigningKey));
     }
 
     private String loadAndVerifyPublicKey(File file) throws IOException, InvalidPublicKeySignature {
         Base64String[] data = FileUtils.read(file);
-        if (SigningUtils.verify(data[0].decodeBytes(), data[1], userSigningKey)) {
+        if (SigningUtils.verify(concatenate(hashedUsername.decodeBytes(), data[0].decodeBytes()), data[1], userSigningKey)) {
             return data[0].getB64String();
         } else {
             throw new InvalidPublicKeySignature();
+        }
+    }
+
+    protected void generateNewVaultSalt() throws IOException, BadCiphertextException {
+        synchronized (vaultSaltFile) {
+            SymmetricUtils.authEnc(
+                    PasswordUtils.generateSalt(),
+                    userEncryptionKey,
+                    userSigningKey
+            ).saveToFile(vaultSaltFile);
         }
     }
 
@@ -206,18 +253,24 @@ public final class User {
         }
     }
 
+    protected void saveSettings(Settings settings) throws IOException, BadCiphertextException {
+        synchronized (settingsFile) {
+            settings.saveToFile(settingsFile, userEncryptionKey, userSigningKey);
+        }
+    }
+
     public void changeSettings(Settings settings, Token token) throws IOException, BadCiphertextException, IllegalTokenException {
         synchronized (settingsFile) {
             verifyToken(token);
-            settings.saveToFile(settingsFile, userEncryptionKey);
+            settings.saveToFile(settingsFile, userEncryptionKey, userSigningKey);
         }
     }
 
     public Settings loadSettings() throws CouldNotLoadSettingsException {
         synchronized (settingsFile) {
             try {
-                return Settings.loadFromFile(settingsFile, userEncryptionKey);
-            } catch (IOException | BadCiphertextException | IllegalArgumentException err) {
+                return Settings.loadFromFile(settingsFile, userEncryptionKey, userSigningKey);
+            } catch (IOException | InvalidSignatureException | IllegalArgumentException err) {
                 throw new CouldNotLoadSettingsException();
             }
         }
@@ -404,16 +457,16 @@ public final class User {
         }
     }
 
-    public Base64String loadVaultSalt(Token token) throws IOException, BadCiphertextException, IllegalTokenException {
+    public Base64String loadVaultSalt(Token token) throws IOException, InvalidSignatureException, IllegalTokenException {
         synchronized (vaultSaltFile) {
             verifyToken(token);
-            return new Base64String(SymmetricUtils.decrypt(Base64String.loadFromFile(vaultSaltFile)[0], userEncryptionKey));
+            return new Base64String(SymmetricUtils.authDec(Base64String.loadFromFile(vaultSaltFile)[0], userEncryptionKey, userSigningKey));
         }
     }
 
     protected UserLogEntry[] loadLog() throws IOException, CouldNotLoadKeyException, CorruptedLogException {
         synchronized (logFile) {
-            synchronized (currentUserLoggingKeyLock) {
+            synchronized (firstUserLoggingKey) {
                 Base64String[] encryptedEntries = FileUtils.read(logFile);
                 UserLogEntry[] decryptedEntries = new UserLogEntry[encryptedEntries.length];
                 currentUserLoggingKey = firstUserLoggingKey;
@@ -421,12 +474,11 @@ public final class User {
                     try {
                         SecretKey encryptionKey = deriveLogEncryptionKey();
                         SecretKey signingKey = deriveLogSigningKey();
-                        String entry = new String(SymmetricUtils.decrypt(encryptedEntries[i], encryptionKey));
-                        CSVRecord unverifiedRecord = CSVUtils.parseRecord(entry).getRecords().get(0);
-                        decryptedEntries[i] = UserLogEntry.fromCSV(unverifiedRecord, signingKey);
+                        String entry = new String(SymmetricUtils.authDec(encryptedEntries[i], encryptionKey, signingKey));
+                        decryptedEntries[i] = UserLogEntry.fromCSV(CSVUtils.parseRecord(entry).getRecords().get(0));
                         iterateLoggingKey();
-                    } catch (BadCiphertextException | IllegalArgumentException err) {
-                        throw new CorruptedLogException();
+                    } catch (IllegalArgumentException | InvalidSignatureException err) {
+                        throw new CorruptedLogException(err);
                     }
                 }
                 return decryptedEntries;
@@ -442,40 +494,35 @@ public final class User {
 
     private void appendToLog(LogType logType, String message, String affectedUser, String ip) {
         synchronized (logFile) {
-            synchronized (currentUserLoggingKeyLock) {
+            synchronized (firstUserLoggingKey) {
                 try {
                     SecretKey encryptionKey = deriveLogEncryptionKey();
                     SecretKey signingKey = deriveLogSigningKey();
-                    UserLogEntry entry = new UserLogEntry(logType, ip, affectedUser, LocalDateTime.now(), message, signingKey);
-                    FileUtils.append(logFile, SymmetricUtils.encrypt(entry.toCSV().getBytes(), encryptionKey));
+                    UserLogEntry entry = new UserLogEntry(logType, ip, affectedUser, LocalDateTime.now(), message);
+                    FileUtils.append(logFile, SymmetricUtils.authEnc(entry.toCSV().getBytes(), encryptionKey, signingKey));
                     iterateLoggingKey();
                     System.out.println("[" + getShortHash() + "] " + entry.toString());
-                } catch (IOException err) {
-                    err.printStackTrace();
-                    warning("Failed to log for user! Continuing (not recommended).", this);
-                    System.err.printf("[WARNING] Failed to log as user %s! Continuing (not recommended).%n", getShortHash());
-                } catch (BadCiphertextException err) {
-                    err.printStackTrace();
-                    Sys.error("Serialization of log entry was too long, or unencryptable.", this);
+                } catch (IOException | BadCiphertextException err) {
+                    throw new RuntimeException(err);
                 }
             }
         }
     }
 
     private void iterateLoggingKey() {
-        synchronized (currentUserLoggingKeyLock) {
+        synchronized (firstUserLoggingKey) {
             currentUserLoggingKey = SymmetricUtils.hashIterateKey(currentUserLoggingKey);
         }
     }
 
     private SecretKey deriveLogEncryptionKey() {
-        synchronized (currentUserLoggingKeyLock) {
+        synchronized (firstUserLoggingKey) {
             return SymmetricUtils.combine(currentUserLoggingKey, "encryption".getBytes());
         }
     }
 
     private SecretKey deriveLogSigningKey() {
-        synchronized (currentUserLoggingKeyLock) {
+        synchronized (firstUserLoggingKey) {
             return SymmetricUtils.combine(currentUserLoggingKey, "signing".getBytes());
         }
     }

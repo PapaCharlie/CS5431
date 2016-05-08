@@ -1,17 +1,12 @@
 package vault5431.users;
 
-import org.apache.commons.io.FileUtils;
 import vault5431.Sys;
 import vault5431.crypto.HashUtils;
-import vault5431.crypto.PasswordUtils;
-import vault5431.crypto.SymmetricUtils;
-import vault5431.crypto.exceptions.BadCiphertextException;
-import vault5431.crypto.exceptions.CouldNotSaveKeyException;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
+import vault5431.users.exceptions.CouldNotCreateUserException;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -100,7 +95,7 @@ public class UserManager {
             SJCLSymmetricField privCryptoKey,
             Base64String pubSigningKey,
             SJCLSymmetricField privSigningKey)
-            throws IOException, CouldNotSaveKeyException, BadCiphertextException {
+            throws CouldNotCreateUserException {
         if (!isValidUsername(username)) {
             throw new IllegalArgumentException("Username is not valid!");
         }
@@ -118,49 +113,12 @@ public class UserManager {
         userMapLock.writeLock().lock();
         try {
             if (!userExists(username)) { // Write lock may have been acquired between r.unlock and w.lock.
-                Sys.debug("Creating user home directory.", user);
-                File homedir = user.getHome();
-                if (homedir.mkdir()) {
-                    Sys.debug("Created user home directory.", user);
-                    if (!user.vaultFile.createNewFile()) {
-                        Sys.error("Could not create vault file!.", user);
-                        return null;
-                    } else {
-                        Sys.info("Created vault file.", user);
-                    }
-                    if (!user.sharedPasswordsFile.createNewFile()) {
-                        Sys.error("Could not create shared passwords file!.", user);
-                        return null;
-                    } else {
-                        Sys.info("Created vault file.", user);
-                    }
-                    PasswordUtils.hashAndSavePassword(user.passwordHashFile, hashedPassword);
-                    new Settings(phoneNumber).saveToFile(user.settingsFile, user.getUserEncryptionKey());
-
-                    user.saveAndSignPublicEncryptionKey(pubCryptoKey);
-                    user.saveAndSignPublicSigningKey(pubSigningKey);
-                    new Base64String(privCryptoKey.toString()).saveToFile(user.privCryptoKeyFile);
-                    new Base64String(privSigningKey.toString()).saveToFile(user.privSigningKeyFile);
-
-                    byte[] salt = PasswordUtils.generateSalt();
-                    SymmetricUtils.encrypt(salt, user.getUserEncryptionKey()).saveToFile(user.vaultSaltFile);
-
-                    Sys.info("Successfully created user.", user);
-                    user.info("Your account was successfully created!");
-                    addUser(user);
-                    return user;
-                } else {
-                    Sys.error("Could not create directory! Not adding to user map.", user);
-                    FileUtils.deleteDirectory(homedir);
-                    return null;
-                }
+                user.initialize(hashedPassword, phoneNumber, pubCryptoKey, privCryptoKey, pubSigningKey, privSigningKey);
+                addUser(user);
+                return user;
             } else {
                 return getUser(username);
             }
-        } catch (Exception err) {
-            err.printStackTrace();
-            FileUtils.deleteDirectory(user.getHome());
-            throw err;
         } finally {
             userMapLock.writeLock().unlock();
         }

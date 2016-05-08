@@ -3,6 +3,7 @@ package vault5431.routes;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
+import spark.Spark;
 import vault5431.Sys;
 import vault5431.auth.exceptions.*;
 import vault5431.routes.exceptions.SessionExpiredException;

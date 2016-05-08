@@ -2,6 +2,7 @@ package vault5431.crypto;
 
 import org.bouncycastle.util.Arrays;
 import vault5431.crypto.exceptions.BadCiphertextException;
+import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.io.Base64String;
 
 import javax.crypto.*;
@@ -79,12 +80,11 @@ public class SymmetricUtils {
         }
     }
 
-    public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws BadCiphertextException {
+    private static byte[] decrypt(byte[] encryptedContent, SecretKey key) throws BadCiphertextException {
         try {
             Cipher aesCipher = getCipher();
-            byte[] content = encryptedContent.decodeBytes();
-            IvParameterSpec iv = new IvParameterSpec(Arrays.copyOfRange(content, 0, IV_SIZE));
-            byte[] cipherText = Arrays.copyOfRange(content, IV_SIZE, content.length);
+            IvParameterSpec iv = new IvParameterSpec(Arrays.copyOfRange(encryptedContent, 0, IV_SIZE));
+            byte[] cipherText = Arrays.copyOfRange(encryptedContent, IV_SIZE, encryptedContent.length);
             aesCipher.init(Cipher.DECRYPT_MODE, key, iv);
             return aesCipher.doFinal(cipherText);
         } catch (InvalidAlgorithmParameterException | NoSuchProviderException | NoSuchPaddingException | NoSuchAlgorithmException err) {
@@ -98,5 +98,30 @@ public class SymmetricUtils {
         }
     }
 
+    public static byte[] decrypt(Base64String encryptedContent, SecretKey key) throws BadCiphertextException {
+        return decrypt(encryptedContent.decodeBytes(), key);
+    }
+
+    public static Base64String authEnc(byte[] content, SecretKey encryptionKey, SecretKey signingKey) throws BadCiphertextException {
+        Base64String cipher = encrypt(content, encryptionKey);
+        Base64String signature = SigningUtils.sign(cipher.decodeBytes(), signingKey);
+        signature.append(cipher);
+        return signature;
+    }
+
+    public static byte[] authDec(Base64String cipher, SecretKey encryptionKey, SecretKey signingKey) throws InvalidSignatureException {
+        byte[] content = cipher.decodeBytes();
+        Base64String signature = new Base64String(Arrays.copyOf(content, SigningUtils.SIGNATURE_SIZE));
+        content = Arrays.copyOfRange(content, SigningUtils.SIGNATURE_SIZE, content.length);
+        if (SigningUtils.verify(content, signature, signingKey)) {
+            try {
+                return decrypt(content, encryptionKey);
+            } catch (BadCiphertextException err) {
+                throw new InvalidSignatureException();
+            }
+        } else {
+            throw new InvalidSignatureException();
+        }
+    }
 
 }

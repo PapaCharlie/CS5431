@@ -11,4 +11,7 @@ public class CorruptedLogException extends Exception {
         super();
     }
 
+    public CorruptedLogException(Throwable cause) {
+        super(cause);
+    }
 }
