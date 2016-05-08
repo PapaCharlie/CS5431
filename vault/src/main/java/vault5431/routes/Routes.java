@@ -12,6 +12,7 @@ import vault5431.auth.AuthenticationHandler;
 import vault5431.auth.AuthenticationHandler.Token;
 import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
+import vault5431.auth.exceptions.NoSuchUserException;
 import vault5431.routes.exceptions.SessionExpiredException;
 
 import java.io.IOException;
@@ -55,17 +56,13 @@ public abstract class Routes {
         return new JSONObject().put("success", true).put("error", "");
     }
 
-    static Token validateToken(Request req) {
+    static JSONObject success(String message) {
+        return new JSONObject().put("success", true).put("error", "").put("message", message);
+    }
+
+    static Token validateToken(Request req) throws NoSuchUserException, CouldNotParseTokenException, InvalidTokenException {
         if (req.cookie("token") != null && req.cookie("token").length() > 0) {
-            try {
-                return AuthenticationHandler.parseFromCookie(req.cookie("token").trim(), req.ip());
-            } catch (CouldNotParseTokenException err) {
-                Sys.debug("Received invalid token.", req.ip());
-                return null;
-            } catch (InvalidTokenException err) {
-                Sys.warning(String.format("Rejecting token. Reason: \"%s\". There is reason to believe this IP is acting maliciously.", err.getMessage()), req.ip());
-                return null;
-            }
+            return AuthenticationHandler.parseFromCookie(req.cookie("token").trim(), req.ip());
         } else {
             return null;
         }

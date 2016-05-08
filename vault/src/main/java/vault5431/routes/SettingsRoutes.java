@@ -82,6 +82,7 @@ final class SettingsRoutes extends Routes {
                     try {
                         token.getUser().changeSettings(settings.withPhoneNumber(phoneNumber), token);
                         token.getUser().info("Changed phone number.", token.getIp());
+                        return success();
                     } catch (IllegalArgumentException err) {
                         return failure(err);
                     }

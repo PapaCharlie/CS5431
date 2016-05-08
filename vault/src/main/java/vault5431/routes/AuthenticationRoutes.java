@@ -38,14 +38,22 @@ final class AuthenticationRoutes extends Routes {
             } else {
                 res.removeCookie("token");
                 Sys.debug("Received GET to /.", req.ip());
-                Map<String, Object> attributes = new HashMap<>();
+                Map<String, Object> attributes = new HashMap<>(2);
+                if (req.session().attribute("error") != null) {
+                    attributes.put("error", req.session().attribute("error"));
+                }
+                if (req.session().attribute("success") != null) {
+                    attributes.put("success", req.session().attribute("success"));
+                }
+                req.session().removeAttribute("error");
+                req.session().removeAttribute("success");
                 return new ModelAndView(attributes, "login.ftl");
             }
         }, freeMarkerEngine);
 
         post("/", (req, res) -> {
             Sys.debug("Received POST to /.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(2);
             String username = req.queryParams("username");
             String password = req.queryParams("password");
             if (!provided(username, password)) {
@@ -74,14 +82,14 @@ final class AuthenticationRoutes extends Routes {
                 }
             }
             Sys.debug("Failed login attempt.", req.ip());
-            String errorMessage = "This username/password combination does not exist!";
-            attributes.put("error", errorMessage);
-            return new ModelAndView(attributes, "login.ftl");
+            req.session().attribute("error", "This username/password combination does not exist!");
+            res.redirect("/");
+            return emptyPage;
         }, freeMarkerEngine);
 
         get("/twofactor", (req, res) -> {
             Token token = validateToken(req);
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(1);
             if (token != null) {
                 if (!token.isVerified()) {
                     try {
@@ -149,13 +157,12 @@ final class AuthenticationRoutes extends Routes {
 
         get("/register", (req, res) -> {
             Sys.debug("Received GET to /register", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "register.ftl");
+            return new ModelAndView(new HashMap<>(0), "register.ftl");
         }, freeMarkerEngine);
 
         post("/register", (req, res) -> {
             Sys.debug("Received POST to /register.", req.ip());
-            Map<String, Object> attributes = new HashMap<>();
+            Map<String, Object> attributes = new HashMap<>(1);
             String username = req.queryParams("username");
             String password = req.queryParams("password");
             String confirm = req.queryParams("confirm");
@@ -173,7 +180,7 @@ final class AuthenticationRoutes extends Routes {
                     && Base64String.isValidBase64Data(pubCryptoKey)
                     && Base64String.isValidBase64Data(pubSigningKey))) {
                 attributes.put("error", "All fields are not of valid format. Please use the proper means.");
-                return new ModelAndView(attributes, "login.ftl");
+                return new ModelAndView(attributes, "register.ftl");
             }
             if (!password.equals(confirm)) {
                 attributes.put("error", "Passwords are not equal!");
@@ -192,16 +199,16 @@ final class AuthenticationRoutes extends Routes {
                             new SJCLSymmetricField(privCryptoKey, 100, true),
                             Base64String.fromBase64(pubSigningKey),
                             new SJCLSymmetricField(privSigningKey, 100, true));
+                    req.session().attribute("success", "Account successfully created!");
+                    res.redirect("/");
+                    return emptyPage;
                 } catch (IllegalArgumentException err) {
-                    err.printStackTrace();
                     attributes.put("error", "Invalid password!");
                     return new ModelAndView(attributes, "register.ftl");
                 } catch (Exception err) {
                     System.err.println("Could not create user!");
                     throw new RuntimeException(err);
                 }
-                res.redirect("/");
-                return emptyPage;
             } else {
                 attributes.put("error", "This username is already taken!");
                 return new ModelAndView(attributes, "register.ftl");
@@ -219,8 +226,7 @@ final class AuthenticationRoutes extends Routes {
             Sys.debug("Displaying unauthorized page.", req.ip());
             res.status(401);
             res.removeCookie("token");
-            Map<String, Object> attributes = new HashMap<>();
-            return new ModelAndView(attributes, "unauthorized.ftl");
+            return new ModelAndView(new HashMap<>(0), "unauthorized.ftl");
         }, freeMarkerEngine);
 
     }

@@ -25,17 +25,17 @@
     <#if error??>
         <p class="has-error">${error}</p>
     </#if>
+    <#if success??>
+        <p class="has-success">${success}</p>
+    </#if>
     </div>
 
 </div>
 <script>
     $(document).ready(function () {
-        if (sessionStorage.getItem("redirected")) {
-            sessionStorage.removeItem("password");
-        } else if (sessionStorage.getItem("password")) {
-            sessionStorage.setItem("redirected", true);
-            window.location.href = "/home";
-        }
+        <#if error??>
+            sessionStorage.clear();
+        </#if>
         $("#loginForm").submit(function (event) {
             var passwordField = $(this).find("#password");
             var hashedPassword = hash(passwordField.val());
