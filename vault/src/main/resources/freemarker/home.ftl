@@ -29,7 +29,7 @@
                 <span class="input-group-addon"><button id="genrandom" type="button">Quick Gen</button></span>
             </div>
             <div id="temprandom" class="hidden generated-password" style="display:inline"></div>
-            <button id="addrandom" type="button" class="hidden">Quick Add</button>
+            <button id="addrandom" type="button" class="hidden">Use this password</button>
 
             <textarea form="newPasswordForm" name="notes" class="form-control" maxlength="1000"
                       placeholder="Secure Notes (Optional- max 1000 characters)"></textarea>
