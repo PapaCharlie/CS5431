@@ -3,10 +3,10 @@ package vault5431.routes;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
-import spark.Spark;
 import vault5431.Sys;
 import vault5431.auth.exceptions.*;
 import vault5431.routes.exceptions.SessionExpiredException;
+import vault5431.users.exceptions.CorruptedLogException;
 import vault5431.users.exceptions.IllegalTokenException;
 
 import java.util.HashMap;
@@ -57,12 +57,16 @@ final class ExceptionRoutes extends Routes {
         exception(TooMany2FAAttemptsException.class, (e, req, res) ->
                 renderFatalError("You've attempted two factor authentication too many times!", req, res));
 
-        exception(IllegalTokenException.class, (e, req, res) -> {
-            res.redirect("/unauthorized");
-        });
+        exception(IllegalTokenException.class, (e, req, res) ->
+                res.redirect("/unauthorized")
+        );
 
         exception(NoSuchUserException.class, (e, req, res) ->
-                renderFatalError("This account has been deleted!", req, res)
+                renderFatalError("This account does not exist!", req, res)
+        );
+
+        exception(CorruptedLogException.class, (e, req, res) ->
+                panic(e)
         );
 
         get("/unauthorized", (req, res) ->

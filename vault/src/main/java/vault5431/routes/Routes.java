@@ -111,15 +111,18 @@ public abstract class Routes {
         new LogRoutes().routes();
         new PasswordRoutes().routes();
 
-        exception(RuntimeException.class, (e, req, res) -> {
-            e.printStackTrace();
-            stop();
-            get("/*", (request, response) -> {
-                SMSHandler.sendSms("646-339-1069", "We're under attack! Please check the logs to see the problem.");
-                return new ModelAndView(new HashMap<>(0), "maintenance.ftl");
-            }, freeMarkerEngine);
-        });
+    }
 
+    public static void panic(Exception err) {
+        err.printStackTrace();
+        try {
+            SMSHandler.sendSms("646-339-1069", "We're under attack! Please check the logs to see the problem: " + err.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        before("*", (req, res) -> {
+            halt(500, freeMarkerEngine.render(new ModelAndView(new HashMap<>(0), "maintenance.ftl")));
+        });
     }
 
     protected abstract void routes();
