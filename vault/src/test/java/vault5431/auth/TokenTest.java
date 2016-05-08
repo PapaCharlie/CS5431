@@ -19,15 +19,15 @@ public class TokenTest extends VaultTest {
 
     @Test(expected = InvalidTokenException.class)
     public void testTokenSerialization() throws Exception {
-        User user = getTempUser("test", "test");
-        Token token = AuthenticationHandler.acquireUnverifiedToken("test", new Base64String("test"), Sys.NO_IP);
+        TempUser tempUser = getTempUser();
+        Token token = AuthenticationHandler.acquireUnverifiedToken(tempUser.username, new Base64String(tempUser.password), Sys.NO_IP);
         assertNotNull(token);
         System.out.println(token.toCookie());
         Thread.sleep(100);
         Token parsedToken = AuthenticationHandler.parseFromCookie(token.toCookie(), Sys.NO_IP);
         assertTrue(token.deepEquals(parsedToken));
 
-        token = AuthenticationHandler.acquireUnverifiedToken("test", new Base64String("test"), Sys.NO_IP);
+        token = AuthenticationHandler.acquireUnverifiedToken(tempUser.username, new Base64String(tempUser.password), Sys.NO_IP);
         assertNotNull(token);
         Thread.sleep(100);
         parsedToken = AuthenticationHandler.parseFromCookie(token.toCookie(), Sys.NO_IP);

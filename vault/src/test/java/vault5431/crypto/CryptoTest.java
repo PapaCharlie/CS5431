@@ -2,6 +2,7 @@ package vault5431.crypto;
 
 import org.junit.Test;
 import vault5431.VaultTest;
+import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.io.Base64String;
 
 import javax.crypto.SecretKey;
@@ -47,6 +48,17 @@ public class CryptoTest extends VaultTest {
         File passwordFile = getTempFile("password");
         PasswordUtils.hashAndSavePassword(passwordFile, "password");
         assertTrue(PasswordUtils.verifyPasswordInFile(passwordFile, "password"));
+    }
+
+    @Test(expected = InvalidSignatureException.class)
+    public void testAuthEncDec() throws Exception {
+        SecretKey crypto = SymmetricUtils.getNewKey();
+        SecretKey signing = SymmetricUtils.getNewKey();
+        Base64String cipher = SymmetricUtils.authEnc("test".getBytes(), crypto, signing);
+        assertEquals("test", new String(SymmetricUtils.authDec(cipher, crypto, signing)));
+        byte[] invalid = cipher.decodeBytes();
+        invalid[0] = (byte)((invalid[0] ^ 42) == invalid[0] ? invalid[0] ^ 27 : invalid[0] ^ 42);
+        SymmetricUtils.authDec(new Base64String(invalid), crypto, signing);
     }
 
 }

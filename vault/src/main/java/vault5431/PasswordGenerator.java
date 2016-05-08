@@ -174,4 +174,8 @@ public class PasswordGenerator {
         return generatePassword(length, true, true, true, true, false);
     }
 
+    public static String generatePassword() throws IllegalArgumentException {
+        return generatePassword(16, true, true, true, true, false);
+    }
+
 }

@@ -14,14 +14,14 @@ public class TwoFactorAuthHandlerTest extends VaultTest {
 
     @Test
     public void testAddToManager() throws Exception {
-        User user = getTempUser("test");
-        int number = TwoFactorAuthHandler.sendAuthMessage(user);
-        assertTrue(TwoFactorAuthHandler.verifyAuthMessage(user, number));
+        TempUser tempUser = getTempUser();
+        int number = TwoFactorAuthHandler.sendAuthMessage(tempUser.user);
+        assertTrue(TwoFactorAuthHandler.verifyAuthMessage(tempUser.user, number));
 //        try {
 //            Thread.sleep(60000);
 //        } catch (InterruptedException ie) {
 //            System.out.println("Interrupted");
 //        }
-        assertTrue(TwoFactorAuthHandler.isWaiting(user));
+        assertTrue(TwoFactorAuthHandler.isWaiting(tempUser.user));
     }
 }

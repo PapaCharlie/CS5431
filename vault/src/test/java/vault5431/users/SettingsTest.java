@@ -17,10 +17,11 @@ public class SettingsTest extends VaultTest {
     @Test
     public void testSettingsSave() throws Exception {
         File tmp = getTempFile("settings");
-        SecretKey key = SymmetricUtils.getNewKey();
+        SecretKey crypto = SymmetricUtils.getNewKey();
+        SecretKey signing = SymmetricUtils.getNewKey();
         Settings settings = new Settings("123-123-1234");
-        settings.saveToFile(tmp, key);
-        Settings loadedSettings = Settings.loadFromFile(tmp, key);
+        settings.saveToFile(tmp, crypto, signing);
+        Settings loadedSettings = Settings.loadFromFile(tmp, crypto, signing);
         assertEquals(settings.getConcurrentSessions(), loadedSettings.getConcurrentSessions());
         assertEquals(settings.getSessionLength(), loadedSettings.getSessionLength());
         assertEquals(settings.getPhoneNumber(), loadedSettings.getPhoneNumber());

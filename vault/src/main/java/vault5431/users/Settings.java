@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
+import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.io.Base64String;
 import vault5431.io.FileUtils;
 
@@ -11,8 +12,6 @@ import javax.crypto.SecretKey;
 import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
-
-import static vault5431.Vault.getAdminEncryptionKey;
 
 /**
  * User settings class. Contains misc information about the user.
@@ -54,8 +53,8 @@ public final class Settings {
         this(phoneNumber, 5, 60);
     }
 
-    protected static Settings loadFromFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, IllegalArgumentException, BadCiphertextException {
-        return fromJSON(new String(SymmetricUtils.decrypt(FileUtils.read(settingsFile)[0], userEncryptionKey)));
+    protected static Settings loadFromFile(File settingsFile, SecretKey userEncryptionKey, SecretKey userSigningKey) throws IOException, InvalidSignatureException, IllegalArgumentException {
+        return fromJSON(new String(SymmetricUtils.authDec(FileUtils.read(settingsFile)[0], userEncryptionKey, userSigningKey)));
     }
 
     public static Settings fromJSON(JSONObject json) throws IllegalArgumentException {
@@ -106,8 +105,8 @@ public final class Settings {
         return new Settings(this.phoneNumber, this.concurrentSessions, sessionLength); // Let constructor validate fields
     }
 
-    protected void saveToFile(File settingsFile, SecretKey userEncryptionKey) throws IOException, BadCiphertextException {
-        FileUtils.write(settingsFile, SymmetricUtils.encrypt(toJson().getBytes(), userEncryptionKey));
+    protected void saveToFile(File settingsFile, SecretKey userEncryptionKey, SecretKey userSigningKey) throws IOException, BadCiphertextException {
+        FileUtils.write(settingsFile, SymmetricUtils.authEnc(toJson().getBytes(), userEncryptionKey, userSigningKey));
     }
 
     public JSONObject toJSONObject() {

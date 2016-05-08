@@ -1,10 +1,7 @@
 package vault5431.logging;
 
-import vault5431.io.Base64String;
-
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,9 +16,6 @@ public abstract class LogEntry {
     String affectedUser; //Whose log the entry was written in
     LocalDateTime timestamp; //When the log was generated
     String message; //The message of the log
-    Base64String signature; //Signature of the creator of the log
-
-//    public abstract boolean checkSignature(String signature);
 
     public abstract String toCSV() throws IOException;
 
@@ -39,7 +33,6 @@ public abstract class LogEntry {
         hash.put("affectedUser", affectedUser);
         hash.put("timestamp", timestamp.toString());
         hash.put("message", message);
-        hash.put("signature", signature.toString());
         return hash;
     }
 }

@@ -7,7 +7,6 @@
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="/sjcl.js"></script>
     <script type="text/javascript" src="/crypto.js"></script>
-    <script type="text/javascript" src="/generator.js"></script>
 </head>
 <body>
 <div class="login">
