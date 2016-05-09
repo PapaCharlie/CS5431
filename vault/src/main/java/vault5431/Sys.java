@@ -47,13 +47,7 @@ public class Sys {
                 throw new RuntimeException(err);
             }
         } else {
-            try {
-                loadLog();
-            } catch (CorruptedLogException err) {
-                System.err.println("System log was corrupted!");
-                Routes.panic(err);
-                throw new RuntimeException(err);
-            }
+            loadLog();
         }
     }
 
@@ -214,7 +208,7 @@ public class Sys {
      *
      * @return Set of LogEntries loaded from disk.
      */
-    public synchronized static SystemLogEntry[] loadLog() throws CorruptedLogException {
+    public synchronized static SystemLogEntry[] loadLog() {
         synchronized (logFile) {
             synchronized (firstLoggingKey) {
                 try {
@@ -228,9 +222,9 @@ public class Sys {
                     }
                     return decryptedEntries;
                 } catch (IllegalArgumentException | InvalidSignatureException | IOException err) {
-                    System.err.println("[ERROR] Failed to load system log!");
-                    Routes.panic(err);
-                    throw new CorruptedLogException(err);
+                    System.err.println("System log was corrupted. Exiting.");
+                    System.exit(1);
+                    throw new RuntimeException();
                 }
             }
         }
