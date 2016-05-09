@@ -199,7 +199,7 @@ final class AuthenticationRoutes extends Routes {
                             new SJCLSymmetricField(privCryptoKey, 100, true),
                             Base64String.fromBase64(pubSigningKey),
                             new SJCLSymmetricField(privSigningKey, 100, true));
-                    req.session().attribute("success", "Account successfully created!");
+                    req.session().attribute("success", "Account successfully created! Don't forget your master password!");
                     res.redirect("/");
                     return emptyPage;
                 } catch (IllegalArgumentException err) {
