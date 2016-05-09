@@ -86,6 +86,17 @@ public final class User {
         currentUserLoggingKey = firstUserLoggingKey;
     }
 
+    /**
+     * Initialize the User. This means creating all the required files.
+     *
+     * @param hashedPassword
+     * @param phoneNumber
+     * @param pubCryptoKey
+     * @param privCryptoKey
+     * @param pubSigningKey
+     * @param privSigningKey
+     * @throws CouldNotCreateUserException
+     */
     protected void initialize(Base64String hashedPassword,
                               String phoneNumber,
                               Base64String pubCryptoKey,
@@ -135,7 +146,10 @@ public final class User {
     }
 
     private void verifyToken(Token token) throws IllegalTokenException {
-        if (!this.hashedUsername.equals(token.getUser().hashedUsername) || (!test && !token.isVerified()))
+        if (
+                (!this.hashedUsername.equals(token.getUser().hashedUsername)
+                        || (!test && !token.isVerified())
+                ) && !token.isExpired())
             throw new IllegalTokenException();
     }
 
@@ -320,28 +334,31 @@ public final class User {
         }
     }
 
-    private HashSet<SharedPassword> loadSharedPasswords() throws IOException, VaultNotFoundException {
+    private HashSet<SharedPassword> loadSharedPasswords() throws VaultNotFoundException {
         synchronized (sharedPasswordsFile) {
             info("Loading shared passwords.");
             if (!sharedPasswordsFile.exists()) {
                 Sys.error("User's shared passwords file could not be found.", this);
                 throw new VaultNotFoundException();
             }
-            HashSet<SharedPassword> sharedPasswords = new HashSet<>();
+            Base64String[] loadedPasswords;
             try {
-                for (Base64String base64String : Base64String.loadFromFile(sharedPasswordsFile)) {
-                    try {
-                        sharedPasswords.add(SharedPassword.fromJSON(base64String));
-                    } catch (IllegalArgumentException | JSONException err) {
-                        err.printStackTrace();
-                        error("Shared password was corrupted! Loading remaining passwords.");
-                    }
-                }
+                loadedPasswords = Base64String.loadFromFile(sharedPasswordsFile);
             } catch (IOException err) {
                 err.printStackTrace();
                 error("Could not find vault!");
                 throw new VaultNotFoundException();
             }
+            HashSet<SharedPassword> sharedPasswords = new HashSet<>(loadedPasswords.length);
+            for (Base64String base64String : loadedPasswords) {
+                try {
+                    sharedPasswords.add(SharedPassword.fromJSON(base64String));
+                } catch (IllegalArgumentException | JSONException err) {
+                    err.printStackTrace();
+                    error("Shared password was corrupted! Loading remaining passwords.");
+                }
+            }
+
             return sharedPasswords;
         }
     }
@@ -398,7 +415,7 @@ public final class User {
         synchronized (vaultFile) {
             verifyToken(token);
             HashSet<Password> passwords = loadPasswords(token);
-            HashSet<Password> filteredPasswords = new HashSet<>();
+            HashSet<Password> filteredPasswords = new HashSet<>(passwords.size());
             Password deleted = null;
             for (Password password : passwords) {
                 if (password.getID().equals(uuid)) {
