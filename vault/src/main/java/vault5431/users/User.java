@@ -146,7 +146,7 @@ public final class User {
     }
 
     private void verifyToken(Token token) throws IllegalTokenException {
-        if (
+        if (token != null &&
                 (!this.hashedUsername.equals(token.getUser().hashedUsername)
                         || (!test && !token.isVerified())
                 ) && !token.isExpired())
