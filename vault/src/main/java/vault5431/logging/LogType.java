@@ -55,6 +55,21 @@ public enum LogType {
     public String toString() {
         switch (this) {
             case ERROR:
+                return "ERROR";
+            case WARNING:
+                return "WARNING";
+            case INFO:
+                return "INFO";
+            case DEBUG:
+                return "DEBUG";
+            default:
+                return "";
+        }
+    }
+
+    public String toColorString() {
+        switch (this) {
+            case ERROR:
                 return String.format("[%s%7s%s]", Colors.RED, "ERROR", Colors.RESET);
             case WARNING:
                 return String.format("[%s%7s%s]", Colors.YELLOW, "WARNING", Colors.RESET);
