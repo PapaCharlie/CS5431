@@ -25,8 +25,21 @@ import java.util.concurrent.ScheduledExecutorService;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
- * Reference monitor for {@link Token} distribution. The only way to acquire a Token instance is through this class. In
- * other words, in order for a request to become authorized to do anything, it must pass through this class at least once.
+ * Reference monitor for {@link Token} distribution. The only way to acquire a Token instance is through this class,
+ * since it is an internal class. In other words, in order for a request to become authorized to do anything, it must
+ * pass through this class at least once.
+ * <p>
+ * Here are the conditions for allowing a Token instance to be created:
+ * - A new Token can only be assigned iff doing so does not violate the User's maximum concurrent users setting. On the
+ * other hand, changing said setting does not currently active Tokens.
+ * - A Token must expire at or before the time dictated by the User's maximum session length. On the other hand,
+ * changing the session length does not affect currently active Tokens. All Tokens expire at midnight EST, regardless
+ * of settings.
+ * - If an account has more than 3 failed login attempts per hour, no new Tokens will be assigned for said User for
+ * an hour.
+ * - A User may attempt 2FA no more than 10 times on the same code. Doing so will result in a one hour login ban.
+ * - Changing the master password voids all active Tokens, and assigns a new Token to the machine that made the change.
+ * - An instance of the Token class will only enter the system if it has been assigned by this monitor for that User.
  *
  * @author papacharlie
  */
@@ -35,9 +48,9 @@ public class AuthenticationHandler {
     private static final int MAX_FAILED_LOGINS = 2;
     private static final int BAN_LENGTH = 60 * 60; // One hour
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final HashMap<User, HashSet<UUID>> tokenCache = new HashMap<>();
-    private static final HashMap<User, Integer> failedLogins = new HashMap<>();
-    private static final HashSet<User> bannedUsers = new HashSet<>();
+    private static final HashMap<User, HashSet<UUID>> tokenCache = new HashMap<>(10);
+    private static final HashMap<User, Integer> failedLogins = new HashMap<>(10);
+    private static final HashSet<User> bannedUsers = new HashSet<>(10);
 
     /**
      * Returns a Token instance parsed from the cookie of a request.
@@ -141,7 +154,7 @@ public class AuthenticationHandler {
                 if (user.verifyMasterPassword(password)) {
                     Settings settings = user.loadSettings();
                     if (!tokenCache.containsKey(user)) {
-                        tokenCache.put(user, new HashSet<>());
+                        tokenCache.put(user, new HashSet<>(settings.getConcurrentSessions()));
                     }
                     if (tokenCache.get(user).size() < settings.getConcurrentSessions()) {
                         Token token = new Token(username, false);
@@ -168,6 +181,17 @@ public class AuthenticationHandler {
         }
     }
 
+    /**
+     * Changes the user's master password. Assigns a new Token and voids all other active Tokens. Requires a Token
+     * assigned by this monitor, and the user's old password.
+     *
+     * @param oldToken previously active token
+     * @param oldPassword user's current password
+     * @return A new Token instance.
+     * @throws TooManyFailedLogins If #oldPassword is not the user's current password.
+     * @throws IOException If the user's current password could not be loaded from disk.
+     * @throws CouldNotLoadSettingsException If the user's settings could not be loaded.
+     */
     public static Token changeMasterPassword(Token oldToken, Base64String oldPassword) throws TooManyFailedLogins, IOException, CouldNotLoadSettingsException {
         synchronized (tokenCache) {
             oldToken.getUser().warning("Received request to change master password. Stay tuned.", oldToken.getIp());
@@ -225,7 +249,7 @@ public class AuthenticationHandler {
                     throw err;
                 }
             } else {
-                throw new InvalidTokenException();
+                throw new InvalidTokenException("This Token was never assigned.");
             }
         }
     }
@@ -275,7 +299,7 @@ public class AuthenticationHandler {
         }
 
         /**
-         * Private constructor used for {@link #parseCookie(String)}.
+         * Private constructor used for {@link #parseCookie(String, String)}.
          *
          * @throws InvalidTokenException thrown when parsed token is not valid
          */
@@ -303,12 +327,12 @@ public class AuthenticationHandler {
             }
         }
 
-        private static byte[] toSignatureBody(String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified) {
-            return (username + creationDate.toString() + expiresAt.toString() + id.toString() + verified).getBytes();
+        public boolean isExpired() {
+            return LocalDateTime.now().isAfter(expiresAt);
         }
 
-        private static Token parseCookie(String cookie) throws CouldNotParseTokenException, InvalidTokenException {
-            return parseCookie(cookie, Sys.NO_IP);
+        private static byte[] toSignatureBody(String username, LocalDateTime creationDate, LocalDateTime expiresAt, UUID id, boolean verified) {
+            return (username + creationDate.toString() + expiresAt.toString() + id.toString() + verified).getBytes();
         }
 
         /**
@@ -340,6 +364,11 @@ public class AuthenticationHandler {
             return UserManager.getUser(this.username);
         }
 
+        /**
+         * Calcuates the number of in which the Token should expire, dictated by the user's settings and the current
+         * time.
+         * @return The calculated time.
+         */
         public int secondsUntilExpiration() {
             return (int) LocalDateTime.now().until(expiresAt, ChronoUnit.SECONDS);
         }
@@ -374,9 +403,10 @@ public class AuthenticationHandler {
         }
 
         /**
-         * Dump to string for cookie
+         * Dump to string for HTML cookie.
          *
-         * @throws IOException
+         * @return The string representation of the Token.
+         * @throws IOException If the cookie body cannot be serialized (impossible).
          */
         public String toCookie() throws IOException {
             return CSVUtils.makeRecord(username, creationDate, expiresAt, id, verified, signature);
