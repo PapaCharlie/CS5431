@@ -35,24 +35,6 @@ public final class UserLogEntry extends LogEntry {
     }
 
     /**
-     * @return a String[] representation of the UserLogEntry
-     */
-    @Override
-    public String toString() {
-        return "[" + logType + "]" + " " + ip +
-                " " + affectedUser + " " + timestamp +
-                " " + message + " ";
-    }
-
-    /**
-     * @return CSV formatted String representation of a UserLogEntry
-     * @throws IOException
-     */
-    public String[] asArray() {
-        return new String[]{logType.toString(), ip, timestamp.toString(), message};
-    }
-
-    /**
      * @return CSV formatted String representation of a SystemLogEntry
      * @throws IOException
      */

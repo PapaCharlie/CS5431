@@ -16,7 +16,7 @@ import static vault5431.Vault.home;
  */
 public class LogTest extends VaultTest {
 
-    private static final File sysLogFile = new File(home, Vault.test ? "testlog" : "log");
+    private static final File sysLogFile = new File(home, "log");
 
     @Test
     public void testUserLog() throws Exception {
@@ -58,7 +58,6 @@ public class LogTest extends VaultTest {
     @Test
     public void testSysLog() throws Exception {
 
-        File sysLogFile = new File(home, Vault.test ? "testlog" : "log");
         FileUtils.empty(sysLogFile);
 
         Sys.loadLog();
