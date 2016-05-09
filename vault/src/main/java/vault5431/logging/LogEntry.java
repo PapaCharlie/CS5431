@@ -19,9 +19,9 @@ public abstract class LogEntry {
 
     public abstract String toCSV() throws IOException;
 
-    public abstract String toString();
-
-    public abstract String[] asArray();
+    public String toString() {
+        return String.format("%s %15s %10s %s %s", logType, ip, affectedUser, timestamp, message);
+    }
 
     /**
      * @return a Map representation of a SystemLogEntry
