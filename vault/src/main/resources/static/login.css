@@ -91,3 +91,7 @@ body {
 .has-error {
   color: #F00;
 }
+
+.has-success {
+  color: forestgreen;
+}
