@@ -4,6 +4,7 @@ import com.twilio.sdk.TwilioRestException;
 import org.apache.commons.csv.CSVRecord;
 import vault5431.Sys;
 import vault5431.auth.exceptions.*;
+import vault5431.crypto.Utils;
 import vault5431.io.Base64String;
 import vault5431.logging.CSVUtils;
 import vault5431.users.Settings;
@@ -67,7 +68,7 @@ public class AuthenticationHandler {
         if (token != null && tokenCache.containsKey(token.getUser()) && tokenCache.get(token.getUser()).contains(token.getId())) {
             return token;
         } else {
-            return null;
+            throw new InvalidTokenException();
         }
     }
 
@@ -290,7 +291,7 @@ public class AuthenticationHandler {
             this.creationDate = LocalDateTime.now();
             LocalDateTime expires = LocalDateTime.now().plusMinutes((long) user.loadSettings().getSessionLength());
             this.expiresAt = RollingKeys.getEndOfCurrentWindow().isBefore(expires) ? RollingKeys.getEndOfCurrentWindow() : expires;
-            this.id = UUID.randomUUID();
+            this.id = Utils.randomUUID();
             byte[] randomBytes = new byte[16];
             random.nextBytes(randomBytes);
             this.verified = verified;

@@ -3,6 +3,7 @@ package vault5431.routes;
 import org.json.JSONException;
 import org.json.JSONObject;
 import spark.ModelAndView;
+import vault5431.crypto.Utils;
 import vault5431.users.Password;
 
 import java.util.HashMap;
@@ -77,7 +78,7 @@ final class PasswordRoutes extends Routes {
             }
             try {
                 JSONObject pass = new JSONObject(password);
-                pass.put("id", UUID.randomUUID().toString());
+                pass.put("id", Utils.randomUUID().toString());
                 Password newPassword = Password.fromJSON(pass);
                 token.getUser().savePassword(newPassword, token);
             } catch (JSONException err) {

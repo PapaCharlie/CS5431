@@ -3,6 +3,7 @@ package vault5431.users;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import vault5431.crypto.Utils;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
 import vault5431.io.Base64String;
 
@@ -126,7 +127,7 @@ public final class Password {
      * Cycle's the password's UUID. Used when saving a new password.
      */
     void newUUID() {
-        id = UUID.randomUUID();
+        id = Utils.randomUUID();
     }
 
     public int hashCode() {
