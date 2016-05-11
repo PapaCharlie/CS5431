@@ -2,6 +2,7 @@ package vault5431.users;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import vault5431.crypto.Utils;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
 import vault5431.crypto.sjcl.SJCLAsymmetricField;
 import vault5431.io.Base64String;
@@ -142,7 +143,7 @@ public final class SharedPassword {
     }
 
     void newUUID() {
-        id = UUID.randomUUID();
+        id = Utils.randomUUID();
     }
 
     public int hashCode() {

@@ -22,7 +22,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 class TwoFactorAuthHandler {
 
-    private static final int MAX_2FA_ATTEMPTS = 10;
+    private static final int MAX_2FA_ATTEMPTS = 3;
 
     private static final HashMap<User, AuthMessage> authCodeMap = new HashMap<>();
     private static final HashMap<User, Integer> attemptsMap = new HashMap<>();

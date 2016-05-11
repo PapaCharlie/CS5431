@@ -138,14 +138,19 @@ public abstract class Routes {
         default Object handle(Request request, Response response) throws Exception {
             Token token = validateToken(request);
             if (token != null) {
-                Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token);
-                Object res = authenticatedHandle(request, response, token);
-                if (res instanceof ModelAndView) {
-                    return freeMarkerEngine.render((ModelAndView) res);
-                } else if (res instanceof JSONObject) {
-                    return res.toString();
+                if (!token.isVerified()) {
+                    response.redirect("/twofactor");
+                    return "";
                 } else {
-                    return res;
+                    Sys.debug(String.format("Received authorized %s to %s.", request.requestMethod(), request.pathInfo()), token);
+                    Object res = authenticatedHandle(request, response, token);
+                    if (res instanceof ModelAndView) {
+                        return freeMarkerEngine.render((ModelAndView) res);
+                    } else if (res instanceof JSONObject) {
+                        return res.toString();
+                    } else {
+                        return res;
+                    }
                 }
             } else {
                 Sys.debug(String.format("Received unauthorized %s to %s.", request.requestMethod(), request.pathInfo()), request.ip());

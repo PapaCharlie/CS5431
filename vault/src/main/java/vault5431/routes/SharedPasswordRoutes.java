@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import spark.ModelAndView;
 import vault5431.Sys;
+import vault5431.crypto.Utils;
 import vault5431.users.Password;
 import vault5431.users.SharedPassword;
 import vault5431.users.User;
@@ -97,7 +98,7 @@ final class SharedPasswordRoutes extends Routes {
             }
             try {
                 JSONObject json = new JSONObject(sharedPassword);
-                json.put("id", UUID.randomUUID().toString());
+                json.put("id", Utils.randomUUID().toString());
                 json.put("sharer", token.getUsername());
                 SharedPassword password = SharedPassword.fromJSON(json);
                 User user = UserManager.getUser(target);
@@ -125,7 +126,7 @@ final class SharedPasswordRoutes extends Routes {
                     token.getUser().info(String.format("Accepting shared password from %s.", sharedPassword.getSharer()), token.getIp());
                     sharedPassword.getSharerUser().info(String.format("%s has accepted your shared password.", token.getUsername()));
                     JSONObject pass = new JSONObject(acceptedPassword);
-                    pass.put("id", UUID.randomUUID().toString());
+                    pass.put("id", Utils.randomUUID().toString());
                     Password newPassword = Password.fromJSON(pass);
                     token.getUser().savePassword(newPassword, token);
                     return success().put("message", "Successfully accepted shared password.");
