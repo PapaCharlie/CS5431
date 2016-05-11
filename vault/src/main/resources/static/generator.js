@@ -42,7 +42,7 @@ function generatePronounceablePassword(length, lower, upper) {
     }
     var password = "";
     var last = syllables[mod(randomNumbers.next(), syllables.length)];
-    for (var i = 0; i < last.length; i++) {
+    for (var c = 0; c < last.length; c++) {
         if (lower && upper) {
             password += randomNumbers.next() % 2 ? last[c].toLocaleUpperCase() : last[c].toLocaleLowerCase();
         } else {
