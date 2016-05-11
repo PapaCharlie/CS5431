@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 
 import static vault5431.Vault.getAdminLoggingKey;
 import static vault5431.Vault.home;
+import static vault5431.routes.Routes.panic;
 
 /**
  * System class. Contains all methods required to act with admin authority.
@@ -44,6 +45,7 @@ public class Sys {
             } catch (IOException err) {
                 err.printStackTrace();
                 System.err.printf("Could not create system log file at %s!%n", logFile.getAbsoluteFile());
+                System.exit(1);
                 throw new RuntimeException(err);
             }
         } else {
@@ -193,10 +195,11 @@ public class Sys {
                         System.out.println("[SYS] " + entry.toString());
                     } catch (BadCiphertextException err) {
                         System.err.println("Cannot System log entry! Fatal error. Halting.");
+                        panic(err);
                         throw new RuntimeException(err);
                     }
                 } catch (IOException err) {
-                    Routes.panic(err);
+                    panic(err);
                     throw new RuntimeException(err);
                 }
             }

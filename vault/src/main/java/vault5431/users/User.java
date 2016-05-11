@@ -32,6 +32,7 @@ import java.util.UUID;
 import static org.bouncycastle.util.Arrays.concatenate;
 import static vault5431.Sys.NO_IP;
 import static vault5431.Vault.*;
+import static vault5431.routes.Routes.panic;
 
 /**
  * User class. Because an instance of User can only be acquired through the UserManager, and the UserManager always
@@ -519,6 +520,7 @@ public final class User {
                     iterateLoggingKey();
                     System.out.println("[" + getShortHash() + "] " + entry.toString());
                 } catch (IOException | BadCiphertextException err) {
+                    panic(err);
                     throw new RuntimeException(err);
                 }
             }
