@@ -27,9 +27,9 @@ public class SMSHandler {
         params.add(new BasicNameValuePair("To", to));
         params.add(new BasicNameValuePair("From", ADMIN_PHONE_NUMBER));
         params.add(new BasicNameValuePair("Body", body));
-        MessageFactory msgFactory = client.getAccount().getMessageFactory();
         Sys.info(String.format("Sending SMS to %s", to));
         if (!test) {
+            MessageFactory msgFactory = client.getAccount().getMessageFactory();
             msgFactory.create(params);
         } else {
             System.out.println(body);

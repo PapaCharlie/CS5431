@@ -1,0 +1,45 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs}
+
+\title{Vault 5431 - Sprint Report}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Sprint Report}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Activity Breakdown}
+\subsection{Paul}
+\par
+
+\subsection{Chang}
+\par
+
+\subsection{Britney}
+\par
+
+\subsection{Alicia}
+\par
+
+\section{Productivity Analysis}
+\par For the final sprint, we planned to complete Authorization as well as additional features like secure notes, password sharing, pronounceable passwords, and settings. These were all completed during this sprint. We also made a few changes like sending the hash of the master password concatenated with a string to the server upon login instead of the double hash to prevent hackers from stealing your computer and looking into session storage for the first hash and then implying the second hash. Another improvement was tamper proof logs, where users sign each log entry to prevent integrity violations. The settings feature include changing the master password and setting the number of concurrent sessions allowed and the length of each session.
+
+\par From a time commitment standpoint, we believe that overall things did not take significantly more time than expected. We went back and changed a few things from Audit and Authentication upon reflection. For Audit, we implemented tamper proof logging with user signatures. And for Authentication, we sent a different hash of the master password to the server. These features are updated under the Design document.
+
+\par Organizationally, we believe we did a fairly good job this sprint. Overall, our meetings were useful in making headway towards our sprint end goal. We used GitHub Issues to keep track of the features that needed to be completed and assigned each issue to a team member. We also used Slack to keep track of bugs that surfaced during our team meetings through testing and/or discussions. This is something that we improved on from our previous sprints.
+
+\end{document}

@@ -1,0 +1,219 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs,dirtree,subcaption,nameref}
+
+\title{Vault 5431 - Design}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Sprint Report}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\usepackage{listings, color, times, textcomp, setspace}
+\definecolor{Code}{rgb}{0,0,0}\definecolor{Decorators}{rgb}{0.5,0.5,0.5}\definecolor{Numbers}{rgb}{0.5,0,0}
+\definecolor{MatchingBrackets}{rgb}{0.25,0.5,0.5}\definecolor{Keywords}{rgb}{0,0,1}\definecolor{self}{rgb}{0,0,0}
+\definecolor{Strings}{rgb}{0,0.63,0}\definecolor{Comments}{rgb}{0,0.63,1}\definecolor{Backquotes}{rgb}{0,0,0}
+\definecolor{Classname}{rgb}{0,0,0}\definecolor{FunctionName}{rgb}{0,0,0}\definecolor{Operators}{rgb}{0,0,0}
+\definecolor{Background}{rgb}{0.98,0.98,0.98}
+
+\lstdefinestyle{Pseudocode}{
+  backgroundcolor=\color{Background},basicstyle=\ttfamily\small\setstretch{1},breaklines=true,mathescape,
+  commentstyle=\color{Comments}\slshape,emph={self},emphstyle={\color{self}\slshape},frame=l,framexbottommargin=2em,
+  framextopmargin=2em,keywordstyle={[2]\color{Numbers}},keywordstyle={\color{Keywords}\bfseries},
+  morekeywords={for,while,if,in,else,break,def,not,return,and,or,execute,on,record},otherkeywords={->},
+  morekeywords=[2]{Sign,Verify,Enc,Dec,AuthEnc,AuthDec,H,PBKDF2},
+  numbers=left,numbersep=1em,numberstyle=\footnotesize,showspaces=false,showstringspaces=false,showtabs=false,
+  stringstyle=\color{Strings},tabsize=4,xleftmargin=1em,
+}
+\lstMakeShortInline[columns=fixed,style=Pseudocode]|
+\renewcommand{\lstlistingname}{Protocol}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\section{Server Environment}
+\label{sec:server_environment}
+
+\subsection{Platform}
+\label{sub:platform}
+\par The server is running Ubuntu 15.10 with weekly backups. SSH access is only allowed for SysAdmins whose keys have been cleared, with password login disabled.
+
+\subsection{Server Startup}
+\label{sub:server_startup}
+\par The first thing to do is to start the VaultRedirector server, which simply listens to all HTTP requests coming on port 80 and redirects to ``/'' on port 443 (dropping all of the request's contents in the process). This is to force users to use HTTPS and prevent them from accidentally sending information via an insecure channel.
+\par Next, the Vault server needs to be started up. The program requires access to three files: the \texttt{/root/.vault5431/} directory that stores all of the required data (see \nameref{sub:filesystem_design}), the Java KeyStore \texttt{keystore.jks} that contains the encrypted private key for the SSL certificate and the KeyStore \texttt{truststore.jks} that contains manually trusted certificates for the SMS messaging service. Upon startup, the program prompts the SysAdmin for three passwords: the admin password, from which the Admin Signing Key (ASK), the Admin Encryption Key (AEK) and the Admin Logging Key (ALK) are derived, the password under which the SSL certificate's private key is encrypted and the password used to verify the trust store's authenticity. The Admin password is only known to the four members of the team.
+\par To derive the Admin Keys, the system reads the admin password into an array. If the system was never initialized, it will generate a random 32 byte salt and save it under \texttt{/root/.vault5431/}. If it has been initialized, it simply reads the salt from this file. Then it XORs each byte of the array with the characters `e', `s' and `l' to derive the AEK, ASK and ALK using PBKDF2 and the salt mentioned above. All of the above is done in place, so that the fewest number of copies of the array are kept in memory at any given time. The array is then zeroed out.
+\par Finally, each User acquires their own set of encryption (UEK), signing (USK) and logging (ULK) keys, all derived from the respective Admin Keys. They are in no way more secret than the Admin Keys, but they serve the purpose of encrypting and signing each log under different keys, along with other User settings and data. The User Keys are simply derived by hashing the User's username along with the respective Admin Key. Please refer to the \nameref{sub:user_creation} section to see how the User Keys are derived.
+
+\subsection{Filesystem Design}
+\label{sub:filesystem_design}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[b]{0.3\textwidth}
+    \dirtree{%
+      .1 .vault5431/.
+      .2 (username hash).
+      .3 crypto.priv.
+      .3 crypto.pub.
+      .3 log.
+      .3 password.hash.
+      .3 settings.
+      .3 shared.
+      .3 signing.priv.
+      .3 signing.pub.
+      .3 vault.
+      .3 vault.salt.
+      .2 log.
+      .2 admin.salt.
+    }
+  \end{subfigure}
+  \caption{Directory Structure}
+  \label{fig:directory_structure}
+\end{figure}
+
+\par All of the relevant data are stored in a directory called \texttt{.vault5431} in server's root. All of a given user's information and data is stored in their respective sub-directories. The system log is stored in \texttt{.vault5431/log}, and the salt used to derive the Admin Keys is stored in \texttt{.vault5431/admin.salt}.
+\par Please refer to the \nameref{sub:user_creation} section for a detailed explanation of what is contained in each file.
+
+\subsection{Rationale}
+\par We decided to use a filesystem design over a database for two main reasons. First, it immediately prevents SQL injections from occurring, which is one less thing our system needs to worry about. Second, it makes it simpler to manage encryption of and signatures for individual files, which we will be extensively using to ensure the integrity and confidentiality of the user data.
+
+\section{Audit}
+For the audit section of our project, we organized our logs based on two types- the user logs and the system log. Currently, they are formatted very similarly but we made the distinction in case their uses begin to deviate in later sprints.
+\subsection{Tamperproof Logging}
+\par All logs in this system follow a tamperproof logging scheme. Here is the protocol for tamperproof logging \cite{bib:TamperProof}, as defined in class:
+\begin{lstlisting}[caption={Tamperproof Logging},label={lst:tamperproof_logging},style=Pseudocode]
+ek = H("encrypt", ak)
+x = AuthEnc(m; ek; ak)
+record x in log
+ak = H("iterate", ak)
+\end{lstlisting}
+Both user specific logs and the system log are encrypted and signed under this scheme, using their respective keys.
+
+\subsection{User Logs}
+\par All the information in our system is organized in a file system structure. Therefore, each user has his own directory containing his log files, password files, keys, and other information found in his vault. Refer to section 1 for this directory layout. Each user log entry has six fields - log type (debug, info, warning, or error), the IP address that completed the specified action, the hashed username, the timestamp of when the action was initiated, signature, and a message that specifies the type of action that took place. The Vault username is hashed to prevent a user's username from being discovered in the case where an attacker somehow manages to get the log. We believe that because it is reasonable for a user to use same username in multiple places (to reduce memorization burden), an attacker should not be able to discover a username even if he successfully attacks our system. The signature is a system signature that is produced to indicate that the log entry was written by the system rather than some outside attacker.
+
+\par Currently, a log entry is created every time a new password is created, changed or deleted and when the log is accessed, additionally successful or failed logins are also logged.
+
+\par Finally, a user can currently see his personal log by successfully logging into his account and clicking on the log link on their dashboard. From there, he will be able to see each log entry with four fields – the log type, the IP address, timestamp, and message with the action. The signature validation, when it is implemented, will be done behind the scenes before the log is displayed.
+
+\subsection{System Log}
+The system log should only be viewed by the admins of our system (the four of us). We will have our own system keys to be able to access the system log (currently base64 encoded), and the system log entry fields are the same as for the user log. We create log entries for actions done by the server, as well as log entries for error events (ex: unsuccessful login events, user creation, etc.), so we have the information to recognize a potential attack on our system.
+
+\section{Authentication}
+
+\subsection{User Creation}
+\label{sub:user_creation}
+\par In order to create a new account, the Client must provide the following parameters:
+\begin{description}
+  \item[\texttt{username}] The desired username.
+  \item[\texttt{hashedPassword}] The User's master password hashed with the string ``auth'', i.e. |H("auth", masterPassword)|.
+  \item[\texttt{phoneNumber}] The desired phone number on which to receive 2FA text messages.
+  \item[\texttt{pubCryptoKey}] A public ElGamal key.
+  \item[\texttt{privCryptoKey}] The respective private ElGamal key, encrypted under |H(masterPassword)|
+  \item[\texttt{pubSigningKey}] A public ECDSA key.
+  \item[\texttt{privSigningKey}] The respective pricate ECDSA key, ecrypted under |H(masterPassword)|.
+\end{description}
+\par All of the Elliptic Curve keys lie on the NIST P-384 curve. Protocol~\ref{lst:user_creation_protocol} defines how a User is created. Only one User can be created at a time, and Protocol~\ref{lst:user_creation_protocol} is only run if there exists no directory in \texttt{/root/.vault5431} named |H(username)|. If no such directory exists, it is created and assigned to the User. On the other hand, if the directory exists, it means the username is already taken, and the User will be notified. There is no way to completely prevent an attacker from knowing if a username is a valid one in our system or not because they will be notified on sign up.
+\begin{lstlisting}[caption={User Creation Protocol},label={lst:user_creation_protocol},style=Pseudocode]
+h := H(username)
+UEK := H(h, AEK)
+USK := H(h, ASK)
+ULK := H(h, ALK)
+PBKDF2(hashedPassword, randomSalt()) -> password.hash
+Sign(h + pubCryptoKey; USK) -> crypto.pub
+privCryptoKey -> crypto.priv
+Sign(h + pubSigningKey; USK) -> signing.pub
+pricSigningKey -> signing.priv
+AuthEnc(phoneNumber; UEK; USK) -> settings
+AuthEnc(randomSalt(); UEK; USK) -> vault.salt
+{} -> log
+{} -> vault
+{} -> shared
+\end{lstlisting}
+\par The public keys are signed with the username of the User they belong to prevent an attacker with access to disk from swapping out the public keys and causing all subsequently shared passwords to be encrypted under a key for which they know the private key. An empty log file is created and encrypted under the user's ULK. An empty vault file is created, to contain the encrypted data given by the user, along with an empty shared passwords file. The random salt contained in \texttt{vault.salt} is required for the Client to create the final master encryption key under which all of the passwords will be encrypted. This is to make decrypting a User's vault required both the system's authorization and the client's master password. The User's phone number is saved along with default settings to \texttt{settings}.
+
+\subsection{Client-Side Authentication}
+\par The authentication happens in two steps. First, the user is required to type in their username and password. Afterwards, an authentication code will be sent to the user's cellphone as an SMS and the input of this code will be required to access the user vault. Below, each step is explained in greater detail.
+
+\subsubsection{Username and Password}
+\par The client sends the username and the hash of the password the server, while storing the first hash of just the password in the browser's Session Storage \cite{bib:session_storage}. The server runs PBKDF2 on the password to verify that it is indeed the correct password. If so, the user is assigned an unverified token (see below). Otherwise, the user is redirected to the login page. The reason the first hash of the master password in the Session Storage instead of the plaintext is because the session storage is readily available for all to see simply by checking the resources in the web browser. Quite obviously, we do not want the master password to be publicly displayed. We send |H("auth", masterPassword)| to the server instead of |H(H(masterPassword))| because if an attacker finds a target's computer logged in, they can change the master password to whatever they want without knowing the actual master password by presenting the Server with the hash of what is stored in the Session Storage.
+
+\subsubsection{Two Factor Authentication (2FA)}
+\par Along with responding with an unverified Token, the Server will also send the User a 6 digit code with a 1 minute expiration time. The point of this code is to authenticate an user based on something that they have (the code, and thus their SMS-receiving phone) in addition to something that they know. This ensures that even if an attacker somehow cracked the User's master password, they still would not have access to the vault. We assume that the User's phone is safely within his/her hands. A user can attempt to verify a 2FA code at most 3 times, after which they will be temporarily banned from logging in. This does not void currently active Tokens. If the user correctly enters the 6 digit code, their Token is upgraded to a verified Token (see below), and they are able to view their vault.
+
+\subsubsection{Decrypting the Vault}
+After the user successfully completes 2FA and has received a verified Token, the System sends the Client the encrypted vault along with the decrypted vault salt. To create the final master key, the Client simply computes |H(H(masterPassword), salt)|. This key will be used to encrypt and decrypt the passwords. In this case, the hashing function is SHA-256. SHA-256 is cryptographically strong and remains to be broken, therefore the only way to arrive at the final master key is to know the master password.
+
+\section{Authorization}
+
+\subsection{Tokens}
+\label{sub:tokens}
+\par Once a user has been authenticated (see below), the Reference Monitor assigns them a Token. A Token in this system is the equivalent of a capability. It binds users  Simply put, Tokens are a piece of unforgeable evidence that convinces the server that the user has been authenticated, meaning that it is okay to send the encrypted Vault to that user.
+
+\subsubsection{Secure Cookies}
+\label{ssub:secure_cookies}
+\par Most modern browsers offer a notion of ``Secure Cookies''. Secure cookies are only sent to the appropriate server if the connection to said server is secured over HTTPS, meaning that it is presumably safe to store the tokens in secure cookies. Cookies persist through multiple connections, and are a useful way to maintain state across multiple requests to the server within a session.
+
+\subsection{Token Generation and Signing}
+\label{sub:token_generation_and_signing}
+\par The tokens used in this system were inspired by JSON Web Tokens (see RFC 7519\cite{bib:RFC7519}), but modified to better suit the system. Here are the fields contained in the token:
+\begin{description}
+  \item[\texttt{username}] User id
+  \item[\texttt{creationDate}] Creation time
+  \item[\texttt{expiresAt}] Expiration time
+  \item[\texttt{id}] Token id
+  \item[\texttt{verified}] Boolean indicating whether or not the user has gone through 2FA.
+  \item[\texttt{signature}] Token signature.
+  \item[\texttt{ip}] IP address.
+\end{description}
+\par The first two fields are rather self explanatory. If a token is presented to the server, but the current time is not between its creation time or its expiration time, it is immediately rejected. The user id represents which user this token was generated for. The token id is a random UUID assigned at token creation, and will be used to do token revocation, and keeping track of how many tokens have been assigned per day per user. The boolean field is used to indicate that the user has indeed put in the correct password, but has not been 2 factor authenticated. This is to prevent anyone but the user him/herself to attempt 2FA, but also prevents partially authenticated users from actually viewing the encrypted vault. Finally, all of the above fields are signed under the current Rolling Key.
+\par Token creation is very simple: when the user puts in the correct password, a token is generated with the \texttt{verified} field set to false, then signed. When the user successfully passes 2FA, the token is verified, singed again, and sent back.
+
+\subsubsection{Rolling Keys}
+\label{ssub:rolling_keys}
+\par Every night, at midnight EST, the server changes signing keys. This automatically voids any tokens assigned the day before, and reduces the window in which an attacker may crack the signing key. The current Rolling Key is always generated from a SecureRandom (Java's cryptographically strong random number generator) instance, making it impossible to guess the current key based on previous ones, were they ever to be cracked.
+
+\subsection{Token validation}
+\label{sub:token_validation}
+\par Here is the steps the system takes to validate tokens:
+\begin{enumerate}[1.]
+  \item The first thing to do is check whether or not the current time is between the token's purported creation time and expiration time. If not, the token is rejected, and the user must sign in again.
+  \item If the current time is within the token's validity window, then the signature is verified against the whole token. If the signature matches, then the previous time check was executed on valid dates, and the process can continue. If the signature does not match, indicating someone may have tampered with it, the token is rejected. Incidentally, the signature of a token from a previous day will never match because the keys used to sign it has changed, voiding it by default. This behavior is desired because an old valid token should not be a reason to assign a new valid token, otherwise if an attacker gains hold of a token, they will be authenticated forever.
+  \item If the signature matches, then the token's id is checked to see whether or not that token was voided through other means, i.e. by user action. If the token is void, it is rejected.
+  \item Finally, the presented token is checked against the user's request. If the token is verified, the user will be allowed to see their vault and logs. Otherwise, the user will only be allowed to view the 2FA page. On the other hand, only a user with a valid, but unverified token can view the 2FA page, to ensure that only the desired user may attempt 2FA.
+\end{enumerate}
+
+\subsection{Reference Monitor}
+\par Every time the server handles a request to a page that is marked as requiring the user to be authenticated, it \textbf{must} pass through the Reference Monitor (RM) at least once. This is due to two things: each function where authorization is required takes a Token as an argument, and the definition of the Token class is contained in the RM. In other words, to even gain access to a valid Token instance, the execution needs to go through the RM. The code was designed this way to prevent accidentally forgetting to check with the RM, which proved to be rather valuable as time went on.
+
+
+\section{Confidentiality}
+\section{Integrity}
+
+\section{Bonus Features}
+
+\subsection{Pronounceable Passwords}
+
+\subsection{Password Sharing}
+
+\begin{thebibliography}{30}
+  \bibitem{bib:session_storage}
+    \url{https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage}
+  \bibitem{bib:RFC7519}
+    \url{https://www.ietf.org/rfc/rfc7519.txt}
+  \bibitem{bib:TamperProof}
+    \url{http://www.cs.cornell.edu/courses/cs5430/2016sp/l/11-logging/notes.html}
+\end{thebibliography}
+
+\end{document}
