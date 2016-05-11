@@ -11,7 +11,6 @@ import vault5431.crypto.PasswordUtils;
 import vault5431.crypto.SigningUtils;
 import vault5431.crypto.SymmetricUtils;
 import vault5431.crypto.exceptions.BadCiphertextException;
-import vault5431.crypto.exceptions.CouldNotLoadKeyException;
 import vault5431.crypto.exceptions.InvalidPublicKeySignature;
 import vault5431.crypto.exceptions.InvalidSignatureException;
 import vault5431.crypto.sjcl.SJCLSymmetricField;
@@ -303,7 +302,7 @@ public final class User {
         synchronized (sharedPasswordsFile) {
             verifyToken(token);
             HashSet<SharedPassword> passwords = loadSharedPasswords(token);
-            HashSet<SharedPassword> filteredPasswords = new HashSet<>();
+            HashSet<SharedPassword> filteredPasswords = new HashSet<>(passwords.size());
             SharedPassword deleted = null;
             for (SharedPassword sharedPassword : passwords) {
                 if (sharedPassword.getID().equals(uuid)) {
@@ -481,7 +480,7 @@ public final class User {
         }
     }
 
-    protected UserLogEntry[] loadLog() throws IOException, CouldNotLoadKeyException, CorruptedLogException {
+    protected UserLogEntry[] loadLog() throws IOException, CorruptedLogException {
         synchronized (logFile) {
             synchronized (firstUserLoggingKey) {
                 Base64String[] encryptedEntries = FileUtils.read(logFile);
@@ -503,7 +502,7 @@ public final class User {
         }
     }
 
-    public UserLogEntry[] loadLog(Token token) throws IOException, CouldNotLoadKeyException, CorruptedLogException, IllegalTokenException {
+    public UserLogEntry[] loadLog(Token token) throws IOException, CorruptedLogException, IllegalTokenException {
         verifyToken(token);
         Sys.debug("Loading log.", token);
         return loadLog();

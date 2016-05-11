@@ -224,7 +224,7 @@ public class Sys {
                 } catch (IllegalArgumentException | InvalidSignatureException | IOException err) {
                     System.err.println("System log was corrupted. Exiting.");
                     System.exit(1);
-                    throw new RuntimeException();
+                    throw new RuntimeException(err);
                 }
             }
         }
