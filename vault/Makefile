@@ -43,7 +43,7 @@ verify:
 	cd lib && rm $(BOUNCY_CASTLE_JAR).checksum
 
 log:
-	cat ~/.vault5431/log | base64 --decode
+	"$(SBT)" "run -l"
 
 submission:
 	cd ../redirector && make submission

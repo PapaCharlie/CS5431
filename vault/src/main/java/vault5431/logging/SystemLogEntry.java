@@ -40,20 +40,6 @@ public final class SystemLogEntry extends LogEntry {
         );
     }
 
-    @Override
-    public String toString() {
-        return  "[" + logType + "]" + " " + ip +
-                " " + affectedUser + " " + timestamp +
-                " " + message + " ";
-    }
-
-    /**
-     * @return a String[] representation of the SystemLogEntry
-     */
-    public String[] asArray() {
-        return new String[]{logType.toString(), ip, affectedUser, timestamp.toString(), message};
-    }
-
     /**
      * @return CSV formatted String representation of a SystemLogEntry
      * @throws IOException

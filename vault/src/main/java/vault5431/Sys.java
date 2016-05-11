@@ -29,8 +29,8 @@ import static vault5431.Vault.home;
 public class Sys {
 
     public static final String SYS = "SYS";
-    public static final String NO_IP = "0.0.0.0";
-    private static final File logFile = new File(home, Vault.test ? "testlog" : "log");
+    public static final String NO_IP = "N/A";
+    private static final File logFile = new File(home, "log");
     private static final SecretKey firstLoggingKey = getAdminLoggingKey();
     private static SecretKey currentLoggingKey = firstLoggingKey;
 
@@ -47,13 +47,7 @@ public class Sys {
                 throw new RuntimeException(err);
             }
         } else {
-            try {
-                loadLog();
-            } catch (CorruptedLogException err) {
-                System.err.println("System log was corrupted!");
-                Routes.panic(err);
-                throw new RuntimeException(err);
-            }
+            loadLog();
         }
     }
 
@@ -214,7 +208,7 @@ public class Sys {
      *
      * @return Set of LogEntries loaded from disk.
      */
-    public synchronized static SystemLogEntry[] loadLog() throws CorruptedLogException {
+    public synchronized static SystemLogEntry[] loadLog() {
         synchronized (logFile) {
             synchronized (firstLoggingKey) {
                 try {
@@ -228,9 +222,9 @@ public class Sys {
                     }
                     return decryptedEntries;
                 } catch (IllegalArgumentException | InvalidSignatureException | IOException err) {
-                    System.err.println("[WARNING] Failed to load system log!");
-                    Routes.panic(err);
-                    throw new CorruptedLogException(err);
+                    System.err.println("System log was corrupted. Exiting.");
+                    System.exit(1);
+                    throw new RuntimeException();
                 }
             }
         }

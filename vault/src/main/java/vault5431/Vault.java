@@ -3,6 +3,7 @@ package vault5431;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import vault5431.crypto.PasswordUtils;
 import vault5431.io.Base64String;
+import vault5431.logging.SystemLogEntry;
 import vault5431.routes.Routes;
 
 import javax.crypto.SecretKey;
@@ -10,6 +11,7 @@ import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.security.Security;
+import java.util.Arrays;
 
 import static spark.Spark.*;
 
@@ -116,21 +118,28 @@ public class Vault {
     }
 
     public static void main(String[] args) throws Exception {
-        if (test) {
-            port(5431);
-            secure("./keystore.jks", "vault5431", null, null);
-            System.out.println("Hosting at: https://localhost:5431");
+        if (args.length > 0 && (args[0].equals("-l") || args[0].equals("--syslog"))) {
+            Console k = System.console();
+            for (SystemLogEntry entry : Sys.loadLog()) {
+                System.out.println(entry.toString());
+            }
         } else {
-            port(443);
-            secure(
-                    "./keystore.jks",
-                    new String(System.console().readPassword("Please enter the SSL certificate password: ")),
-                    "./truststore.jks",
-                    new String(System.console().readPassword("Please enter the truststore password: "))
-            );
+            if (test) {
+                port(5431);
+                secure("./keystore.jks", "vault5431", null, null);
+                System.out.println("Hosting at: https://localhost:5431");
+            } else {
+                port(443);
+                secure(
+                        "./keystore.jks",
+                        new String(System.console().readPassword("Please enter the SSL certificate password: ")),
+                        "./truststore.jks",
+                        new String(System.console().readPassword("Please enter the truststore password: "))
+                );
+            }
+            Routes.initialize();
+            awaitInitialization();
         }
-        Routes.initialize();
-        awaitInitialization();
     }
 
 }
