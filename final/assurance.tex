@@ -1,0 +1,31 @@
+\documentclass{article}
+\usepackage[margin=2cm, headheight=0pt, headsep=1cm, includeheadfoot, top=0.75cm, bottom=1cm]{geometry}
+\usepackage{enumerate, fancyhdr, graphicx, amsmath, float, url, hyperref, color}
+\usepackage{array,booktabs}
+
+\title{Vault 5431 - Assurance}
+\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\date{\today}
+
+\pagestyle{fancy}
+\fancyhead{}
+\lhead{cj285, bmw227, pmc85, yw344}
+\chead{Vault 5431 - Assurance}
+\rhead{\today}
+\fancyfoot{}
+\rfoot{\thepage}
+\lfoot{\includegraphics[height=20pt]{figures/Logo}}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\section{Final}
+\par As with the Alpha and Beta releases, JUnit tests were written and ran for every method. As new classes and methods were created and implemented, old and new JUnit tests were ran to ensure that all code is running as expected. Since we have concurrent sessions for this iteration, we ensure that the server is synchronized using locks.
+
+\par Additionally, the codebase was checked using FindBugs. There are no ``Scariest'' and ``Scary'' Bugs. ``Troubling'' bugs were found periodically and fixed. At the end of the sprint, there is one ``Troubling'' bugs of rank 13, but is not important. Additionally, the build manager checksums all dependencies and verifies before using them.
+
+\par In the Final, we added onto the Alpha and Beta user web interface. Thus, we tested every form for bad input and did form validation on both the client side and the server side. We also tested the forms and routes for input that is entered via Ajax POST or GET calls. The server side validation will catch errors made through these calls. We also tested UI functionality written in Javascript by extensively interacting with the web interface via clicks and refreshes. For example, we discovered a bug when memebers of other groups were playing around with concurrent sessions, where changing the master password while already logged into the maximum number of sessions produced a bug that bumps you out but also prevents you logging back in to reduce the number of concurrent sessions. This was fixed after discovery.
+
+\end{document}
