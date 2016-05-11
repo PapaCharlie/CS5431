@@ -1,6 +1,7 @@
 package vault5431.routes;
 
 import freemarker.template.Configuration;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.json.JSONObject;
 import spark.ModelAndView;
 import spark.Request;
@@ -15,8 +16,11 @@ import vault5431.auth.exceptions.CouldNotParseTokenException;
 import vault5431.auth.exceptions.InvalidTokenException;
 import vault5431.auth.exceptions.NoSuchUserException;
 import vault5431.routes.exceptions.SessionExpiredException;
+import vault5431.users.exceptions.CorruptedLogException;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.HashMap;
 
 import static spark.Spark.*;
@@ -114,15 +118,20 @@ public abstract class Routes {
     }
 
     public static void panic(Exception err) {
-        err.printStackTrace();
-        try {
-            SMSHandler.sendSms("646-339-1069", "We're under attack! Please check the logs to see the problem: " + err.getMessage());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         before("*", (req, res) -> {
             halt(500, freeMarkerEngine.render(new ModelAndView(new HashMap<>(0), "maintenance.ftl")));
         });
+        err.printStackTrace();
+        StringBuilderWriter trace = new StringBuilderWriter();
+        err.printStackTrace(new PrintWriter(trace));
+        if (!(err instanceof IOException || err instanceof CorruptedLogException)) {
+            Sys.error(trace.toString());
+        }
+        try {
+            SMSHandler.sendSms("646-339-1069", "We're under attack! Please check the logs to see the problem: " + err.toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     protected abstract void routes();

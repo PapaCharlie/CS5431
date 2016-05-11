@@ -12,7 +12,7 @@
     <h2 class="login-header">Fatal error!!</h2>
     <div class="login-container has-error">
         <p>
-            Seems like we're under attack! We'll get back to you soon, so stay tuned!
+            Seems like we're under attack! We'll get back to you soon, so please stay tuned. Not to worry, your passwords are safe!
         </p>
     </div>
 </div>

@@ -3,12 +3,13 @@ package vault5431.routes;
 import spark.ModelAndView;
 import spark.Request;
 import spark.Response;
+import vault5431.FatalException;
 import vault5431.Sys;
 import vault5431.auth.exceptions.*;
 import vault5431.routes.exceptions.SessionExpiredException;
-import vault5431.users.exceptions.CorruptedLogException;
 import vault5431.users.exceptions.IllegalTokenException;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import static spark.Spark.exception;
@@ -37,7 +38,6 @@ final class ExceptionRoutes extends Routes {
     protected void routes() {
         exception(SessionExpiredException.class, (e, req, res) -> renderFatalError("Session has expired!", req, res));
 
-
         exception(InvalidTokenException.class, (e, req, res) -> {
             Sys.warning(String.format("Rejecting token. Reason: \"%s\". There is reason to believe this IP is acting maliciously.", e.getMessage()), req.ip());
             renderFatalError("Session has expired!", req, res);
@@ -65,7 +65,11 @@ final class ExceptionRoutes extends Routes {
                 renderFatalError("This account does not exist!", req, res)
         );
 
-        exception(CorruptedLogException.class, (e, req, res) ->
+        exception(FatalException.class, (e, req, res) ->
+                panic(e)
+        );
+
+        exception(IOException.class, (e, req, res) ->
                 panic(e)
         );
 
