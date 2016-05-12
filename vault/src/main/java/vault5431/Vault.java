@@ -25,7 +25,7 @@ public class Vault {
 
     public static final File home = new File(System.getProperty("user.home"), ".vault5431");
     /**
-     * This becomes set to false at deployment.
+     * This is set to false at deployment.
      */
     public static final boolean test = true;
     private static final File adminSaltFile = new File(home, "admin.salt");
