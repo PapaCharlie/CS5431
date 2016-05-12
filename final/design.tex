@@ -4,12 +4,12 @@
 \usepackage{array,booktabs,dirtree,subcaption,nameref}
 
 \title{Vault 5431 - Design}
-\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\author{Paul Chesnais, Alicia Wu, Britney Wong, Chang Yang Jiao}
 \date{\today}
 
 \pagestyle{fancy}
 \fancyhead{}
-\lhead{cj285, bmw227, pmc85, yw344}
+\lhead{pmc85, yw344, bmw227, cj285}
 \chead{Vault 5431 - Sprint Report}
 \rhead{\today}
 \fancyfoot{}
@@ -26,7 +26,7 @@
 \definecolor{Background}{rgb}{0.98,0.98,0.98}
 
 \lstdefinestyle{Pseudocode}{
-  backgroundcolor=\color{Background},basicstyle=\ttfamily\small\setstretch{1},breaklines=true,mathescape,
+  backgroundcolor=\color{Background},basicstyle=\ttfamily\small\setstretch{1},breaklines=true,mathescape,language=Java,
   commentstyle=\color{Comments}\slshape,emph={self},emphstyle={\color{self}\slshape},frame=l,framexbottommargin=2em,
   framextopmargin=2em,keywordstyle={[2]\color{Numbers}},keywordstyle={\color{Keywords}\bfseries},
   morekeywords={for,while,if,in,else,break,def,not,return,and,or,execute,on,record},otherkeywords={->},
@@ -52,7 +52,17 @@
 \label{sub:server_startup}
 \par The first thing to do is to start the VaultRedirector server, which simply listens to all HTTP requests coming on port 80 and redirects to ``/'' on port 443 (dropping all of the request's contents in the process). This is to force users to use HTTPS and prevent them from accidentally sending information via an insecure channel.
 \par Next, the Vault server needs to be started up. The program requires access to three files: the \texttt{/root/.vault5431/} directory that stores all of the required data (see \nameref{sub:filesystem_design}), the Java KeyStore \texttt{keystore.jks} that contains the encrypted private key for the SSL certificate and the KeyStore \texttt{truststore.jks} that contains manually trusted certificates for the SMS messaging service. Upon startup, the program prompts the SysAdmin for three passwords: the admin password, from which the Admin Signing Key (ASK), the Admin Encryption Key (AEK) and the Admin Logging Key (ALK) are derived, the password under which the SSL certificate's private key is encrypted and the password used to verify the trust store's authenticity. The Admin password is only known to the four members of the team.
-\par To derive the Admin Keys, the system reads the admin password into an array. If the system was never initialized, it will generate a random 32 byte salt and save it under \texttt{/root/.vault5431/}. If it has been initialized, it simply reads the salt from this file. Then it XORs each byte of the array with the characters `e', `s' and `l' to derive the AEK, ASK and ALK using PBKDF2 and the salt mentioned above. All of the above is done in place, so that the fewest number of copies of the array are kept in memory at any given time. The array is then zeroed out.
+\par Protocol~\ref{lst:admin_key_derivation} describes how the Admin Keys are generated from the admin password. The password is read from the console into the \texttt{adminPassword} array. This array is zeroed out after the keys have been generated, in the hopes that this will decrease the likelihood of it ending up on disk. If the system was never initialized, it will generate a random 32 byte salt and save it under \texttt{/root/.vault5431/admin.salt}. The salt is required for PBKDF2, and therefore needs to stay constant throughout, otherwise the Admin Keys will not stay the same after restart. The salt is then read into the \texttt{salt} array.
+\begin{lstlisting}[caption={Admin Key Derivation},label={lst:admin_key_derivation},style=Pseudocode]
+adminPassword = adminPassword $\oplus$ 'e' // e for encryption
+AEK = PBKDF2(adminPassword, salt)
+adminPassword = adminPassword $\oplus$ 'e' // back to original password
+adminPassword = adminPassword $\oplus$ 's' // s for signing
+ASK = PBKDF2(adminPassword, salt)
+adminPassword = adminPassword $\oplus$ 's' // back to original password
+adminPassword = adminPassword $\oplus$ 'l' // l for logging
+ALK = PBKDF2(adminPassword, salt)
+\end{lstlisting}
 \par Finally, each User acquires their own set of encryption (UEK), signing (USK) and logging (ULK) keys, all derived from the respective Admin Keys. They are in no way more secret than the Admin Keys, but they serve the purpose of encrypting and signing each log under different keys, along with other User settings and data. The User Keys are simply derived by hashing the User's username along with the respective Admin Key. Please refer to the \nameref{sub:user_creation} section to see how the User Keys are derived.
 
 \subsection{Filesystem Design}
@@ -93,19 +103,21 @@ For the audit section of our project, we organized our logs based on two types- 
 \subsection{Tamperproof Logging}
 \par All logs in this system follow a tamperproof logging scheme. Here is the protocol for tamperproof logging \cite{bib:TamperProof}, as defined in class:
 \begin{lstlisting}[caption={Tamperproof Logging},label={lst:tamperproof_logging},style=Pseudocode]
-ek = H("encrypt", ak)
-x = AuthEnc(m; ek; ak)
+ek = H("encrypt", ULK)
+x = AuthEnc(m; ek; ULK)
 record x in log
 ak = H("iterate", ak)
 \end{lstlisting}
 Both user specific logs and the system log are encrypted and signed under this scheme, using their respective keys.
 
 \subsection{User Logs}
-\par All the information in our system is organized in a file system structure. Therefore, each user has his own directory containing his log files, password files, keys, and other information found in his vault. Refer to section 1 for this directory layout. Each user log entry has six fields - log type (debug, info, warning, or error), the IP address that completed the specified action, the hashed username, the timestamp of when the action was initiated, signature, and a message that specifies the type of action that took place. The Vault username is hashed to prevent a user's username from being discovered in the case where an attacker somehow manages to get the log. We believe that because it is reasonable for a user to use same username in multiple places (to reduce memorization burden), an attacker should not be able to discover a username even if he successfully attacks our system. The signature is a system signature that is produced to indicate that the log entry was written by the system rather than some outside attacker.
+\par All the information in our system is organized in a file system structure. Therefore, each user has his own directory containing his log files, password files, keys, and other information found in his vault. Each user log entry has five fields: the log level (debug, info, warning, or error), the IP address that completed the specified action, the hashed username, the timestamp of when the action was initiated, and the message that specifies the type of action that took place. The Vault username is hashed to prevent a user's username from being discovered in the case where an attacker somehow manages to get the log. We believe that because it is reasonable for a user to use same username in multiple places (to reduce memorization burden), an attacker should not be able to discover a username even if he successfully attacks our system.
 
-\par Currently, a log entry is created every time a new password is created, changed or deleted and when the log is accessed, additionally successful or failed logins are also logged.
+\par Currently, a log entry is created when a new password is created, a password is viewed, a password is modified, when a password is modified, or when passwords are shared and accepted. Furthermore, changes in settings will be logged. Additionally, both successful or failed logins are also logged.
 
-\par Finally, a user can currently see his personal log by successfully logging into his account and clicking on the log link on their dashboard. From there, he will be able to see each log entry with four fields – the log type, the IP address, timestamp, and message with the action. The signature validation, when it is implemented, will be done behind the scenes before the log is displayed.
+\par Finally, a user can currently see his personal log by successfully logging into his account and clicking on the log link on their dashboard. From there, he will be able to see each log entry with four fields – the log type, the IP address, timestamp, and message with the action. The signature validation validation now takes place behind the scene.
+
+% when it is implemented, will be done behind the scenes before the log is displayed.
 
 \subsection{System Log}
 The system log should only be viewed by the admins of our system (the four of us). We will have our own system keys to be able to access the system log (currently base64 encoded), and the system log entry fields are the same as for the user log. We create log entries for actions done by the server, as well as log entries for error events (ex: unsuccessful login events, user creation, etc.), so we have the information to recognize a potential attack on our system.
@@ -122,7 +134,7 @@ The system log should only be viewed by the admins of our system (the four of us
   \item[\texttt{pubCryptoKey}] A public ElGamal key.
   \item[\texttt{privCryptoKey}] The respective private ElGamal key, encrypted under |H(masterPassword)|
   \item[\texttt{pubSigningKey}] A public ECDSA key.
-  \item[\texttt{privSigningKey}] The respective pricate ECDSA key, ecrypted under |H(masterPassword)|.
+  \item[\texttt{privSigningKey}] The respective private ECDSA key, encrypted under |H(masterPassword)|.
 \end{description}
 \par All of the Elliptic Curve keys lie on the NIST P-384 curve. Protocol~\ref{lst:user_creation_protocol} defines how a User is created. Only one User can be created at a time, and Protocol~\ref{lst:user_creation_protocol} is only run if there exists no directory in \texttt{/root/.vault5431} named |H(username)|. If no such directory exists, it is created and assigned to the User. On the other hand, if the directory exists, it means the username is already taken, and the User will be notified. There is no way to completely prevent an attacker from knowing if a username is a valid one in our system or not because they will be notified on sign up.
 \begin{lstlisting}[caption={User Creation Protocol},label={lst:user_creation_protocol},style=Pseudocode]
@@ -130,16 +142,16 @@ h := H(username)
 UEK := H(h, AEK)
 USK := H(h, ASK)
 ULK := H(h, ALK)
-PBKDF2(hashedPassword, randomSalt()) -> password.hash
-Sign(h + pubCryptoKey; USK) -> crypto.pub
-privCryptoKey -> crypto.priv
-Sign(h + pubSigningKey; USK) -> signing.pub
-pricSigningKey -> signing.priv
-AuthEnc(phoneNumber; UEK; USK) -> settings
-AuthEnc(randomSalt(); UEK; USK) -> vault.salt
-{} -> log
-{} -> vault
-{} -> shared
+record PBKDF2(hashedPassword, randomSalt()) in password.hash
+record Sign(h + pubCryptoKey; USK) in crypto.pub
+record privCryptoKey in crypto.priv
+record Sign(h + pubSigningKey; USK) in signing.pub
+record privSigningKey in signing.priv
+record AuthEnc(phoneNumber; UEK; USK) in settings
+record AuthEnc(randomSalt(); UEK; USK) in vault.salt
+record $\texttt{\O}$ in log
+record $\texttt{\O}$ in vault
+record $\texttt{\O}$ in shared
 \end{lstlisting}
 \par The public keys are signed with the username of the User they belong to prevent an attacker with access to disk from swapping out the public keys and causing all subsequently shared passwords to be encrypted under a key for which they know the private key. An empty log file is created and encrypted under the user's ULK. An empty vault file is created, to contain the encrypted data given by the user, along with an empty shared passwords file. The random salt contained in \texttt{vault.salt} is required for the Client to create the final master encryption key under which all of the passwords will be encrypted. This is to make decrypting a User's vault required both the system's authorization and the client's master password. The User's phone number is saved along with default settings to \texttt{settings}.
 
@@ -147,63 +159,98 @@ AuthEnc(randomSalt(); UEK; USK) -> vault.salt
 \par The authentication happens in two steps. First, the user is required to type in their username and password. Afterwards, an authentication code will be sent to the user's cellphone as an SMS and the input of this code will be required to access the user vault. Below, each step is explained in greater detail.
 
 \subsubsection{Username and Password}
-\par The client sends the username and the hash of the password the server, while storing the first hash of just the password in the browser's Session Storage \cite{bib:session_storage}. The server runs PBKDF2 on the password to verify that it is indeed the correct password. If so, the user is assigned an unverified token (see below). Otherwise, the user is redirected to the login page. The reason the first hash of the master password in the Session Storage instead of the plaintext is because the session storage is readily available for all to see simply by checking the resources in the web browser. Quite obviously, we do not want the master password to be publicly displayed. We send |H("auth", masterPassword)| to the server instead of |H(H(masterPassword))| because if an attacker finds a target's computer logged in, they can change the master password to whatever they want without knowing the actual master password by presenting the Server with the hash of what is stored in the Session Storage.
+\par The client sends the username and the hash of the password the server, while storing the first hash of just the password in the browser's Session Storage \cite{bib:session_storage}. The server runs PBKDF2 on the password to verify that it is indeed the correct password. If so, the user is assigned an unverified token (see below). Otherwise, the user is redirected to the login page; after 3 incorrect attempts, the user will be locked out for a period of time. The reason the first hash of the master password in the Session Storage instead of the plaintext is because the session storage is readily available for all to see simply by checking the resources in the web browser. Quite obviously, we do not want the master password to be publicly displayed. We send |H("auth", masterPassword)| to the server instead of |H(H(masterPassword))| because if an attacker finds a target's computer logged in, they can change the master password to whatever they want without knowing the actual master password by presenting the Server with the hash of what is stored in the Session Storage.
 
 \subsubsection{Two Factor Authentication (2FA)}
 \par Along with responding with an unverified Token, the Server will also send the User a 6 digit code with a 1 minute expiration time. The point of this code is to authenticate an user based on something that they have (the code, and thus their SMS-receiving phone) in addition to something that they know. This ensures that even if an attacker somehow cracked the User's master password, they still would not have access to the vault. We assume that the User's phone is safely within his/her hands. A user can attempt to verify a 2FA code at most 3 times, after which they will be temporarily banned from logging in. This does not void currently active Tokens. If the user correctly enters the 6 digit code, their Token is upgraded to a verified Token (see below), and they are able to view their vault.
 
 \subsubsection{Decrypting the Vault}
-After the user successfully completes 2FA and has received a verified Token, the System sends the Client the encrypted vault along with the decrypted vault salt. To create the final master key, the Client simply computes |H(H(masterPassword), salt)|. This key will be used to encrypt and decrypt the passwords. In this case, the hashing function is SHA-256. SHA-256 is cryptographically strong and remains to be broken, therefore the only way to arrive at the final master key is to know the master password.
+After the user successfully completes 2FA and has received a verified Token, the System sends the Client the encrypted vault along with the decrypted vault salt. To create the final master key, the Client simply computes |H(H(masterPassword, salt)|. This key will be used to encrypt and decrypt the passwords. In this case, the hashing function is SHA-256. SHA-256 is cryptographically strong and remains to be broken, therefore the only way to arrive at the final master key is to know the master password.
 
 \section{Authorization}
 
-\subsection{Tokens}
+\subsection{Tokens for Access Control}
 \label{sub:tokens}
-\par Once a user has been authenticated (see below), the Reference Monitor assigns them a Token. A Token in this system is the equivalent of a capability. It binds users  Simply put, Tokens are a piece of unforgeable evidence that convinces the server that the user has been authenticated, meaning that it is okay to send the encrypted Vault to that user.
+\par Once a user has been authenticated (see below), the Reference Monitor assigns them a Token. A Token in this system is the equivalent of a capability. In other words, when the Client presents a valid Token to the Server, the Server can be certain that the User has been authenticated. The Access Control policy is mandatory: Users have access to their own files, and the public keys of all other users in the System (provided that they know their username), but cannot change said access rights. Incidentally, these rights never change; therefore the capability does not need to contain a list of files and their respective rights, rather just the User to whom it was assigned and therefore the files this capability grants access to.
 
-\subsubsection{Secure Cookies}
-\label{ssub:secure_cookies}
-\par Most modern browsers offer a notion of ``Secure Cookies''. Secure cookies are only sent to the appropriate server if the connection to said server is secured over HTTPS, meaning that it is presumably safe to store the tokens in secure cookies. Cookies persist through multiple connections, and are a useful way to maintain state across multiple requests to the server within a session.
-
-\subsection{Token Generation and Signing}
-\label{sub:token_generation_and_signing}
-\par The tokens used in this system were inspired by JSON Web Tokens (see RFC 7519\cite{bib:RFC7519}), but modified to better suit the system. Here are the fields contained in the token:
+\subsubsection{Body of a Token}
+\label{ssub:body_of_a_token}
+\par The Tokens used in this system were inspired by JSON Web Tokens (see RFC 7519\cite{bib:RFC7519}), but modified to better suit the system. Here are the fields contained in the Token:
 \begin{description}
-  \item[\texttt{username}] User id
-  \item[\texttt{creationDate}] Creation time
-  \item[\texttt{expiresAt}] Expiration time
-  \item[\texttt{id}] Token id
-  \item[\texttt{verified}] Boolean indicating whether or not the user has gone through 2FA.
-  \item[\texttt{signature}] Token signature.
-  \item[\texttt{ip}] IP address.
+  \item[\texttt{username}] The User whose files this Token grants access to.
+  \item[\texttt{creationDate}] A timestamp indicating when the Token was created by the system.
+  \item[\texttt{expiresAt}] When the Token should automatically expire. Users get to choose how long they want their Tokens to last, with a maximum Token time to live of 24 hours.
+  \item[\texttt{id}] The Token's unique identifier, here implemented as 128 bit UUIDs generated from a SecureRandom instance.
+  \item[\texttt{verified}] Boolean indicating whether or not the User has gone through 2FA, and therefore if this Token allows access to anything other than the 2FA page.
+  \item[\texttt{signature}] The signature of the concatenation of the above fields under the current Rolling Key (see below).
 \end{description}
-\par The first two fields are rather self explanatory. If a token is presented to the server, but the current time is not between its creation time or its expiration time, it is immediately rejected. The user id represents which user this token was generated for. The token id is a random UUID assigned at token creation, and will be used to do token revocation, and keeping track of how many tokens have been assigned per day per user. The boolean field is used to indicate that the user has indeed put in the correct password, but has not been 2 factor authenticated. This is to prevent anyone but the user him/herself to attempt 2FA, but also prevents partially authenticated users from actually viewing the encrypted vault. Finally, all of the above fields are signed under the current Rolling Key.
-\par Token creation is very simple: when the user puts in the correct password, a token is generated with the \texttt{verified} field set to false, then signed. When the user successfully passes 2FA, the token is verified, singed again, and sent back.
 
 \subsubsection{Rolling Keys}
 \label{ssub:rolling_keys}
-\par Every night, at midnight EST, the server changes signing keys. This automatically voids any tokens assigned the day before, and reduces the window in which an attacker may crack the signing key. The current Rolling Key is always generated from a SecureRandom (Java's cryptographically strong random number generator) instance, making it impossible to guess the current key based on previous ones, were they ever to be cracked.
+\par Every night, at midnight EST, the server changes signing keys. This automatically voids any Tokens assigned the day before, and reduces the window in which an attacker may crack the signing key. The current Rolling Key is always generated from a SecureRandom (Java's cryptographically strong random number generator) instance, making it impossible to guess the current key based on previous ones, were they ever to be cracked. Consequently, expiration dates on timestamps are never later than 23:59:59:999 on the same day.
 
-\subsection{Token validation}
-\label{sub:token_validation}
-\par Here is the steps the system takes to validate tokens:
-\begin{enumerate}[1.]
-  \item The first thing to do is check whether or not the current time is between the token's purported creation time and expiration time. If not, the token is rejected, and the user must sign in again.
-  \item If the current time is within the token's validity window, then the signature is verified against the whole token. If the signature matches, then the previous time check was executed on valid dates, and the process can continue. If the signature does not match, indicating someone may have tampered with it, the token is rejected. Incidentally, the signature of a token from a previous day will never match because the keys used to sign it has changed, voiding it by default. This behavior is desired because an old valid token should not be a reason to assign a new valid token, otherwise if an attacker gains hold of a token, they will be authenticated forever.
-  \item If the signature matches, then the token's id is checked to see whether or not that token was voided through other means, i.e. by user action. If the token is void, it is rejected.
-  \item Finally, the presented token is checked against the user's request. If the token is verified, the user will be allowed to see their vault and logs. Otherwise, the user will only be allowed to view the 2FA page. On the other hand, only a user with a valid, but unverified token can view the 2FA page, to ensure that only the desired user may attempt 2FA.
-\end{enumerate}
+\subsubsection{Secure Cookies}
+\label{ssub:secure_cookies}
+\par Most modern browsers offer a notion of ``Secure Cookies''. Secure cookies are only sent to the appropriate server if the connection to said server is secured over HTTPS, meaning that it is presumably safe to store the tokens in secure cookies. Cookies persist through multiple connections, and are a useful way to maintain state across multiple requests to the server within a session. Tokens are serialized and sent to the Client via cookies, and the Client is expected to present its Tokens through cookies as well. Due to the nature of Tokens as capabilities, it is crucial that they are not leaked accidentally, hence the use of Secure Cookies.
 
 \subsection{Reference Monitor}
-\par Every time the server handles a request to a page that is marked as requiring the user to be authenticated, it \textbf{must} pass through the Reference Monitor (RM) at least once. This is due to two things: each function where authorization is required takes a Token as an argument, and the definition of the Token class is contained in the RM. In other words, to even gain access to a valid Token instance, the execution needs to go through the RM. The code was designed this way to prevent accidentally forgetting to check with the RM, which proved to be rather valuable as time went on.
+\label{sub:reference_monitor}
+\par Due to the importance of Tokens, they need to be very tightly controlled, by trusted code. Therefore the Reference Monitor (RM) ultimately decides on whether or not a Token is assigned to a User, and whether or not a Token presented by the Client is valid. As a means to ensure this, the definition of the Token class is actually contained in the RM, so that a Token instance never exists by accident at runtime. Building the code like this was an interesting choice, because it meant that the type system (barring nulls, which are checked at runtime) actually prevents functions that require a Token as a parameter from being called without having gone through the RM first.
+\par The RM keeps track of three things: which Tokens it has assigned to which Users (by the Token's id), how many failed login attempts have been made in the past hour for each user, and which User have been banned from logging in. This state lets it tightly control how many Tokens it creates for Users, and whether or not to let a Token instance enter then System. Here is the set of rules the RM guarantees:
+\begin{itemize}
+  \item A new Token is created for a User if and only if they provide the right master password and username combination at the time of the request. An old Token does no grant new Tokens.
+  \item A new Token can only be created if doing so does not violate the User's maximum concurrent users setting. On the other hand, changing said setting does not void the User's currently active Tokens.
+  \item A Token may only be verified and re-signed if the User provides the correct Two Factor Authentication code.
+  \item A Token must expire at or before the time dictated by the User's maximum session length. On the other hand, changing the session length does not affect the User's currently active Tokens.
+  \item If an account has more than 3 failed login attempts per hour, the User will be banned.
+  \item A User must present an unverified Token to attempt 2FA on a particular code.
+  \item A User may attempt 2FA no more than 3 times on the same code. Otherwise, the User will be banned.
+  \item Banned Users may not receive new Tokens for an hour.
+  \item Changing the master password voids all active Tokens for that User. A new Token will be created for the Client that made the change.
+  \item A Token instance will only enter the System if it is valid at the time it is received by the Server (see below for Token validation). The signature of a Token instance is not checked outside of the RM, only its expiration date.
+  \item Only verified Tokens grant the right to access files.
+\end{itemize}
+\par After a Token is created, it is scheduled to be removed from the RM's monitor set of valid Tokens, regardless of whether or said Token is presented again by the User.
 
+\par Here are the steps the system takes to validate tokens:
+\begin{enumerate}[1.]
+  \item The first thing to do is check whether or not the current time is between the Token's purported creation time and expiration time. If not, the Token is rejected, and the user must sign in again.
+  \item The signature is verified against the whole Token. If the signature matches, then the previous time check was executed on valid dates, and the process can continue. If the signature does not match, indicating someone may have tampered with it, the Token is rejected.
+  \item The Token's id is checked to see whether or not that Token was voided through other means, i.e. by user action, or simply removed from the valid set by timeout. If the Token is not in the valid set, it is rejected. Keeping track of which Tokens have been assigned to which Users also gives Tokens an interesting property: even if the attacker cracks the current Rolling Signing Key, they still need to know what Token ids have been assigned so far. Given that Token ids are 128 bits, it's impossible to try all of them during the Token's validity window. In other words, cracking the signing key still does not let an attacker forge a new Token, which is a much desired property.
+  \item Finally, the presented Token is checked against the User's request. If the Token is verified, the User will be allowed to view whatever page they requested. Otherwise, the User will only be allowed to view the 2FA page, or the login page. Additionally, only a User with a valid, but unverified, Token may submit a 2FA code to upgrade their Token, to ensure that only the desired User may attempt 2FA.
+\end{enumerate}
 
 \section{Confidentiality}
+\subsection{Server}
+\par All Server side encryption is done with AES-256 in CBC mode, with PKCS5 padding. No key is ever stored on disk, and all are derived from a 32 character randomly chosen password known only to the members of the team. All key derivation is done with SHA-256 and PBKDF2, both standard cryptographically strong protocols. All IVs, where required, are generated using cryptographically strong random number generators. No information is ever stored in plaintext.
+
+\subsection{Client}
+\label{sub:confidentiality_client}
+\par All Client side encryption is done with AES-128 in CCM mode. AES in CCM mode is effectively AES in CTR mode, with the counter values picked with a cryptographically strong random number generator, except that the plaintext is MACed before being encrypted, therefore also protecting integrity. The symmetric key used by the Client is derived from the User's master password using SHA-256. The Client also encrypts shared passwords with ElGamal using keys from the P-384 NIST curve. Unfortunately, the Client side encryption library did not support curve P-521, otherwise it would have been used. The private key is encrypted under the master password and is therefore never known by the Server. Additionally, the master password is hashed before being sent to the Server, therefore the Server never knows the master encryption key either.
+
 \section{Integrity}
+\subsection{Server}
+\par All of the content that is encrypted by the Server is also signed using HMAC-SHA-256. The encrypted content is what is being signed, therefore no decryption happens before the signature is verified.
+
+\subsection{Client}
+\par As mentioned above, all Client side encryption is done with AES in CCM mode, therefore the integrity of the ciphertext is checked as it is being decrypted. Additionally, shared passwords are signed with ECDSA, using keys from the P-384 NIST curve.
 
 \section{Bonus Features}
-
 \subsection{Pronounceable Passwords}
+\par In an effort to make passwords easier to remember, a slightly different kind of password generator was implemented: a pronounceable password generator. Of course, how pronounceable a password is is rather subjective, especially for different languages. For this particular generator, English sounds were used. The final product does indeed produce passwords that are, with a little effort, pronounceable; at the very least, they offer a cadence that does make them a little easier to remember.
+
+\subsubsection{The Method}
+\par It starts a dictionary of 10,000 simple English words (experimentation showed that using more complex words actually made the passwords a little harder to pronounce). An original attempt was to have a simple precedence matrix: one row and one column for each letter, and if a letter can precede another and still be pronouceable, the respective entry in the matrix is set to true. Sadly, there's a little more to what makes strings of letters pronouceable, and the passwords generated from this matrix didn't end up being very good. But it was a good starting point.
+\par Following the same idea, instead of looking at single letters, why not look at two, three or $n$ letters? For each $n$ letter string and a letter $l$, is there a word in the dictionary that contains the substring $n + l$? Instead of generating each and every $n$ letter string, each word in the dictionary can be dissected to find the valid $n$ letter strings, and all of the letters they may precede. This would return a Precedence Map $P$, which is a mapping from $n$ letter strings to sets of letters. But there is a problem with this map. Suppose a key $n = n_1 n_2 \cdots n_i$ that maps to the set $C = {c_1, c_2, \cdots, c_j}$. There is no guarantee that $\forall c \in C: n_2 \cdots n_{i-1} n_i c \in P$. This means that there are some ways to traverse $P$ that lead to ``dead ends''. This can be fixed by iterating through $P$ multiple times and removing keys that point to empty sets and letters from values that could create a key that points to an empty set, until the size of the map stops changing. This results in a Precedence Map that can generate infinitely long passwords.
+
+\subsubsection{The Results}
+\par The major limiting factor in this is that the number of keys in $P$ grows exponentially with their length. Additionally, longer keys may imply more pronounceable passwords, but at a diminishing gain. Therefore a balance needs to be struck between how large $P$ should be and how pronouceable the resulting passwords are. In this case, 3-letter keys generated a 3,000+ entry mapping that produced very good passwords. As such, this is the length that was chosen.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\linewidth]{figures/pronounceable.png}
+  \caption{Pronounceable Password Space Size Comparison}
+  \label{fig:pronounceable_password_space_size_comparison}
+\end{figure}
 
 \subsection{Password Sharing}
 
