@@ -1,0 +1,955 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="http://findbugs.sourceforge.net/xsl/default.xsl"?>
+
+<BugCollection version="3.0.1" sequence="0" timestamp="1463013632138" analysisTimestamp="1463013625346" release="">
+  <Project projectName="vault5431">
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\AuthenticationHandler$1.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\AuthenticationHandler$Token.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\AuthenticationHandler.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\AuthMessage.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\CouldNotParseTokenException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\InvalidTokenException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\NoSuchUserException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\TooMany2FAAttemptsException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\TooManyConcurrentSessionsException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\exceptions\TooManyFailedLogins.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\RollingKeys.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\SMSHandler.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\auth\TwoFactorAuthHandler.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\exceptions\BadCiphertextException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\exceptions\InvalidPublicKeySignature.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\exceptions\InvalidSignatureException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\HashUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\PasswordUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\SigningUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\sjcl\SJCLAsymmetricField.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\sjcl\SJCLSymmetricField.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\SymmetricUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\crypto\Utils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\FatalException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\io\Base64String.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\io\FileUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\CSVUtils.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\LogEntry.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\LogType$1.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\LogType$Colors.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\LogType.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\SystemLogEntry.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\logging\UserLogEntry.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\PasswordGenerator.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\AuthenticationRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\ExceptionRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\exceptions\SessionExpiredException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\exceptions\UnauthorizedRequestException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\GeneratorRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\LogRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\PasswordRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\Routes$AuthenticatedRoute.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\Routes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\SettingsRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\routes\SharedPasswordRoutes.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\Sys.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\AlreadySharingPasswordException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\CorruptedLogException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\CouldNotCreateUserException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\CouldNotLoadSettingsException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\IllegalTokenException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\exceptions\VaultNotFoundException.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\Password.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\Settings.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\SharedPassword.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\User.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\users\UserManager.class</Jar>
+    <Jar>G:\code\CS5431\vault\target\scala-2.10\classes\vault5431\Vault.class</Jar>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\charsets.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\deploy.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\access-bridge-64.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\cldrdata.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\dnsns.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\jaccess.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\jfxrt.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\localedata.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\nashorn.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\sunec.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\sunjce_provider.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\sunmscapi.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\sunpkcs11.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\ext\zipfs.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\javaws.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\jce.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\jfr.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\jfxswt.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\jsse.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\management-agent.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\plugin.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\resources.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Program Files\Java\jdk1.8.0_71\jre\lib\rt.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.sparkjava\spark-core\bundles\spark-core-2.3.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-beanutils\commons-beanutils\jars\commons-beanutils-1.9.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-collections\commons-collections\jars\commons-collections-3.2.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-digester\commons-digester\jars\commons-digester-1.8.1.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-logging\commons-logging\jars\commons-logging-1.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-validator\commons-validator\jars\commons-validator-1.5.0.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\javax.servlet\javax.servlet-api\jars\javax.servlet-api-3.1.0.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-http\jars\jetty-http-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-io\jars\jetty-io-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-security\jars\jetty-security-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-server\jars\jetty-server-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-servlet\jars\jetty-servlet-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-util\jars\jetty-util-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-webapp\jars\jetty-webapp-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty\jetty-xml\jars\jetty-xml-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty.websocket\websocket-api\jars\websocket-api-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty.websocket\websocket-client\jars\websocket-client-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty.websocket\websocket-common\jars\websocket-common-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty.websocket\websocket-server\jars\websocket-server-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.eclipse.jetty.websocket\websocket-servlet\jars\websocket-servlet-9.3.2.v20150730.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.sbt\boot\scala-2.10.5\lib\scala-library.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.slf4j\slf4j-api\jars\slf4j-api-1.7.12.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.slf4j\slf4j-simple\jars\slf4j-simple-1.7.12.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\junit\junit\jars\junit-4.12.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.hamcrest\hamcrest-core\jars\hamcrest-core-1.3.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.novocode\junit-interface\jars\junit-interface-0.11.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.apache.commons\commons-csv\jars\commons-csv-1.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.scala-sbt\test-interface\jars\test-interface-1.0.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-io\commons-io\jars\commons-io-2.4.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.freemarker\freemarker\jars\freemarker-2.3.23.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>G:\code\CS5431\vault\lib\bcprov-jdk15on-154.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>G:\code\CS5431\vault\lib\spark-template-freemarker-2.3.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.googlecode.json-simple\json-simple\jars\json-simple-1.1.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.codehaus.jackson\jackson-core-asl\jars\jackson-core-asl-1.9.3.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.codehaus.jackson\jackson-mapper-asl\jars\jackson-mapper-asl-1.9.3.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.fasterxml.jackson.core\jackson-annotations\bundles\jackson-annotations-2.4.0.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.fasterxml.jackson.core\jackson-core\bundles\jackson-core-2.4.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.fasterxml.jackson.core\jackson-databind\bundles\jackson-databind-2.4.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\com.twilio.sdk\twilio-java-sdk\jars\twilio-java-sdk-5.9.0.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\io.jsonwebtoken\jjwt\jars\jjwt-0.4.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.apache.commons\commons-lang3\jars\commons-lang3-3.3.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.json\json\bundles\json-20160212.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\commons-codec\commons-codec\jars\commons-codec-1.9.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.apache.httpcomponents\httpclient\jars\httpclient-4.5.2.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.ivy2\cache\org.apache.httpcomponents\httpcore\jars\httpcore-4.4.4.jar</AuxClasspathEntry>
+    <AuxClasspathEntry>C:\Users\papacharlie\.IntelliJIdea15\config\javascript\extLibs\http_maxcdn.bootstrapcdn.com_bootstrap_3.3.6_js_bootstrap.js</AuxClasspathEntry>
+    <SrcDir>G:\code\CS5431\vault\src\main\java</SrcDir>
+    <SrcDir>G:\code\CS5431\vault\src\test\java</SrcDir>
+    <SrcDir>G:\code\CS5431\vault\src\main\resources</SrcDir>
+    <SrcDir>G:\code\CS5431\vault\src\test\resources</SrcDir>
+    <SrcDir>G:\code\CS5431\vault\project</SrcDir>
+    <Plugin id="edu.umd.cs.findbugs.plugins.core" enabled="true"/>
+  </Project>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="fe9950706afb9098c2a6b06b41b47633" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.PasswordGenerator.&lt;static initializer for PasswordGenerator&gt;(): new java.io.InputStreamReader(InputStream)</LongMessage>
+    <Class classname="vault5431.PasswordGenerator" primary="true">
+      <SourceLine classname="vault5431.PasswordGenerator" sourcefile="PasswordGenerator.java" sourcepath="vault5431/PasswordGenerator.java" relSourcepath="src\main\java\vault5431\PasswordGenerator.java">
+        <Message>In PasswordGenerator.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.PasswordGenerator</Message>
+    </Class>
+    <Method classname="vault5431.PasswordGenerator" name="&lt;clinit&gt;" signature="()V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.PasswordGenerator" start="18" end="46" startBytecode="0" endBytecode="477" sourcefile="PasswordGenerator.java" sourcepath="vault5431/PasswordGenerator.java" relSourcepath="src\main\java\vault5431\PasswordGenerator.java"/>
+      <Message>In method vault5431.PasswordGenerator.&lt;static initializer for PasswordGenerator&gt;()</Message>
+    </Method>
+    <Method classname="java.io.InputStreamReader" name="&lt;init&gt;" signature="(Ljava/io/InputStream;)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.io.InputStreamReader" start="72" end="79" startBytecode="0" endBytecode="108" sourcefile="InputStreamReader.java" sourcepath="java/io/InputStreamReader.java"/>
+      <Message>Called method new java.io.InputStreamReader(InputStream)</Message>
+    </Method>
+    <SourceLine classname="vault5431.PasswordGenerator" primary="true" start="33" end="33" startBytecode="38" endBytecode="38" sourcefile="PasswordGenerator.java" sourcepath="vault5431/PasswordGenerator.java" relSourcepath="src\main\java\vault5431\PasswordGenerator.java">
+      <Message>At PasswordGenerator.java:[line 33]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.PasswordGenerator" primary="true" start="33" end="33" startBytecode="38" endBytecode="38" sourcefile="PasswordGenerator.java" sourcepath="vault5431/PasswordGenerator.java" relSourcepath="src\main\java\vault5431\PasswordGenerator.java">
+      <Message>At PasswordGenerator.java:[line 33]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="3d379c45070035c434cd33fad716bfa3" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.Sys.appendToLog(SystemLogEntry): String.getBytes()</LongMessage>
+    <Class classname="vault5431.Sys" primary="true">
+      <SourceLine classname="vault5431.Sys" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+        <Message>In Sys.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.Sys</Message>
+    </Class>
+    <Method classname="vault5431.Sys" name="appendToLog" signature="(Lvault5431/logging/SystemLogEntry;)V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.Sys" start="189" end="207" startBytecode="0" endBytecode="352" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java"/>
+      <Message>In method vault5431.Sys.appendToLog(SystemLogEntry)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.Sys" primary="true" start="193" end="193" startBytecode="19" endBytecode="19" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 193]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.Sys" primary="true" start="193" end="193" startBytecode="19" endBytecode="19" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 193]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="d3199bf2b75ff737dc03e01b1e5c0950" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.Sys.deriveLogEncryptionKey(): String.getBytes()</LongMessage>
+    <Class classname="vault5431.Sys" primary="true">
+      <SourceLine classname="vault5431.Sys" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+        <Message>In Sys.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.Sys</Message>
+    </Class>
+    <Method classname="vault5431.Sys" name="deriveLogEncryptionKey" signature="()Ljavax/crypto/SecretKey;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.Sys" start="171" end="173" startBytecode="0" endBytecode="93" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java"/>
+      <Message>In method vault5431.Sys.deriveLogEncryptionKey()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.Sys" primary="true" start="172" end="172" startBytecode="11" endBytecode="11" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 172]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.Sys" primary="true" start="172" end="172" startBytecode="11" endBytecode="11" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 172]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="8d13505eb3b41263fb74fad6b368ad25" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.Sys.deriveLogSigningKey(): String.getBytes()</LongMessage>
+    <Class classname="vault5431.Sys" primary="true">
+      <SourceLine classname="vault5431.Sys" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+        <Message>In Sys.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.Sys</Message>
+    </Class>
+    <Method classname="vault5431.Sys" name="deriveLogSigningKey" signature="()Ljavax/crypto/SecretKey;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.Sys" start="177" end="179" startBytecode="0" endBytecode="93" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java"/>
+      <Message>In method vault5431.Sys.deriveLogSigningKey()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.Sys" primary="true" start="178" end="178" startBytecode="11" endBytecode="11" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 178]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.Sys" primary="true" start="178" end="178" startBytecode="11" endBytecode="11" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 178]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="e4b93f4b8ef9112c253d87616854e63b" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.Sys.loadLog(): new String(byte[])</LongMessage>
+    <Class classname="vault5431.Sys" primary="true">
+      <SourceLine classname="vault5431.Sys" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+        <Message>In Sys.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.Sys</Message>
+    </Class>
+    <Method classname="vault5431.Sys" name="loadLog" signature="()[Lvault5431/logging/SystemLogEntry;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.Sys" start="215" end="233" startBytecode="0" endBytecode="403" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java"/>
+      <Message>In method vault5431.Sys.loadLog()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="&lt;init&gt;" signature="([B)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="566" end="567" startBytecode="0" endBytecode="36" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method new String(byte[])</Message>
+    </Method>
+    <SourceLine classname="vault5431.Sys" primary="true" start="222" end="222" startBytecode="58" endBytecode="58" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 222]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.Sys" primary="true" start="222" end="222" startBytecode="58" endBytecode="58" sourcefile="Sys.java" sourcepath="vault5431/Sys.java" relSourcepath="src\main\java\vault5431\Sys.java">
+      <Message>At Sys.java:[line 222]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="f48095701d4d2e06bb554d379cded8f4" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.auth.AuthenticationHandler$Token.toSignatureBody(String, LocalDateTime, LocalDateTime, UUID, boolean): String.getBytes()</LongMessage>
+    <Class classname="vault5431.auth.AuthenticationHandler$Token" primary="true">
+      <SourceLine classname="vault5431.auth.AuthenticationHandler$Token" sourcefile="AuthenticationHandler.java" sourcepath="vault5431/auth/AuthenticationHandler.java" relSourcepath="src\main\java\vault5431\auth\AuthenticationHandler.java">
+        <Message>In AuthenticationHandler.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.auth.AuthenticationHandler$Token</Message>
+    </Class>
+    <Method classname="vault5431.auth.AuthenticationHandler$Token" name="toSignatureBody" signature="(Ljava/lang/String;Ljava/time/LocalDateTime;Ljava/time/LocalDateTime;Ljava/util/UUID;Z)[B" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.auth.AuthenticationHandler$Token" start="336" end="336" startBytecode="0" endBytecode="125" sourcefile="AuthenticationHandler.java" sourcepath="vault5431/auth/AuthenticationHandler.java" relSourcepath="src\main\java\vault5431\auth\AuthenticationHandler.java"/>
+      <Message>In method vault5431.auth.AuthenticationHandler$Token.toSignatureBody(String, LocalDateTime, LocalDateTime, UUID, boolean)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.auth.AuthenticationHandler$Token" primary="true" start="336" end="336" startBytecode="40" endBytecode="40" sourcefile="AuthenticationHandler.java" sourcepath="vault5431/auth/AuthenticationHandler.java" relSourcepath="src\main\java\vault5431\auth\AuthenticationHandler.java">
+      <Message>At AuthenticationHandler.java:[line 336]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.auth.AuthenticationHandler$Token" primary="true" start="336" end="336" startBytecode="40" endBytecode="40" sourcefile="AuthenticationHandler.java" sourcepath="vault5431/auth/AuthenticationHandler.java" relSourcepath="src\main\java\vault5431\auth\AuthenticationHandler.java">
+      <Message>At AuthenticationHandler.java:[line 336]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DLS_DEAD_LOCAL_STORE" priority="1" rank="15" abbrev="DLS" category="STYLE" instanceHash="ac102361be54a4b2e0566882175106d6" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="563">
+    <ShortMessage>Dead store to local variable</ShortMessage>
+    <LongMessage>Dead store to client in vault5431.auth.SMSHandler.sendSms(String, String)</LongMessage>
+    <Class classname="vault5431.auth.SMSHandler" primary="true">
+      <SourceLine classname="vault5431.auth.SMSHandler" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java">
+        <Message>In SMSHandler.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.auth.SMSHandler</Message>
+    </Class>
+    <Method classname="vault5431.auth.SMSHandler" name="sendSms" signature="(Ljava/lang/String;Ljava/lang/String;)V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.auth.SMSHandler" start="25" end="37" startBytecode="0" endBytecode="47" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java"/>
+      <Message>In method vault5431.auth.SMSHandler.sendSms(String, String)</Message>
+    </Method>
+    <LocalVariable name="client" register="2" pc="12" role="LOCAL_VARIABLE_NAMED">
+      <Message>Local variable named client</Message>
+    </LocalVariable>
+    <SourceLine classname="vault5431.auth.SMSHandler" primary="true" start="25" end="25" startBytecode="11" endBytecode="11" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java">
+      <Message>At SMSHandler.java:[line 25]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.auth.SMSHandler" primary="true" start="25" end="25" startBytecode="11" endBytecode="11" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java">
+      <Message>At SMSHandler.java:[line 25]</Message>
+    </SourceLine>
+    <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.DEAD_OBJECT_STORE" value="true"/>
+    <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.LOCAL_NAME" value="client"/>
+    <Property name="edu.umd.cs.findbugs.detect.DeadLocalStoreProperty.METHOD_RESULT" value="true"/>
+  </BugInstance>
+  <BugInstance type="UC_USELESS_OBJECT" priority="2" rank="17" abbrev="UC" category="STYLE" instanceHash="f687949788f501c537634e8509206a61" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Useless object created</ShortMessage>
+    <LongMessage>Useless object stored in variable params of method vault5431.auth.SMSHandler.sendSms(String, String)</LongMessage>
+    <Class classname="vault5431.auth.SMSHandler" primary="true">
+      <SourceLine classname="vault5431.auth.SMSHandler" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java">
+        <Message>In SMSHandler.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.auth.SMSHandler</Message>
+    </Class>
+    <Method classname="vault5431.auth.SMSHandler" name="sendSms" signature="(Ljava/lang/String;Ljava/lang/String;)V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.auth.SMSHandler" start="25" end="37" startBytecode="0" endBytecode="214" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java"/>
+      <Message>In method vault5431.auth.SMSHandler.sendSms(String, String)</Message>
+    </Method>
+    <String value="params">
+      <Message>Value params</Message>
+    </String>
+    <Type descriptor="Ljava/util/ArrayList;">
+      <SourceLine classname="java.util.ArrayList" start="106" end="1459" sourcefile="ArrayList.java" sourcepath="java/util/ArrayList.java">
+        <Message>At ArrayList.java:[lines 106-1459]</Message>
+      </SourceLine>
+      <Message>Type java.util.ArrayList</Message>
+    </Type>
+    <SourceLine classname="vault5431.auth.SMSHandler" primary="true" start="26" end="26" startBytecode="17" endBytecode="17" sourcefile="SMSHandler.java" sourcepath="vault5431/auth/SMSHandler.java" relSourcepath="src\main\java\vault5431\auth\SMSHandler.java">
+      <Message>At SMSHandler.java:[line 26]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="c74e95cca1ee89ccd9b6bc8b93bb2d0a" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in new vault5431.io.Base64String(String): String.getBytes()</LongMessage>
+    <Class classname="vault5431.io.Base64String" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+        <Message>In Base64String.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.Base64String</Message>
+    </Class>
+    <Method classname="vault5431.io.Base64String" name="&lt;init&gt;" signature="(Ljava/lang/String;)V" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" start="25" end="26" startBytecode="0" endBytecode="36" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java"/>
+      <Message>In method new vault5431.io.Base64String(String)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="25" end="25" startBytecode="2" endBytecode="2" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 25]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="25" end="25" startBytecode="2" endBytecode="2" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 25]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="bf75229785d6f12779d2aaec05afca75" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.Base64String.decodeString(): new String(byte[])</LongMessage>
+    <Class classname="vault5431.io.Base64String" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+        <Message>In Base64String.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.Base64String</Message>
+    </Class>
+    <Method classname="vault5431.io.Base64String" name="decodeString" signature="()Ljava/lang/String;" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" start="133" end="133" startBytecode="0" endBytecode="35" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java"/>
+      <Message>In method vault5431.io.Base64String.decodeString()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="&lt;init&gt;" signature="([B)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="566" end="567" startBytecode="0" endBytecode="36" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method new String(byte[])</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="133" end="133" startBytecode="8" endBytecode="8" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 133]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="133" end="133" startBytecode="8" endBytecode="8" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 133]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="64fad27bd125f014e0a0bfe66aedfcce" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.Base64String.fromBase64(String): String.getBytes()</LongMessage>
+    <Class classname="vault5431.io.Base64String" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+        <Message>In Base64String.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.Base64String</Message>
+    </Class>
+    <Method classname="vault5431.io.Base64String" name="fromBase64" signature="(Ljava/lang/String;)Lvault5431/io/Base64String;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" start="62" end="65" startBytecode="0" endBytecode="54" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java"/>
+      <Message>In method vault5431.io.Base64String.fromBase64(String)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="63" end="63" startBytecode="5" endBytecode="5" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 63]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="63" end="63" startBytecode="5" endBytecode="5" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 63]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="be46a62663548aaf4b0c7a87c81b1875" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.Base64String.getB64Bytes(): String.getBytes()</LongMessage>
+    <Class classname="vault5431.io.Base64String" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+        <Message>In Base64String.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.Base64String</Message>
+    </Class>
+    <Method classname="vault5431.io.Base64String" name="getB64Bytes" signature="()[B" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" start="120" end="120" startBytecode="0" endBytecode="31" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java"/>
+      <Message>In method vault5431.io.Base64String.getB64Bytes()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="120" end="120" startBytecode="4" endBytecode="4" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 120]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="120" end="120" startBytecode="4" endBytecode="4" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 120]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="baebcf2ec88a87565afa80e15975c258" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.Base64String.setB64data(byte[]): new String(byte[])</LongMessage>
+    <Class classname="vault5431.io.Base64String" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+        <Message>In Base64String.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.Base64String</Message>
+    </Class>
+    <Method classname="vault5431.io.Base64String" name="setB64data" signature="([B)V" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.io.Base64String" start="102" end="103" startBytecode="0" endBytecode="40" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java"/>
+      <Message>In method vault5431.io.Base64String.setB64data(byte[])</Message>
+    </Method>
+    <Method classname="java.lang.String" name="&lt;init&gt;" signature="([B)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="566" end="567" startBytecode="0" endBytecode="36" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method new String(byte[])</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="102" end="102" startBytecode="6" endBytecode="6" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 102]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.Base64String" primary="true" start="102" end="102" startBytecode="6" endBytecode="6" sourcefile="Base64String.java" sourcepath="vault5431/io/Base64String.java" relSourcepath="src\main\java\vault5431\io\Base64String.java">
+      <Message>At Base64String.java:[line 102]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="e19a891b94b394aa8a410b19e0fe3daf" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.FileUtils.append(File, Base64String): String.getBytes()</LongMessage>
+    <Class classname="vault5431.io.FileUtils" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+        <Message>In FileUtils.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.FileUtils</Message>
+    </Class>
+    <Method classname="vault5431.io.FileUtils" name="append" signature="(Ljava/io/File;Lvault5431/io/Base64String;)V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" start="85" end="87" startBytecode="0" endBytecode="51" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java"/>
+      <Message>In method vault5431.io.FileUtils.append(File, Base64String)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="86" end="86" startBytecode="12" endBytecode="12" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 86]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="86" end="86" startBytecode="12" endBytecode="12" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 86]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="231d008e82c12cd520639d66abb73b36" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.FileUtils.read(File): new java.io.FileReader(File)</LongMessage>
+    <Class classname="vault5431.io.FileUtils" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+        <Message>In FileUtils.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.FileUtils</Message>
+    </Class>
+    <Method classname="vault5431.io.FileUtils" name="read" signature="(Ljava/io/File;)[Lvault5431/io/Base64String;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" start="22" end="35" startBytecode="0" endBytecode="435" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java"/>
+      <Message>In method vault5431.io.FileUtils.read(File)</Message>
+    </Method>
+    <Method classname="java.io.FileReader" name="&lt;init&gt;" signature="(Ljava/io/File;)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.io.FileReader" start="72" end="73" startBytecode="0" endBytecode="40" sourcefile="FileReader.java" sourcepath="java/io/FileReader.java"/>
+      <Message>Called method new java.io.FileReader(File)</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="23" end="23" startBytecode="17" endBytecode="17" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 23]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="23" end="23" startBytecode="17" endBytecode="17" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 23]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="12834181ec62ede02660a3c69e12409" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.io.FileUtils.write(File, byte[], boolean): new java.io.FileWriter(File, boolean)</LongMessage>
+    <Class classname="vault5431.io.FileUtils" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+        <Message>In FileUtils.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.io.FileUtils</Message>
+    </Class>
+    <Method classname="vault5431.io.FileUtils" name="write" signature="(Ljava/io/File;[BZ)V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.io.FileUtils" start="57" end="64" startBytecode="0" endBytecode="334" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java"/>
+      <Message>In method vault5431.io.FileUtils.write(File, byte[], boolean)</Message>
+    </Method>
+    <Method classname="java.io.FileWriter" name="&lt;init&gt;" signature="(Ljava/io/File;Z)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.io.FileWriter" start="107" end="108" startBytecode="0" endBytecode="41" sourcefile="FileWriter.java" sourcepath="java/io/FileWriter.java"/>
+      <Message>Called method new java.io.FileWriter(File, boolean)</Message>
+    </Method>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="57" end="57" startBytecode="6" endBytecode="6" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 57]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.io.FileUtils" primary="true" start="57" end="57" startBytecode="6" endBytecode="6" sourcefile="FileUtils.java" sourcepath="vault5431/io/FileUtils.java" relSourcepath="src\main\java\vault5431\io\FileUtils.java">
+      <Message>At FileUtils.java:[line 57]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="d05b3e8455e3c8c21476a5ab78b5d467" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.Settings.loadFromFile(File, SecretKey, SecretKey): new String(byte[])</LongMessage>
+    <Class classname="vault5431.users.Settings" primary="true">
+      <SourceLine classname="vault5431.users.Settings" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+        <Message>In Settings.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.Settings</Message>
+    </Class>
+    <Method classname="vault5431.users.Settings" name="loadFromFile" signature="(Ljava/io/File;Ljavax/crypto/SecretKey;Ljavax/crypto/SecretKey;)Lvault5431/users/Settings;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.users.Settings" start="57" end="57" startBytecode="0" endBytecode="45" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java"/>
+      <Message>In method vault5431.users.Settings.loadFromFile(File, SecretKey, SecretKey)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="&lt;init&gt;" signature="([B)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="566" end="567" startBytecode="0" endBytecode="36" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method new String(byte[])</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.Settings" primary="true" start="57" end="57" startBytecode="15" endBytecode="15" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+      <Message>At Settings.java:[line 57]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.Settings" primary="true" start="57" end="57" startBytecode="15" endBytecode="15" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+      <Message>At Settings.java:[line 57]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="b4feb610cef5a4cab64ae4fe3b28b019" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.Settings.saveToFile(File, SecretKey, SecretKey): String.getBytes()</LongMessage>
+    <Class classname="vault5431.users.Settings" primary="true">
+      <SourceLine classname="vault5431.users.Settings" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+        <Message>In Settings.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.Settings</Message>
+    </Class>
+    <Method classname="vault5431.users.Settings" name="saveToFile" signature="(Ljava/io/File;Ljavax/crypto/SecretKey;Ljavax/crypto/SecretKey;)V" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.users.Settings" start="109" end="110" startBytecode="0" endBytecode="44" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java"/>
+      <Message>In method vault5431.users.Settings.saveToFile(File, SecretKey, SecretKey)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.Settings" primary="true" start="109" end="109" startBytecode="5" endBytecode="5" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+      <Message>At Settings.java:[line 109]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.Settings" primary="true" start="109" end="109" startBytecode="5" endBytecode="5" sourcefile="Settings.java" sourcepath="vault5431/users/Settings.java" relSourcepath="src\main\java\vault5431\users\Settings.java">
+      <Message>At Settings.java:[line 109]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="2e2f1b01b80cb361bf57707dba02ba3" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.User.appendToLog(LogType, String, String, String): String.getBytes()</LongMessage>
+    <Class classname="vault5431.users.User" primary="true">
+      <SourceLine classname="vault5431.users.User" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+        <Message>In User.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.User</Message>
+    </Class>
+    <Method classname="vault5431.users.User" name="appendToLog" signature="(Lvault5431/logging/LogType;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.users.User" start="513" end="528" startBytecode="0" endBytecode="440" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java"/>
+      <Message>In method vault5431.users.User.appendToLog(LogType, String, String, String)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.User" primary="true" start="519" end="519" startBytecode="54" endBytecode="54" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 519]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.User" primary="true" start="519" end="519" startBytecode="54" endBytecode="54" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 519]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="1cc8192430c38bffe084bca7bf028b7b" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.User.deriveLogEncryptionKey(): String.getBytes()</LongMessage>
+    <Class classname="vault5431.users.User" primary="true">
+      <SourceLine classname="vault5431.users.User" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+        <Message>In User.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.User</Message>
+    </Class>
+    <Method classname="vault5431.users.User" name="deriveLogEncryptionKey" signature="()Ljavax/crypto/SecretKey;" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.users.User" start="537" end="539" startBytecode="0" endBytecode="116" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java"/>
+      <Message>In method vault5431.users.User.deriveLogEncryptionKey()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.User" primary="true" start="538" end="538" startBytecode="13" endBytecode="13" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 538]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.User" primary="true" start="538" end="538" startBytecode="13" endBytecode="13" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 538]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="af9d8770b6ea6cbbc93dde53109eab29" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.User.deriveLogSigningKey(): String.getBytes()</LongMessage>
+    <Class classname="vault5431.users.User" primary="true">
+      <SourceLine classname="vault5431.users.User" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+        <Message>In User.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.User</Message>
+    </Class>
+    <Method classname="vault5431.users.User" name="deriveLogSigningKey" signature="()Ljavax/crypto/SecretKey;" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.users.User" start="543" end="545" startBytecode="0" endBytecode="116" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java"/>
+      <Message>In method vault5431.users.User.deriveLogSigningKey()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.User" primary="true" start="544" end="544" startBytecode="13" endBytecode="13" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 544]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.User" primary="true" start="544" end="544" startBytecode="13" endBytecode="13" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 544]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="240b994c8e6affe5dc911f622e431c9d" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.User.loadLog(): new String(byte[])</LongMessage>
+    <Class classname="vault5431.users.User" primary="true">
+      <SourceLine classname="vault5431.users.User" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+        <Message>In User.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.User</Message>
+    </Class>
+    <Method classname="vault5431.users.User" name="loadLog" signature="()[Lvault5431/logging/UserLogEntry;" isStatic="false" primary="true">
+      <SourceLine classname="vault5431.users.User" start="485" end="503" startBytecode="0" endBytecode="453" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java"/>
+      <Message>In method vault5431.users.User.loadLog()</Message>
+    </Method>
+    <Method classname="java.lang.String" name="&lt;init&gt;" signature="([B)V" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="566" end="567" startBytecode="0" endBytecode="36" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method new String(byte[])</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.User" primary="true" start="494" end="494" startBytecode="74" endBytecode="74" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 494]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.User" primary="true" start="494" end="494" startBytecode="74" endBytecode="74" sourcefile="User.java" sourcepath="vault5431/users/User.java" relSourcepath="src\main\java\vault5431\users\User.java">
+      <Message>At User.java:[line 494]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="DM_DEFAULT_ENCODING" priority="1" rank="19" abbrev="Dm" category="I18N" instanceHash="a2076de1f2d54998fb5f5b95bbb25aaa" instanceOccurrenceNum="0" instanceOccurrenceMax="0">
+    <ShortMessage>Reliance on default encoding</ShortMessage>
+    <LongMessage>Found reliance on default encoding in vault5431.users.UserManager.hashUsername(String): String.getBytes()</LongMessage>
+    <Class classname="vault5431.users.UserManager" primary="true">
+      <SourceLine classname="vault5431.users.UserManager" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java">
+        <Message>In UserManager.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.UserManager</Message>
+    </Class>
+    <Method classname="vault5431.users.UserManager" name="hashUsername" signature="(Ljava/lang/String;)Lvault5431/io/Base64String;" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.users.UserManager" start="58" end="58" startBytecode="0" endBytecode="49" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java"/>
+      <Message>In method vault5431.users.UserManager.hashUsername(String)</Message>
+    </Method>
+    <Method classname="java.lang.String" name="getBytes" signature="()[B" isStatic="false" role="METHOD_CALLED">
+      <SourceLine classname="java.lang.String" start="958" end="958" startBytecode="0" endBytecode="37" sourcefile="String.java" sourcepath="java/lang/String.java"/>
+      <Message>Called method String.getBytes()</Message>
+    </Method>
+    <SourceLine classname="vault5431.users.UserManager" primary="true" start="58" end="58" startBytecode="1" endBytecode="1" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java">
+      <Message>At UserManager.java:[line 58]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.UserManager" primary="true" start="58" end="58" startBytecode="1" endBytecode="1" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java">
+      <Message>At UserManager.java:[line 58]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugInstance type="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" priority="2" rank="13" abbrev="NP" category="STYLE" instanceHash="727c6c00b1ffb14a00e9a6ad0fbcab6e" instanceOccurrenceNum="0" instanceOccurrenceMax="0" cweid="476">
+    <ShortMessage>Possible null pointer dereference due to return value of called method</ShortMessage>
+    <LongMessage>Possible null pointer dereference in vault5431.users.UserManager.&lt;static initializer for UserManager&gt;() due to return value of called method</LongMessage>
+    <Class classname="vault5431.users.UserManager" primary="true">
+      <SourceLine classname="vault5431.users.UserManager" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java">
+        <Message>In UserManager.java</Message>
+      </SourceLine>
+      <Message>In class vault5431.users.UserManager</Message>
+    </Class>
+    <Method classname="vault5431.users.UserManager" name="&lt;clinit&gt;" signature="()V" isStatic="true" primary="true">
+      <SourceLine classname="vault5431.users.UserManager" start="27" end="46" startBytecode="0" endBytecode="346" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java"/>
+      <Message>In method vault5431.users.UserManager.&lt;static initializer for UserManager&gt;()</Message>
+    </Method>
+    <LocalVariable name="err" register="0" pc="55" role="LOCAL_VARIABLE_VALUE_OF">
+      <Message>Value loaded from err</Message>
+    </LocalVariable>
+    <SourceLine classname="vault5431.users.UserManager" primary="true" start="34" end="34" startBytecode="55" endBytecode="55" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java" role="SOURCE_LINE_DEREF">
+      <Message>Dereferenced at UserManager.java:[line 34]</Message>
+    </SourceLine>
+    <SourceLine classname="vault5431.users.UserManager" start="34" end="34" startBytecode="50" endBytecode="50" sourcefile="UserManager.java" sourcepath="vault5431/users/UserManager.java" relSourcepath="src\main\java\vault5431\users\UserManager.java" role="SOURCE_LINE_KNOWN_NULL">
+      <Message>Known null at UserManager.java:[line 34]</Message>
+    </SourceLine>
+  </BugInstance>
+  <BugCategory category="STYLE">
+    <Description>Dodgy code</Description>
+  </BugCategory>
+  <BugCategory category="I18N">
+    <Description>Internationalization</Description>
+  </BugCategory>
+  <BugPattern type="DLS_DEAD_LOCAL_STORE" abbrev="DLS" category="STYLE">
+    <ShortDescription>Dead store to local variable</ShortDescription>
+    <Details><![CDATA[
+
+<p>
+This instruction assigns a value to a local variable,
+but the value is not read or used in any subsequent instruction.
+Often, this indicates an error, because the value computed is never
+used.
+</p>
+<p>
+Note that Sun's javac compiler often generates dead stores for
+final local variables.  Because FindBugs is a bytecode-based tool,
+there is no easy way to eliminate these false positives.
+</p>
+
+    ]]></Details>
+  </BugPattern>
+  <BugPattern type="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE" abbrev="NP" category="STYLE">
+    <ShortDescription>Possible null pointer dereference due to return value of called method</ShortDescription>
+    <Details><![CDATA[
+      
+<p> The return value from a method is dereferenced without a null check,
+and the return value of that method is one that should generally be checked
+for null.  This may lead to a <code>NullPointerException</code> when the code is executed.
+</p>
+      
+   ]]></Details>
+  </BugPattern>
+  <BugPattern type="UC_USELESS_OBJECT" abbrev="UC" category="STYLE">
+    <ShortDescription>Useless object created</ShortDescription>
+    <Details><![CDATA[
+
+<p>Our analysis shows that this object is useless. 
+It's created and modified, but its value never go outside of the method or produce any side-effect.
+Either there is a mistake and object was intended to be used or it can be removed.</p>
+<p>This analysis rarely produces false-positives. Common false-positive cases include:</p>
+<p>- This object used to implicitly throw some obscure exception.</p>
+<p>- This object used as a stub to generalize the code.</p>
+<p>- This object used to hold strong references to weak/soft-referenced objects.</p>
+
+    ]]></Details>
+  </BugPattern>
+  <BugPattern type="DM_DEFAULT_ENCODING" abbrev="Dm" category="I18N">
+    <ShortDescription>Reliance on default encoding</ShortDescription>
+    <Details><![CDATA[
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      ]]></Details>
+  </BugPattern>
+  <BugCode abbrev="NP" cweid="476">
+    <Description>Null pointer dereference</Description>
+  </BugCode>
+  <BugCode abbrev="Dm">
+    <Description>Dubious method used</Description>
+  </BugCode>
+  <BugCode abbrev="DLS" cweid="563">
+    <Description>Dead local store</Description>
+  </BugCode>
+  <BugCode abbrev="UC">
+    <Description>Useless code</Description>
+  </BugCode>
+  <Errors errors="0" missingClasses="0"></Errors>
+  <FindBugsSummary timestamp="Wed, 11 May 2016 18:19:43 -0400" total_classes="58" referenced_classes="227" total_bugs="24" total_size="2416" num_packages="12" java_version="1.8.0_51" vm_version="25.51-b03" cpu_seconds="60.50" clock_seconds="137.17" peak_mbytes="658.01" alloc_mbytes="494.94" gc_seconds="0.32" priority_2="2" priority_1="22">
+    <FileStats path="vault5431/FatalException.java" bugCount="0" size="13"/>
+    <FileStats path="vault5431/PasswordGenerator.java" bugCount="1" size="73" bugHash="5d674b216630b260cd71584a34dc71cd"/>
+    <FileStats path="vault5431/Sys.java" bugCount="4" size="133" bugHash="de2fbf0d596dbbee8dca73ba10ce8bfd"/>
+    <FileStats path="vault5431/Vault.java" bugCount="0" size="66"/>
+    <FileStats path="vault5431/auth/AuthMessage.java" bugCount="0" size="15"/>
+    <FileStats path="vault5431/auth/AuthenticationHandler.java" bugCount="1" size="214" bugHash="55b019011fcd63c7169668720ad847bc"/>
+    <FileStats path="vault5431/auth/RollingKeys.java" bugCount="0" size="54"/>
+    <FileStats path="vault5431/auth/SMSHandler.java" bugCount="2" size="15" bugHash="e7490cf1f53a803f09f3faff46ca2e7b"/>
+    <FileStats path="vault5431/auth/TwoFactorAuthHandler.java" bugCount="0" size="59"/>
+    <FileStats path="vault5431/auth/exceptions/CouldNotParseTokenException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/auth/exceptions/InvalidTokenException.java" bugCount="0" size="7"/>
+    <FileStats path="vault5431/auth/exceptions/NoSuchUserException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/auth/exceptions/TooMany2FAAttemptsException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/auth/exceptions/TooManyConcurrentSessionsException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/auth/exceptions/TooManyFailedLogins.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/crypto/HashUtils.java" bugCount="0" size="23"/>
+    <FileStats path="vault5431/crypto/PasswordUtils.java" bugCount="0" size="37"/>
+    <FileStats path="vault5431/crypto/SigningUtils.java" bugCount="0" size="18"/>
+    <FileStats path="vault5431/crypto/SymmetricUtils.java" bugCount="0" size="76"/>
+    <FileStats path="vault5431/crypto/Utils.java" bugCount="0" size="10"/>
+    <FileStats path="vault5431/crypto/exceptions/BadCiphertextException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/crypto/exceptions/InvalidPublicKeySignature.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/crypto/exceptions/InvalidSignatureException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/crypto/sjcl/SJCLAsymmetricField.java" bugCount="0" size="22"/>
+    <FileStats path="vault5431/crypto/sjcl/SJCLSymmetricField.java" bugCount="0" size="25"/>
+    <FileStats path="vault5431/io/Base64String.java" bugCount="5" size="58" bugHash="daa2e125b111556945af432c21f4e5e5"/>
+    <FileStats path="vault5431/io/FileUtils.java" bugCount="3" size="32" bugHash="3444fd47788911048a51b6f2336e8833"/>
+    <FileStats path="vault5431/logging/CSVUtils.java" bugCount="0" size="14"/>
+    <FileStats path="vault5431/logging/LogEntry.java" bugCount="0" size="19"/>
+    <FileStats path="vault5431/logging/LogType.java" bugCount="0" size="59"/>
+    <FileStats path="vault5431/logging/SystemLogEntry.java" bugCount="0" size="32"/>
+    <FileStats path="vault5431/logging/UserLogEntry.java" bugCount="0" size="29"/>
+    <FileStats path="vault5431/routes/AuthenticationRoutes.java" bugCount="0" size="159"/>
+    <FileStats path="vault5431/routes/ExceptionRoutes.java" bugCount="0" size="46"/>
+    <FileStats path="vault5431/routes/GeneratorRoutes.java" bugCount="0" size="7"/>
+    <FileStats path="vault5431/routes/LogRoutes.java" bugCount="0" size="13"/>
+    <FileStats path="vault5431/routes/PasswordRoutes.java" bugCount="0" size="62"/>
+    <FileStats path="vault5431/routes/Routes.java" bugCount="0" size="94"/>
+    <FileStats path="vault5431/routes/SettingsRoutes.java" bugCount="0" size="79"/>
+    <FileStats path="vault5431/routes/SharedPasswordRoutes.java" bugCount="0" size="109"/>
+    <FileStats path="vault5431/routes/exceptions/SessionExpiredException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/routes/exceptions/UnauthorizedRequestException.java" bugCount="0" size="3"/>
+    <FileStats path="vault5431/users/Password.java" bugCount="0" size="67"/>
+    <FileStats path="vault5431/users/Settings.java" bugCount="2" size="59" bugHash="abb54c94c324ba01d8a7d01d5eb01211"/>
+    <FileStats path="vault5431/users/SharedPassword.java" bugCount="0" size="79"/>
+    <FileStats path="vault5431/users/User.java" bugCount="4" size="412" bugHash="159b67749e2c3a3e17e35f36e17dc9d5"/>
+    <FileStats path="vault5431/users/UserManager.java" bugCount="2" size="58" bugHash="dc61cc5fcc34a54327f645e1f22e1224"/>
+    <FileStats path="vault5431/users/exceptions/AlreadySharingPasswordException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/users/exceptions/CorruptedLogException.java" bugCount="0" size="7"/>
+    <FileStats path="vault5431/users/exceptions/CouldNotCreateUserException.java" bugCount="0" size="7"/>
+    <FileStats path="vault5431/users/exceptions/CouldNotLoadSettingsException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/users/exceptions/IllegalTokenException.java" bugCount="0" size="4"/>
+    <FileStats path="vault5431/users/exceptions/VaultNotFoundException.java" bugCount="0" size="4"/>
+    <PackageStats package="vault5431" total_bugs="5" total_types="4" total_size="285" priority_1="5">
+      <ClassStats class="vault5431.FatalException" sourceFile="FatalException.java" interface="false" size="13" bugs="0"/>
+      <ClassStats class="vault5431.PasswordGenerator" sourceFile="PasswordGenerator.java" interface="false" size="73" bugs="1" priority_1="1"/>
+      <ClassStats class="vault5431.Sys" sourceFile="Sys.java" interface="false" size="133" bugs="4" priority_1="4"/>
+      <ClassStats class="vault5431.Vault" sourceFile="Vault.java" interface="false" size="66" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.auth" total_bugs="3" total_types="7" total_size="357" priority_2="1" priority_1="2">
+      <ClassStats class="vault5431.auth.AuthMessage" sourceFile="AuthMessage.java" interface="false" size="15" bugs="0"/>
+      <ClassStats class="vault5431.auth.AuthenticationHandler" sourceFile="AuthenticationHandler.java" interface="false" size="115" bugs="0"/>
+      <ClassStats class="vault5431.auth.AuthenticationHandler$1" sourceFile="AuthenticationHandler.java" interface="false" size="1" bugs="0"/>
+      <ClassStats class="vault5431.auth.AuthenticationHandler$Token" sourceFile="AuthenticationHandler.java" interface="false" size="98" bugs="1" priority_1="1"/>
+      <ClassStats class="vault5431.auth.RollingKeys" sourceFile="RollingKeys.java" interface="false" size="54" bugs="0"/>
+      <ClassStats class="vault5431.auth.SMSHandler" sourceFile="SMSHandler.java" interface="false" size="15" bugs="2" priority_2="1" priority_1="1"/>
+      <ClassStats class="vault5431.auth.TwoFactorAuthHandler" sourceFile="TwoFactorAuthHandler.java" interface="false" size="59" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.auth.exceptions" total_bugs="0" total_types="6" total_size="27">
+      <ClassStats class="vault5431.auth.exceptions.CouldNotParseTokenException" sourceFile="CouldNotParseTokenException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.auth.exceptions.InvalidTokenException" sourceFile="InvalidTokenException.java" interface="false" size="7" bugs="0"/>
+      <ClassStats class="vault5431.auth.exceptions.NoSuchUserException" sourceFile="NoSuchUserException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.auth.exceptions.TooMany2FAAttemptsException" sourceFile="TooMany2FAAttemptsException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.auth.exceptions.TooManyConcurrentSessionsException" sourceFile="TooManyConcurrentSessionsException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.auth.exceptions.TooManyFailedLogins" sourceFile="TooManyFailedLogins.java" interface="false" size="4" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.crypto" total_bugs="0" total_types="5" total_size="164">
+      <ClassStats class="vault5431.crypto.HashUtils" sourceFile="HashUtils.java" interface="false" size="23" bugs="0"/>
+      <ClassStats class="vault5431.crypto.PasswordUtils" sourceFile="PasswordUtils.java" interface="false" size="37" bugs="0"/>
+      <ClassStats class="vault5431.crypto.SigningUtils" sourceFile="SigningUtils.java" interface="false" size="18" bugs="0"/>
+      <ClassStats class="vault5431.crypto.SymmetricUtils" sourceFile="SymmetricUtils.java" interface="false" size="76" bugs="0"/>
+      <ClassStats class="vault5431.crypto.Utils" sourceFile="Utils.java" interface="false" size="10" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.crypto.exceptions" total_bugs="0" total_types="3" total_size="12">
+      <ClassStats class="vault5431.crypto.exceptions.BadCiphertextException" sourceFile="BadCiphertextException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.crypto.exceptions.InvalidPublicKeySignature" sourceFile="InvalidPublicKeySignature.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.crypto.exceptions.InvalidSignatureException" sourceFile="InvalidSignatureException.java" interface="false" size="4" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.crypto.sjcl" total_bugs="0" total_types="2" total_size="47">
+      <ClassStats class="vault5431.crypto.sjcl.SJCLAsymmetricField" sourceFile="SJCLAsymmetricField.java" interface="false" size="22" bugs="0"/>
+      <ClassStats class="vault5431.crypto.sjcl.SJCLSymmetricField" sourceFile="SJCLSymmetricField.java" interface="false" size="25" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.io" total_bugs="8" total_types="2" total_size="90" priority_1="8">
+      <ClassStats class="vault5431.io.Base64String" sourceFile="Base64String.java" interface="false" size="58" bugs="5" priority_1="5"/>
+      <ClassStats class="vault5431.io.FileUtils" sourceFile="FileUtils.java" interface="false" size="32" bugs="3" priority_1="3"/>
+    </PackageStats>
+    <PackageStats package="vault5431.logging" total_bugs="0" total_types="7" total_size="153">
+      <ClassStats class="vault5431.logging.CSVUtils" sourceFile="CSVUtils.java" interface="false" size="14" bugs="0"/>
+      <ClassStats class="vault5431.logging.LogEntry" sourceFile="LogEntry.java" interface="false" size="19" bugs="0"/>
+      <ClassStats class="vault5431.logging.LogType" sourceFile="LogType.java" interface="false" size="33" bugs="0"/>
+      <ClassStats class="vault5431.logging.LogType$1" sourceFile="LogType.java" interface="false" size="6" bugs="0"/>
+      <ClassStats class="vault5431.logging.LogType$Colors" sourceFile="LogType.java" interface="false" size="20" bugs="0"/>
+      <ClassStats class="vault5431.logging.SystemLogEntry" sourceFile="SystemLogEntry.java" interface="false" size="32" bugs="0"/>
+      <ClassStats class="vault5431.logging.UserLogEntry" sourceFile="UserLogEntry.java" interface="false" size="29" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.routes" total_bugs="0" total_types="9" total_size="569">
+      <ClassStats class="vault5431.routes.AuthenticationRoutes" sourceFile="AuthenticationRoutes.java" interface="false" size="159" bugs="0"/>
+      <ClassStats class="vault5431.routes.ExceptionRoutes" sourceFile="ExceptionRoutes.java" interface="false" size="46" bugs="0"/>
+      <ClassStats class="vault5431.routes.GeneratorRoutes" sourceFile="GeneratorRoutes.java" interface="false" size="7" bugs="0"/>
+      <ClassStats class="vault5431.routes.LogRoutes" sourceFile="LogRoutes.java" interface="false" size="13" bugs="0"/>
+      <ClassStats class="vault5431.routes.PasswordRoutes" sourceFile="PasswordRoutes.java" interface="false" size="62" bugs="0"/>
+      <ClassStats class="vault5431.routes.Routes" sourceFile="Routes.java" interface="false" size="77" bugs="0"/>
+      <ClassStats class="vault5431.routes.Routes$AuthenticatedRoute" sourceFile="Routes.java" interface="true" size="17" bugs="0"/>
+      <ClassStats class="vault5431.routes.SettingsRoutes" sourceFile="SettingsRoutes.java" interface="false" size="79" bugs="0"/>
+      <ClassStats class="vault5431.routes.SharedPasswordRoutes" sourceFile="SharedPasswordRoutes.java" interface="false" size="109" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.routes.exceptions" total_bugs="0" total_types="2" total_size="7">
+      <ClassStats class="vault5431.routes.exceptions.SessionExpiredException" sourceFile="SessionExpiredException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.routes.exceptions.UnauthorizedRequestException" sourceFile="UnauthorizedRequestException.java" interface="false" size="3" bugs="0"/>
+    </PackageStats>
+    <PackageStats package="vault5431.users" total_bugs="8" total_types="5" total_size="675" priority_2="1" priority_1="7">
+      <ClassStats class="vault5431.users.Password" sourceFile="Password.java" interface="false" size="67" bugs="0"/>
+      <ClassStats class="vault5431.users.Settings" sourceFile="Settings.java" interface="false" size="59" bugs="2" priority_1="2"/>
+      <ClassStats class="vault5431.users.SharedPassword" sourceFile="SharedPassword.java" interface="false" size="79" bugs="0"/>
+      <ClassStats class="vault5431.users.User" sourceFile="User.java" interface="false" size="412" bugs="4" priority_1="4"/>
+      <ClassStats class="vault5431.users.UserManager" sourceFile="UserManager.java" interface="false" size="58" bugs="2" priority_2="1" priority_1="1"/>
+    </PackageStats>
+    <PackageStats package="vault5431.users.exceptions" total_bugs="0" total_types="6" total_size="30">
+      <ClassStats class="vault5431.users.exceptions.AlreadySharingPasswordException" sourceFile="AlreadySharingPasswordException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.users.exceptions.CorruptedLogException" sourceFile="CorruptedLogException.java" interface="false" size="7" bugs="0"/>
+      <ClassStats class="vault5431.users.exceptions.CouldNotCreateUserException" sourceFile="CouldNotCreateUserException.java" interface="false" size="7" bugs="0"/>
+      <ClassStats class="vault5431.users.exceptions.CouldNotLoadSettingsException" sourceFile="CouldNotLoadSettingsException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.users.exceptions.IllegalTokenException" sourceFile="IllegalTokenException.java" interface="false" size="4" bugs="0"/>
+      <ClassStats class="vault5431.users.exceptions.VaultNotFoundException" sourceFile="VaultNotFoundException.java" interface="false" size="4" bugs="0"/>
+    </PackageStats>
+    <FindBugsProfile>
+      <ClassProfile name="edu.umd.cs.findbugs.FindBugs2" totalMilliseconds="766" invocations="2" avgMicrosecondsPerInvocation="383341" maxMicrosecondsPerInvocation="534127" standardDeviationMircosecondsPerInvocation="150785"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassInfoAnalysisEngine" totalMilliseconds="477" invocations="1160" avgMicrosecondsPerInvocation="411" maxMicrosecondsPerInvocation="19693" standardDeviationMircosecondsPerInvocation="1132"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FieldItemSummary" totalMilliseconds="390" invocations="227" avgMicrosecondsPerInvocation="1720" maxMicrosecondsPerInvocation="22435" standardDeviationMircosecondsPerInvocation="3332"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FindNoSideEffectMethods" totalMilliseconds="336" invocations="227" avgMicrosecondsPerInvocation="1482" maxMicrosecondsPerInvocation="16161" standardDeviationMircosecondsPerInvocation="2532"/>
+      <ClassProfile name="edu.umd.cs.findbugs.ba.npe.NullDerefAndRedundantComparisonFinder" totalMilliseconds="292" invocations="396" avgMicrosecondsPerInvocation="739" maxMicrosecondsPerInvocation="19803" standardDeviationMircosecondsPerInvocation="1655"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.TypeDataflowFactory" totalMilliseconds="282" invocations="422" avgMicrosecondsPerInvocation="670" maxMicrosecondsPerInvocation="10963" standardDeviationMircosecondsPerInvocation="1110"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.IsNullValueDataflowFactory" totalMilliseconds="275" invocations="396" avgMicrosecondsPerInvocation="695" maxMicrosecondsPerInvocation="16755" standardDeviationMircosecondsPerInvocation="1435"/>
+      <ClassProfile name="edu.umd.cs.findbugs.OpcodeStack$JumpInfoFactory" totalMilliseconds="273" invocations="963" avgMicrosecondsPerInvocation="283" maxMicrosecondsPerInvocation="12188" standardDeviationMircosecondsPerInvocation="643"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.ValueNumberDataflowFactory" totalMilliseconds="252" invocations="422" avgMicrosecondsPerInvocation="598" maxMicrosecondsPerInvocation="13332" standardDeviationMircosecondsPerInvocation="1381"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.CFGFactory" totalMilliseconds="207" invocations="396" avgMicrosecondsPerInvocation="524" maxMicrosecondsPerInvocation="16025" standardDeviationMircosecondsPerInvocation="959"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.UnconditionalValueDerefDataflowFactory" totalMilliseconds="202" invocations="396" avgMicrosecondsPerInvocation="511" maxMicrosecondsPerInvocation="11767" standardDeviationMircosecondsPerInvocation="887"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FindRefComparison$SpecialTypeAnalysis" totalMilliseconds="182" invocations="381" avgMicrosecondsPerInvocation="478" maxMicrosecondsPerInvocation="11722" standardDeviationMircosecondsPerInvocation="932"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.ClassDataAnalysisEngine" totalMilliseconds="173" invocations="1162" avgMicrosecondsPerInvocation="149" maxMicrosecondsPerInvocation="8560" standardDeviationMircosecondsPerInvocation="318"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.NoteDirectlyRelevantTypeQualifiers" totalMilliseconds="117" invocations="227" avgMicrosecondsPerInvocation="516" maxMicrosecondsPerInvocation="14789" standardDeviationMircosecondsPerInvocation="1288"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.JavaClassAnalysisEngine" totalMilliseconds="108" invocations="307" avgMicrosecondsPerInvocation="354" maxMicrosecondsPerInvocation="32631" standardDeviationMircosecondsPerInvocation="1980"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.FunctionsThatMightBeMistakenForProcedures" totalMilliseconds="100" invocations="227" avgMicrosecondsPerInvocation="444" maxMicrosecondsPerInvocation="8940" standardDeviationMircosecondsPerInvocation="1110"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.MethodGenFactory" totalMilliseconds="91" invocations="399" avgMicrosecondsPerInvocation="228" maxMicrosecondsPerInvocation="47342" standardDeviationMircosecondsPerInvocation="2367"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.OverridingEqualsNotSymmetrical" totalMilliseconds="85" invocations="227" avgMicrosecondsPerInvocation="376" maxMicrosecondsPerInvocation="11406" standardDeviationMircosecondsPerInvocation="1140"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.CalledMethods" totalMilliseconds="70" invocations="227" avgMicrosecondsPerInvocation="309" maxMicrosecondsPerInvocation="3768" standardDeviationMircosecondsPerInvocation="577"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.BuildObligationPolicyDatabase" totalMilliseconds="70" invocations="227" avgMicrosecondsPerInvocation="308" maxMicrosecondsPerInvocation="4159" standardDeviationMircosecondsPerInvocation="563"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.BuildStringPassthruGraph" totalMilliseconds="69" invocations="227" avgMicrosecondsPerInvocation="304" maxMicrosecondsPerInvocation="4174" standardDeviationMircosecondsPerInvocation="573"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.DefaultEncodingDetector" totalMilliseconds="59" invocations="58" avgMicrosecondsPerInvocation="1033" maxMicrosecondsPerInvocation="8485" standardDeviationMircosecondsPerInvocation="1652"/>
+      <ClassProfile name="edu.umd.cs.findbugs.classfile.engine.bcel.ConstantDataflowFactory" totalMilliseconds="59" invocations="396" avgMicrosecondsPerInvocation="149" maxMicrosecondsPerInvocation="2634" standardDeviationMircosecondsPerInvocation="269"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.ExplicitSerialization" totalMilliseconds="54" invocations="227" avgMicrosecondsPerInvocation="241" maxMicrosecondsPerInvocation="15800" standardDeviationMircosecondsPerInvocation="1359"/>
+      <ClassProfile name="edu.umd.cs.findbugs.detect.LoadOfKnownNullValue" totalMilliseconds="53" invocations="58" avgMicrosecondsPerInvocation="930" maxMicrosecondsPerInvocation="13386" standardDeviationMircosecondsPerInvocation="1856"/>
+    </FindBugsProfile>
+  </FindBugsSummary>
+  <ClassFeatures></ClassFeatures>
+  <History></History>
+</BugCollection>

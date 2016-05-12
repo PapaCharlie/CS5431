@@ -1,0 +1,517 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>FindBugs Report</title>
+<style type="text/css">
+		.tablerow0 {
+			background: #EEEEEE;
+		}
+
+		.tablerow1 {
+			background: white;
+		}
+
+		.detailrow0 {
+			background: #EEEEEE;
+		}
+
+		.detailrow1 {
+			background: white;
+		}
+
+		.tableheader {
+			background: #b9b9fe;
+			font-size: larger;
+		}
+		</style>
+</head>
+<body>
+<h1>FindBugs Report</h1>
+<p>Produced using <a href="http://findbugs.sourceforge.net">FindBugs</a>3.0.1.</p>
+<p>Project: 
+			vault5431</p>
+<h2>Metrics</h2>
+<p>2416 lines of code analyzed,
+	in 58 classes, 
+	in 12 packages.</p>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Metric</th>
+<th align="right">Total</th>
+<th align="right">Density*</th>
+</tr>
+<tr class="tablerow0">
+<td>High Priority Warnings</td>
+<td align="right">22</td>
+<td align="right">9.11</td>
+</tr>
+<tr class="tablerow1">
+<td>Medium Priority Warnings</td>
+<td align="right">2</td>
+<td align="right">0.83</td>
+</tr>
+<tr class="$totalClass">
+<td>
+<b>Total Warnings</b>
+</td>
+<td align="right">
+<b>24</b>
+</td>
+<td align="right">
+<b>9.93</b>
+</td>
+</tr>
+</table>
+<p>
+<i>(* Defects per Thousand lines of non-commenting source statements)</i>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h2>Summary</h2>
+<table width="500" cellpadding="5" cellspacing="2">
+<tr class="tableheader">
+<th align="left">Warning Type</th>
+<th align="right">Number</th>
+</tr>
+<tr class="tablerow0">
+<td>
+<a href="#Warnings_I18N">Internationalization Warnings</a>
+</td>
+<td align="right">21</td>
+</tr>
+<tr class="tablerow1">
+<td>
+<a href="#Warnings_STYLE">Dodgy code Warnings</a>
+</td>
+<td align="right">3</td>
+</tr>
+<tr class="tablerow0">
+<td>
+<b>Total</b>
+</td>
+<td align="right">
+<b>24</b>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h1>Warnings</h1>
+<p>Click on each warning link to see a full description of the issue, and
+	    details of how to resolve it.</p>
+<h2>
+<a name="Warnings_I18N">Internationalization Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.auth.AuthenticationHandler$Token.toSignatureBody(String, LocalDateTime, LocalDateTime, UUID, boolean): String.getBytes()<br/>
+<br/>
+<br/>In file AuthenticationHandler.java,
+					
+						line 336<br/>In class vault5431.auth.AuthenticationHandler$Token<br/>In method vault5431.auth.AuthenticationHandler$Token.toSignatureBody(String, LocalDateTime, LocalDateTime, UUID, boolean)<br/>Called method String.getBytes()<br/>At AuthenticationHandler.java:[line 336]<br/>At AuthenticationHandler.java:[line 336]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in new vault5431.io.Base64String(String): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 25<br/>In class vault5431.io.Base64String<br/>In method new vault5431.io.Base64String(String)<br/>Called method String.getBytes()<br/>At Base64String.java:[line 25]<br/>At Base64String.java:[line 25]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.decodeString(): new String(byte[])<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 133<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.decodeString()<br/>Called method new String(byte[])<br/>At Base64String.java:[line 133]<br/>At Base64String.java:[line 133]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.fromBase64(String): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 63<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.fromBase64(String)<br/>Called method String.getBytes()<br/>At Base64String.java:[line 63]<br/>At Base64String.java:[line 63]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.getB64Bytes(): String.getBytes()<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 120<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.getB64Bytes()<br/>Called method String.getBytes()<br/>At Base64String.java:[line 120]<br/>At Base64String.java:[line 120]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.Base64String.setB64data(byte[]): new String(byte[])<br/>
+<br/>
+<br/>In file Base64String.java,
+					
+						line 102<br/>In class vault5431.io.Base64String<br/>In method vault5431.io.Base64String.setB64data(byte[])<br/>Called method new String(byte[])<br/>At Base64String.java:[line 102]<br/>At Base64String.java:[line 102]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.append(File, Base64String): String.getBytes()<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 86<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.append(File, Base64String)<br/>Called method String.getBytes()<br/>At FileUtils.java:[line 86]<br/>At FileUtils.java:[line 86]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.read(File): new java.io.FileReader(File)<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 23<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.read(File)<br/>Called method new java.io.FileReader(File)<br/>At FileUtils.java:[line 23]<br/>At FileUtils.java:[line 23]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.io.FileUtils.write(File, byte[], boolean): new java.io.FileWriter(File, boolean)<br/>
+<br/>
+<br/>In file FileUtils.java,
+					
+						line 57<br/>In class vault5431.io.FileUtils<br/>In method vault5431.io.FileUtils.write(File, byte[], boolean)<br/>Called method new java.io.FileWriter(File, boolean)<br/>At FileUtils.java:[line 57]<br/>At FileUtils.java:[line 57]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.PasswordGenerator.&lt;static initializer for PasswordGenerator&gt;(): new java.io.InputStreamReader(InputStream)<br/>
+<br/>
+<br/>In file PasswordGenerator.java,
+					
+						line 33<br/>In class vault5431.PasswordGenerator<br/>In method vault5431.PasswordGenerator.&lt;static initializer for PasswordGenerator&gt;()<br/>Called method new java.io.InputStreamReader(InputStream)<br/>At PasswordGenerator.java:[line 33]<br/>At PasswordGenerator.java:[line 33]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.Sys.appendToLog(SystemLogEntry): String.getBytes()<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						line 193<br/>In class vault5431.Sys<br/>In method vault5431.Sys.appendToLog(SystemLogEntry)<br/>Called method String.getBytes()<br/>At Sys.java:[line 193]<br/>At Sys.java:[line 193]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.Sys.deriveLogEncryptionKey(): String.getBytes()<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						line 172<br/>In class vault5431.Sys<br/>In method vault5431.Sys.deriveLogEncryptionKey()<br/>Called method String.getBytes()<br/>At Sys.java:[line 172]<br/>At Sys.java:[line 172]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.Sys.deriveLogSigningKey(): String.getBytes()<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						line 178<br/>In class vault5431.Sys<br/>In method vault5431.Sys.deriveLogSigningKey()<br/>Called method String.getBytes()<br/>At Sys.java:[line 178]<br/>At Sys.java:[line 178]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.Sys.loadLog(): new String(byte[])<br/>
+<br/>
+<br/>In file Sys.java,
+					
+						line 222<br/>In class vault5431.Sys<br/>In method vault5431.Sys.loadLog()<br/>Called method new String(byte[])<br/>At Sys.java:[line 222]<br/>At Sys.java:[line 222]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.Settings.loadFromFile(File, SecretKey, SecretKey): new String(byte[])<br/>
+<br/>
+<br/>In file Settings.java,
+					
+						line 57<br/>In class vault5431.users.Settings<br/>In method vault5431.users.Settings.loadFromFile(File, SecretKey, SecretKey)<br/>Called method new String(byte[])<br/>At Settings.java:[line 57]<br/>At Settings.java:[line 57]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.Settings.saveToFile(File, SecretKey, SecretKey): String.getBytes()<br/>
+<br/>
+<br/>In file Settings.java,
+					
+						line 109<br/>In class vault5431.users.Settings<br/>In method vault5431.users.Settings.saveToFile(File, SecretKey, SecretKey)<br/>Called method String.getBytes()<br/>At Settings.java:[line 109]<br/>At Settings.java:[line 109]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.User.appendToLog(LogType, String, String, String): String.getBytes()<br/>
+<br/>
+<br/>In file User.java,
+					
+						line 519<br/>In class vault5431.users.User<br/>In method vault5431.users.User.appendToLog(LogType, String, String, String)<br/>Called method String.getBytes()<br/>At User.java:[line 519]<br/>At User.java:[line 519]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.User.deriveLogEncryptionKey(): String.getBytes()<br/>
+<br/>
+<br/>In file User.java,
+					
+						line 538<br/>In class vault5431.users.User<br/>In method vault5431.users.User.deriveLogEncryptionKey()<br/>Called method String.getBytes()<br/>At User.java:[line 538]<br/>At User.java:[line 538]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.User.deriveLogSigningKey(): String.getBytes()<br/>
+<br/>
+<br/>In file User.java,
+					
+						line 544<br/>In class vault5431.users.User<br/>In method vault5431.users.User.deriveLogSigningKey()<br/>Called method String.getBytes()<br/>At User.java:[line 544]<br/>At User.java:[line 544]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.User.loadLog(): new String(byte[])<br/>
+<br/>
+<br/>In file User.java,
+					
+						line 494<br/>In class vault5431.users.User<br/>In method vault5431.users.User.loadLog()<br/>Called method new String(byte[])<br/>At User.java:[line 494]<br/>At User.java:[line 494]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Found reliance on default encoding in vault5431.users.UserManager.hashUsername(String): String.getBytes()<br/>
+<br/>
+<br/>In file UserManager.java,
+					
+						line 58<br/>In class vault5431.users.UserManager<br/>In method vault5431.users.UserManager.hashUsername(String)<br/>Called method String.getBytes()<br/>At UserManager.java:[line 58]<br/>At UserManager.java:[line 58]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="Warnings_STYLE">Dodgy code Warnings</a>
+</h2>
+<table class="warningtable" width="100%" cellspacing="2" cellpadding="5">
+<tr class="tableheader">
+<th align="left">Warning</th>
+<th align="left">Priority</th>
+<th align="left">Details</th>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</td>
+<td width="10%" valign="top">High</td>
+<td width="70%">
+<p>Dead store to client in vault5431.auth.SMSHandler.sendSms(String, String)<br/>
+<br/>
+<br/>In file SMSHandler.java,
+					
+						line 25<br/>In class vault5431.auth.SMSHandler<br/>In method vault5431.auth.SMSHandler.sendSms(String, String)<br/>Local variable named client<br/>At SMSHandler.java:[line 25]<br/>At SMSHandler.java:[line 25]</p>
+</td>
+</tr>
+<tr class="tablerow0">
+<td width="20%" valign="top">
+<a href="#NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Possible null pointer dereference in vault5431.users.UserManager.&lt;static initializer for UserManager&gt;() due to return value of called method<br/>
+<br/>
+<br/>In file UserManager.java,
+					
+						line 34<br/>In class vault5431.users.UserManager<br/>In method vault5431.users.UserManager.&lt;static initializer for UserManager&gt;()<br/>Value loaded from err<br/>Dereferenced at UserManager.java:[line 34]<br/>Known null at UserManager.java:[line 34]</p>
+</td>
+</tr>
+<tr class="tablerow1">
+<td width="20%" valign="top">
+<a href="#UC_USELESS_OBJECT">Useless object created</a>
+</td>
+<td width="10%" valign="top">Medium</td>
+<td width="70%">
+<p>Useless object stored in variable params of method vault5431.auth.SMSHandler.sendSms(String, String)<br/>
+<br/>
+<br/>In file SMSHandler.java,
+					
+						line 26<br/>In class vault5431.auth.SMSHandler<br/>In method vault5431.auth.SMSHandler.sendSms(String, String)<br/>Value params<br/>Type java.util.ArrayList<br/>At SMSHandler.java:[line 26]</p>
+</td>
+</tr>
+</table>
+<p>
+<br/>
+<br/>
+</p>
+<p>
+<br/>
+<br/>
+</p>
+<h1>
+<a name="Details">Warning Types</a>
+</h1>
+<h2>
+<a name="DLS_DEAD_LOCAL_STORE">Dead store to local variable</a>
+</h2>
+
+<p>
+This instruction assigns a value to a local variable,
+but the value is not read or used in any subsequent instruction.
+Often, this indicates an error, because the value computed is never
+used.
+</p>
+<p>
+Note that Sun's javac compiler often generates dead stores for
+final local variables.  Because FindBugs is a bytecode-based tool,
+there is no easy way to eliminate these false positives.
+</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="DM_DEFAULT_ENCODING">Reliance on default encoding</a>
+</h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion, and will assume that the default platform encoding is suitable. This will cause the application behaviour to vary between platforms. Use an alternative API and specify a charset name or Charset object explicitly.  </p>
+
+      
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE">Possible null pointer dereference due to return value of called method</a>
+</h2>
+      
+<p> The return value from a method is dereferenced without a null check,
+and the return value of that method is one that should generally be checked
+for null.  This may lead to a <code>NullPointerException</code> when the code is executed.
+</p>
+      
+   
+<p>
+<br/>
+<br/>
+</p>
+<h2>
+<a name="UC_USELESS_OBJECT">Useless object created</a>
+</h2>
+
+<p>Our analysis shows that this object is useless. 
+It's created and modified, but its value never go outside of the method or produce any side-effect.
+Either there is a mistake and object was intended to be used or it can be removed.</p>
+<p>This analysis rarely produces false-positives. Common false-positive cases include:</p>
+<p>- This object used to implicitly throw some obscure exception.</p>
+<p>- This object used as a stub to generalize the code.</p>
+<p>- This object used to hold strong references to weak/soft-referenced objects.</p>
+
+    
+<p>
+<br/>
+<br/>
+</p>
+</body>
+</html>

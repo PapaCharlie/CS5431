@@ -11,7 +11,7 @@ all:
 	-mkdir .build
 	-rm $(PDF)
 	for t in $(SRC) ; do \
-		pdflatex -shell-escape -output-directory=.build $$t ; \
+		pdflatex -shell-escape -interaction=nonstopmode -output-directory=.build $$t ; \
 	done
 	make links
 
