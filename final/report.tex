@@ -4,12 +4,12 @@
 \usepackage{array,booktabs}
 
 \title{Vault 5431 - Sprint Report}
-\author{Alicia Wu, Britney Wong, Chang Yang Jiao, Paul Chesnais}
+\author{Paul Chesnais, Alicia Wu, Britney Wong, Chang Yang Jiao}
 \date{\today}
 
 \pagestyle{fancy}
 \fancyhead{}
-\lhead{cj285, bmw227, pmc85, yw344}
+\lhead{pmc85, yw344, bmw227, cj285}
 \chead{Vault 5431 - Sprint Report}
 \rhead{\today}
 \fancyfoot{}
@@ -24,16 +24,16 @@
 
 \section{Activity Breakdown}
 \subsection{Paul}
-\par
+\par For this final sprint, I focused on polishing up the code as much as I could. I made sure that the Reference Monitor had no bugs and worked exactly as intended, nothing more nothing less. Thankfully, we had implemented Tokens (i.e. capabilities) for the previous milestone, so implementing the Reference Monitor did not take too long. This meant I could focus on the rest of the code, mainly implementing features that we were not sure we would have time for, namely password sharing, pronounceable passwords and optional secure notes attached to passwords. I also helped Chang implement Tamperproof Logging, and switched all encryption to authenticated encryption. All in all a very productive sprint, and I think that we are all happy with the final design.
 
 \subsection{Chang}
-\par
+\par For this final sprint, I focused primarily on implementing our new Tamperproof Logging system with Paul. I helped to discover some bugs by testing the site we put on the server. I also added comments to parts of the code base to make the final source code as readable as possible.
 
 \subsection{Britney}
-\par
+\par For this sprint, I did the password strength checker on the client side (conforming to Kelly's standards as specified in class) on the registration page. I also refined the log search on the user log to enable user's to check through all the different fields. Finally, I also added search bars for searching through accounts and usernames (for password sharing).
 
 \subsection{Alicia}
-\par
+\par For this final sprint, I worked on changing how passwords are rendered to prevent malicious user input and revising the settings page. I also made the vault interface more user friendly and less cluttered.
 
 \section{Productivity Analysis}
 \par For the final sprint, we planned to complete Authorization as well as additional features like secure notes, password sharing, pronounceable passwords, and settings. These were all completed during this sprint. We also made a few changes like sending the hash of the master password concatenated with a string to the server upon login instead of the double hash to prevent hackers from stealing your computer and looking into session storage for the first hash and then implying the second hash. Another improvement was tamper proof logs, where users sign each log entry to prevent integrity violations. The settings feature include changing the master password and setting the number of concurrent sessions allowed and the length of each session.
