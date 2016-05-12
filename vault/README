@@ -8,4 +8,4 @@ Run `make` or `make compile`, and let sbt pull in all of its dependencies and th
 Run `make test` if you want to ensure that Bouncy Castle was installed properly and that Java's Crypto Extension is indeed working.
 
 #RUNNING
-To start using the Vault, run `make run` and go to https://localhost:5431 to interact with it. WARNING: at this stage, the project is using self signed certificates, so you will need to accept them before you can start using the web UI.
+To start using the Vault, run `make run` and go to https://localhost:5431 to interact with it. WARNING: at this stage, the project is using self signed certificates, so you will need to accept them before you can start using the web UI. You may also run `make log` to view the System logs.
