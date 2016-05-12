@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Vault5431</title>
+    <link rel="icon" href="/favicon.ico?v=2" />
     <link rel="stylesheet" type="text/css" href="/login.css">
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
 </head>

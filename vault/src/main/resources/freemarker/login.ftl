@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
+    <link rel="icon" href="/favicon.ico?v=2" />
     <meta charset="utf-8">
     <title>Vault5431</title>
     <link rel="stylesheet" type="text/css" href="/login.css">

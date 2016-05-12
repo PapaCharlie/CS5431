@@ -10,6 +10,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Vault5431</title>
+    <link rel="icon" href="/favicon.ico?v=2" />
     <link href="/bootstrap.min.css" rel="stylesheet">
     <script type="text/javascript" src="/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="/bootstrap.min.js"></script>
